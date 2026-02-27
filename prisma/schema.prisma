@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  uid          String        @unique
+  openid       String        @unique
+  username     String        @unique
+  email        String        @unique
+  password     String
+  isAdmin      Boolean       @default(false)
+  whaleCash    Int           @default(0)
+  transactions Transaction[]
+  discounts    UserDiscount[]
+  orders       Order[]
+  createdAt    DateTime      @default(now())
+}
+
+model Order {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  productName String
+  quantity    Int      @default(1)
+  totalAmount Int
+  status      String   @default("PENDING") // PENDING, DONE, CANCELLED
+  items       Inventory[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Inventory {
+  id        String    @id @default(uuid())
+  game      String
+  serial    String
+  pin       String
+  inTime    DateTime  @default(now())
+  outTime   DateTime?
+  cardValue Int       @default(0)
+  qh        Int       @default(0)
+  cost      Int       @default(0)
+  price     Int       @default(0)
+  status    String    @default("NEW") // NEW, PENDING, DONE
+  
+  orderId   String?
+  order     Order?    @relation(fields: [orderId], references: [id])
+}
+
+model UserDiscount {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  codeName        String   // vd: "Welcome (1% Off)"
+  discountPercent Int
+  isUsed          Boolean  @default(false)
+  createdAt       DateTime @default(now())
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       Int
+  image       String   @default("")
+  isDeck      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model DiscountTemplate {
+  id              String   @id @default(uuid())
+  code            String   @unique
+  discountPercent Int
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+}
+
+model Subscription {
+  id       String @id @default(uuid())
+  name     String
+  price    Int
+  benefits String
+}
+
+model Transaction {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  amount    Int
+  type      String
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+}
