@@ -3,6 +3,7 @@ import { prisma } from '../../../../../lib/prisma';
 import { getSession } from '../../../../../lib/auth';
 import { grantMembershipPerks } from '../../../../../lib/membership';
 
+export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
     try {
         const session = await getSession();

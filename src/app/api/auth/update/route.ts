@@ -3,6 +3,7 @@ import { prisma } from '../../../../../lib/prisma';
 import { getSession } from '../../../../../lib/auth';
 import bcrypt from 'bcrypt';
 
+export const dynamic = 'force-dynamic';
 export async function PUT(req: Request) {
     try {
         const session = getSession();

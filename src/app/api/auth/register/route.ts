@@ -6,6 +6,7 @@ function pad(n: number) {
     return n < 10 ? '0' + n : n.toString();
 }
 
+export const dynamic = 'force-dynamic';
 export async function POST(req: Request) {
     try {
         const { username, email, password } = await req.json();
