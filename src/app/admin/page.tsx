@@ -6,10 +6,12 @@ import Modal from '../../components/Modal';
 
 export default function AdminDashboard() {
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState('orders'); // set orders default
+    const [activeTab, setActiveTab] = useState('overview');
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true);
     const [orders, setOrders] = useState<any[]>([]);
+    const [showAddInventoryForm, setShowAddInventoryForm] = useState(false);
+    const [newInventoryData, setNewInventoryData] = useState({ game: 'Liên Quân', serial: '', pin: '', cardValue: 100000 });
 
     const [modalConfig, setModalConfig] = useState<{
         isOpen: boolean;
@@ -85,6 +87,15 @@ export default function AdminDashboard() {
                 .then(res => res.json())
                 .then(data => setUsers(data || []))
                 .catch(err => console.error(err));
+        } else if (isAdmin && activeTab === 'overview') {
+            fetch('/api/admin/all-orders')
+                .then(res => res.json())
+                .then(data => setAllOrders(data || []))
+                .catch(err => console.error(err));
+            fetch('/api/admin/inventory')
+                .then(res => res.json())
+                .then(data => setInventoryCards(data || []))
+                .catch(err => console.error(err));
         }
     }, [isAdmin, activeTab]);
 
@@ -131,6 +142,45 @@ export default function AdminDashboard() {
             message: `Bạn có chắc chắn muốn xóa thẻ Serial: ${serial}?`,
             onConfirm: () => confirmDeleteInventory(id, serial)
         });
+    };
+
+    const handleAddInventory = async () => {
+        if (!newInventoryData.serial || !newInventoryData.pin) {
+            setModalConfig({ isOpen: true, type: 'alert', message: 'Vui lòng nhập đầy đủ Serial và Mã Nạp.' });
+            return;
+        }
+
+        const cardValue = parseInt(newInventoryData.cardValue.toString()) || 100000;
+        let qh = 204;
+        let price = 97000;
+        let cost = 96000;
+
+        if (cardValue === 200000) { qh = 408; price = 194000; cost = 192000; }
+        else if (cardValue === 500000) { qh = 1020; price = 485000; cost = 480000; }
+
+        const dataToSubmit = {
+            ...newInventoryData,
+            cardValue,
+            qh,
+            price,
+            cost
+        };
+
+        const res = await fetch('/api/admin/inventory', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dataToSubmit),
+        });
+
+        if (res.ok) {
+            const newItem = await res.json();
+            setInventoryCards([newItem, ...inventoryCards]);
+            setShowAddInventoryForm(false);
+            setNewInventoryData({ game: 'Liên Quân', serial: '', pin: '', cardValue: 100000 });
+            setModalConfig({ isOpen: true, type: 'alert', message: 'Nhập thẻ thành công!' });
+        } else {
+            setModalConfig({ isOpen: true, type: 'alert', message: 'Có lỗi xảy ra khi nhập thẻ.' });
+        }
     };
 
     const handleEditClick = (item: any) => {
@@ -264,11 +314,18 @@ export default function AdminDashboard() {
     });
 
     return (
-        <div style={{ padding: '8rem 5%', minHeight: '100vh', display: 'flex', gap: '3rem' }}>
+        <div style={{ padding: '8rem 5%', minHeight: '100vh', display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
 
             {/* Sidebar */}
-            <div style={{ width: '250px', backgroundColor: '#111', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ width: '250px', flexGrow: 1, maxWidth: '300px', backgroundColor: '#111', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', height: 'fit-content' }}>
                 <h2 style={{ color: 'var(--primary)', marginBottom: '2rem', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '1.2rem' }}>Quản Trị</h2>
+
+                <button
+                    onClick={() => setActiveTab('overview')}
+                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'overview' ? '#222' : 'transparent', color: activeTab === 'overview' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'overview' ? '2px solid var(--primary)' : '2px solid transparent' }}
+                >
+                    Tổng Quan
+                </button>
 
                 <button
                     onClick={() => setActiveTab('orders')}
@@ -285,20 +342,6 @@ export default function AdminDashboard() {
                 </button>
 
                 <button
-                    onClick={() => setActiveTab('posts')}
-                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'posts' ? '#222' : 'transparent', color: activeTab === 'posts' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'posts' ? '2px solid var(--primary)' : '2px solid transparent' }}
-                >
-                    Bài Viết & Media
-                </button>
-
-                <button
-                    onClick={() => setActiveTab('discounts')}
-                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'discounts' ? '#222' : 'transparent', color: activeTab === 'discounts' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'discounts' ? '2px solid var(--primary)' : '2px solid transparent' }}
-                >
-                    Mã Giảm Giá
-                </button>
-
-                <button
                     onClick={() => setActiveTab('inventory')}
                     style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'inventory' ? '#222' : 'transparent', color: activeTab === 'inventory' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'inventory' ? '2px solid var(--primary)' : '2px solid transparent' }}
                 >
@@ -312,10 +355,52 @@ export default function AdminDashboard() {
                     Người Dùng
                 </button>
 
+                <button
+                    onClick={() => setActiveTab('discounts')}
+                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'discounts' ? '#222' : 'transparent', color: activeTab === 'discounts' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'discounts' ? '2px solid var(--primary)' : '2px solid transparent' }}
+                >
+                    Mã Giảm Giá
+                </button>
+
+                <button
+                    onClick={() => setActiveTab('posts')}
+                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'posts' ? '#222' : 'transparent', color: activeTab === 'posts' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'posts' ? '2px solid var(--primary)' : '2px solid transparent' }}
+                >
+                    Post
+                </button>
+
             </div>
 
             {/* Content */}
-            <div style={{ flex: 1, backgroundColor: '#111', padding: '3rem', border: '1px solid #333' }}>
+            <div style={{ flex: '2 1 600px', backgroundColor: '#111', padding: '3rem', border: '1px solid #333', overflowX: 'auto' }}>
+
+                {activeTab === 'overview' && (
+                    <div>
+                        <h3 style={{ fontSize: '1.5rem', textTransform: 'uppercase', marginBottom: '2rem' }}>Tổng Quan Hệ Thống</h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
+                            <div style={{ backgroundColor: '#222', padding: '2rem', border: '1px solid #333', borderRadius: '8px' }}>
+                                <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Lượng Truy Cập Hôm Nay</p>
+                                <h4 style={{ fontSize: '2rem', color: '#fff' }}>1,284</h4>
+                                <p style={{ color: 'var(--primary)', fontSize: '0.8rem', marginTop: '10px' }}>+12% so với tuần trước</p>
+                            </div>
+                            <div style={{ backgroundColor: '#222', padding: '2rem', border: '1px solid #333', borderRadius: '8px' }}>
+                                <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Dữ liệu Web (Capacity)</p>
+                                <h4 style={{ fontSize: '2rem', color: '#fff' }}>0.01 / 0.5 GB</h4>
+                                <p style={{ color: 'var(--primary)', fontSize: '0.8rem', marginTop: '10px' }}>Neon Postgres</p>
+                            </div>
+                            <div style={{ backgroundColor: '#222', padding: '2rem', border: '1px solid #333', borderRadius: '8px' }}>
+                                <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Tổng Doanh Thu</p>
+                                <h4 style={{ fontSize: '2rem', color: '#fff' }}>{new Intl.NumberFormat('vi-VN').format(allOrders.filter(o => o.status === 'DONE').reduce((acc, o) => acc + o.totalAmount, 0))}₫</h4>
+                                <p style={{ color: '#aaa', fontSize: '0.8rem', marginTop: '10px' }}>Đơn hàng thành công</p>
+                            </div>
+                            <div style={{ backgroundColor: '#222', padding: '2rem', border: '1px solid #333', borderRadius: '8px' }}>
+                                <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Tổng Lợi Nhuận</p>
+                                <h4 style={{ fontSize: '2rem', color: 'var(--primary)' }}>{new Intl.NumberFormat('vi-VN').format(inventoryCards.filter(c => c.status === 'DONE').reduce((acc, c) => acc + ((c.price || 0) - (c.cost || 0)), 0))}₫</h4>
+                                <p style={{ color: 'rgba(68, 214, 44, 0.8)', fontSize: '0.8rem', marginTop: '10px' }}>Từ thẻ Garena đã bán</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {activeTab === 'orders' && (
                     <div>
@@ -525,101 +610,148 @@ export default function AdminDashboard() {
 
                 {activeTab === 'inventory' && (
                     <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                             <h3 style={{ fontSize: '1.5rem', textTransform: 'uppercase' }}>Quản lý Kho thẻ Garena</h3>
-                            <button className="btn-primary" style={{ padding: '10px 20px' }}>+ Nhập Thẻ Mới</button>
+                            <button onClick={() => setShowAddInventoryForm(!showAddInventoryForm)} className="btn-primary" style={{ padding: '10px 20px' }}>
+                                {showAddInventoryForm ? 'Thoát' : '+ Nhập Thẻ Mới'}
+                            </button>
                         </div>
+
+                        {showAddInventoryForm && (
+                            <div style={{ backgroundColor: '#222', padding: '2rem', borderRadius: '8px', marginBottom: '2rem', border: '1px solid #444', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                <h4 style={{ color: 'var(--primary)', fontSize: '1.2rem', marginBottom: '1rem' }}>Nhập Thẻ Garena Mới</h4>
+
+                                <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                                    <div style={{ flex: '1 1 200px' }}>
+                                        <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.9rem' }}>Game</label>
+                                        <input value={newInventoryData.game} onChange={e => setNewInventoryData({ ...newInventoryData, game: e.target.value })} style={{ width: '100%', padding: '10px', backgroundColor: '#111', border: '1px solid #333', color: '#fff', borderRadius: '4px' }} placeholder="Liên Quân" />
+                                    </div>
+                                    <div style={{ flex: '1 1 200px' }}>
+                                        <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.9rem' }}>Mệnh giá (VNĐ)</label>
+                                        <select value={newInventoryData.cardValue} onChange={e => setNewInventoryData({ ...newInventoryData, cardValue: parseInt(e.target.value) })} style={{ width: '100%', padding: '10px', backgroundColor: '#111', border: '1px solid #333', color: '#fff', borderRadius: '4px', cursor: 'pointer' }}>
+                                            <option value={100000}>100.000 VNĐ</option>
+                                            <option value={200000}>200.000 VNĐ</option>
+                                            <option value={500000}>500.000 VNĐ</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                                    <div style={{ flex: '1 1 300px' }}>
+                                        <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.9rem' }}>Số Serial</label>
+                                        <input value={newInventoryData.serial} onChange={e => setNewInventoryData({ ...newInventoryData, serial: e.target.value })} style={{ width: '100%', padding: '10px', backgroundColor: '#111', border: '1px solid #333', color: '#fff', borderRadius: '4px' }} placeholder="Ví dụ: 795317382" />
+                                    </div>
+                                    <div style={{ flex: '1 1 300px' }}>
+                                        <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.9rem' }}>Mã Nạp (PIN)</label>
+                                        <input value={newInventoryData.pin} onChange={e => setNewInventoryData({ ...newInventoryData, pin: e.target.value })} style={{ width: '100%', padding: '10px', backgroundColor: '#111', border: '1px solid #333', color: '#fff', borderRadius: '4px', letterSpacing: '2px' }} placeholder="Ví dụ: 8380900809093927" />
+                                    </div>
+                                </div>
+
+                                <button onClick={handleAddInventory} className="btn-primary" style={{ padding: '12px 20px', marginTop: '10px', alignSelf: 'flex-start', fontWeight: 'bold' }}>Lưu Thẻ Vào Kho</button>
+                            </div>
+                        )}
 
                         {inventoryCards.length === 0 ? (
                             <p style={{ color: '#aaa', fontSize: '1.1rem' }}>Kho dữ liệu hiện đang trống.</p>
                         ) : (
-                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', color: '#fff' }}>
-                                <thead>
-                                    <tr style={{ borderBottom: '1px solid #333', color: '#888', textTransform: 'uppercase', fontSize: '0.8rem' }}>
-                                        <th style={{ padding: '15px 0' }}>Game</th>
-                                        <th>Serial</th>
-                                        <th>Mã Nạp</th>
-                                        <th>Quân Huy</th>
-                                        <th>Trạng Thái</th>
-                                        <th>Ngày Nhập</th>
-                                        <th>Ngày Bán</th>
-                                        <th>Thao Tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {inventoryCards.map((c) => (
-                                        <tr key={c.id} style={{ borderBottom: '1px solid #222' }}>
-                                            {editingInventoryId === c.id ? (
-                                                <>
-                                                    <td style={{ padding: '20px 0' }}>
-                                                        <input value={editFormData.game || ''} onChange={(e) => setEditFormData({ ...editFormData, game: e.target.value })} style={{ width: '100%', padding: '5px', backgroundColor: '#333', color: '#fff', border: 'none', borderRadius: '4px' }} />
-                                                    </td>
-                                                    <td>
-                                                        <input value={editFormData.serial || ''} onChange={(e) => setEditFormData({ ...editFormData, serial: e.target.value })} style={{ width: '100%', padding: '5px', backgroundColor: '#333', color: '#fff', border: 'none', borderRadius: '4px' }} />
-                                                    </td>
-                                                    <td>
-                                                        <input value={editFormData.pin || ''} onChange={(e) => setEditFormData({ ...editFormData, pin: e.target.value })} style={{ width: '100%', padding: '5px', backgroundColor: '#333', color: '#fff', border: 'none', borderRadius: '4px' }} />
-                                                    </td>
-                                                    <td>
-                                                        <input type="number" value={editFormData.qh || ''} onChange={(e) => setEditFormData({ ...editFormData, qh: parseInt(e.target.value) || 0 })} style={{ width: '100%', padding: '5px', backgroundColor: '#333', color: '#fff', border: 'none', borderRadius: '4px' }} />
-                                                    </td>
-                                                    <td>
-                                                        <select value={editFormData.status || ''} onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })} style={{ padding: '5px', backgroundColor: '#333', color: '#fff', border: 'none', borderRadius: '4px' }}>
-                                                            <option value="NEW">NEW</option>
-                                                            <option value="PENDING">PENDING</option>
-                                                            <option value="DONE">DONE</option>
-                                                        </select>
-                                                    </td>
-                                                    <td style={{ color: '#888' }}>{new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short' }).format(new Date(c.inTime))}</td>
-                                                    <td style={{ color: '#888' }}>{c.outTime ? new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short' }).format(new Date(c.outTime)) : '-'}</td>
-                                                    <td>
-                                                        <div style={{ display: 'flex', gap: '5px' }}>
-                                                            <button onClick={handleSaveEdit} style={{ color: '#fff', border: '1px solid var(--primary)', padding: '5px 10px', backgroundColor: 'var(--primary)', borderRadius: '4px' }}>Lưu</button>
-                                                            <button onClick={handleCancelEdit} style={{ color: '#fff', border: '1px solid #444', padding: '5px 10px', backgroundColor: 'transparent', borderRadius: '4px' }}>Hủy</button>
-                                                        </div>
-                                                    </td>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <td style={{ padding: '20px 0', fontWeight: 'bold' }}>{c.game}</td>
-                                                    <td style={{ color: '#aaa' }}>{c.serial}</td>
-                                                    <td style={{ color: '#fff', letterSpacing: '1px' }}>{c.pin}</td>
-                                                    <td style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{new Intl.NumberFormat('vi-VN').format(c.cardValue || c.qh)}</td>
-                                                    <td>
-                                                        <span style={{
-                                                            backgroundColor: c.status === 'NEW' ? 'rgba(68, 214, 44, 0.2)' : 'rgba(255, 0, 0, 0.2)',
-                                                            color: c.status === 'NEW' ? 'var(--primary)' : 'red',
-                                                            padding: '5px 10px',
-                                                            fontSize: '0.8rem',
-                                                            textTransform: 'uppercase'
-                                                        }}>
-                                                            {c.status}
-                                                        </span>
-                                                    </td>
-                                                    <td style={{ color: '#888' }}>{new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short' }).format(new Date(c.inTime))}</td>
-                                                    <td style={{ color: '#888' }}>{c.outTime ? new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short' }).format(new Date(c.outTime)) : '-'}</td>
-                                                    <td>
-                                                        <div style={{ display: 'flex', gap: '5px' }}>
-                                                            <button
-                                                                onClick={() => handleEditClick(c)}
-                                                                style={{ color: '#fff', border: '1px solid #444', padding: '6px 12px', backgroundColor: 'transparent', borderRadius: '4px' }}
-                                                            >
-                                                                Sửa
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleDeleteInventory(c.id, c.serial)}
-                                                                style={{ color: '#fff', border: '1px solid red', padding: '6px 12px', backgroundColor: 'rgba(255,0,0,0.1)', borderRadius: '4px' }}
-                                                            >
-                                                                Xóa
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </>
-                                            )}
+                            <div style={{ overflowX: 'auto' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', color: '#fff', minWidth: '800px' }}>
+                                    <thead>
+                                        <tr style={{ borderBottom: '1px solid #333', color: '#888', textTransform: 'uppercase', fontSize: '0.8rem' }}>
+                                            <th style={{ padding: '15px 0' }}>Game</th>
+                                            <th>Serial</th>
+                                            <th>Mã Nạp</th>
+                                            <th>Quân Huy</th>
+                                            <th>Giá Nhập</th>
+                                            <th>Giá Bán</th>
+                                            <th>Lợi Nhuận</th>
+                                            <th>Trạng Thái</th>
+                                            <th>Ngày Nhập</th>
+                                            <th>Ngày Bán</th>
+                                            <th>Thao Tác</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {inventoryCards.map((c) => (
+                                            <tr key={c.id} style={{ borderBottom: '1px solid #222' }}>
+                                                {editingInventoryId === c.id ? (
+                                                    <>
+                                                        <td style={{ padding: '20px 0' }}>
+                                                            <input value={editFormData.game || ''} onChange={(e) => setEditFormData({ ...editFormData, game: e.target.value })} style={{ width: '100%', padding: '5px', backgroundColor: '#333', color: '#fff', border: 'none', borderRadius: '4px' }} />
+                                                        </td>
+                                                        <td>
+                                                            <input value={editFormData.serial || ''} onChange={(e) => setEditFormData({ ...editFormData, serial: e.target.value })} style={{ width: '100%', padding: '5px', backgroundColor: '#333', color: '#fff', border: 'none', borderRadius: '4px' }} />
+                                                        </td>
+                                                        <td>
+                                                            <input value={editFormData.pin || ''} onChange={(e) => setEditFormData({ ...editFormData, pin: e.target.value })} style={{ width: '100%', padding: '5px', backgroundColor: '#333', color: '#fff', border: 'none', borderRadius: '4px' }} />
+                                                        </td>
+                                                        <td>
+                                                            <input type="number" value={editFormData.qh || ''} onChange={(e) => setEditFormData({ ...editFormData, qh: parseInt(e.target.value) || 0 })} style={{ width: '100%', padding: '5px', backgroundColor: '#333', color: '#fff', border: 'none', borderRadius: '4px' }} />
+                                                        </td>
+                                                        <td style={{ color: '#888', fontSize: '0.9rem' }}>-</td>
+                                                        <td style={{ color: '#888', fontSize: '0.9rem' }}>-</td>
+                                                        <td style={{ color: '#888', fontSize: '0.9rem' }}>-</td>
+                                                        <td>
+                                                            <select value={editFormData.status || ''} onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })} style={{ padding: '5px', backgroundColor: '#333', color: '#fff', border: 'none', borderRadius: '4px' }}>
+                                                                <option value="NEW">NEW</option>
+                                                                <option value="PENDING">PENDING</option>
+                                                                <option value="DONE">DONE</option>
+                                                            </select>
+                                                        </td>
+                                                        <td style={{ color: '#888' }}>{new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short' }).format(new Date(c.inTime))}</td>
+                                                        <td style={{ color: '#888' }}>{c.outTime ? new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short' }).format(new Date(c.outTime)) : '-'}</td>
+                                                        <td>
+                                                            <div style={{ display: 'flex', gap: '5px' }}>
+                                                                <button onClick={handleSaveEdit} style={{ color: '#fff', border: '1px solid var(--primary)', padding: '5px 10px', backgroundColor: 'var(--primary)', borderRadius: '4px' }}>Lưu</button>
+                                                                <button onClick={handleCancelEdit} style={{ color: '#fff', border: '1px solid #444', padding: '5px 10px', backgroundColor: 'transparent', borderRadius: '4px' }}>Hủy</button>
+                                                            </div>
+                                                        </td>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <td style={{ padding: '20px 0', fontWeight: 'bold' }}>{c.game}</td>
+                                                        <td style={{ color: '#aaa' }}>{c.serial}</td>
+                                                        <td style={{ color: '#fff', letterSpacing: '1px' }}>{c.pin}</td>
+                                                        <td style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{new Intl.NumberFormat('vi-VN').format(c.qh || c.cardValue)}</td>
+                                                        <td style={{ color: '#aaa', fontSize: '0.9rem' }}>{new Intl.NumberFormat('vi-VN').format(c.cost || 0)}₫</td>
+                                                        <td style={{ color: '#aaa', fontSize: '0.9rem' }}>{new Intl.NumberFormat('vi-VN').format(c.price || 0)}₫</td>
+                                                        <td style={{ color: 'rgba(68, 214, 44, 1)', fontWeight: 'bold' }}>{new Intl.NumberFormat('vi-VN').format((c.price || 0) - (c.cost || 0))}₫</td>
+                                                        <td>
+                                                            <span style={{
+                                                                backgroundColor: c.status === 'NEW' ? 'rgba(68, 214, 44, 0.2)' : 'rgba(255, 0, 0, 0.2)',
+                                                                color: c.status === 'NEW' ? 'var(--primary)' : 'red',
+                                                                padding: '5px 10px',
+                                                                fontSize: '0.8rem',
+                                                                textTransform: 'uppercase'
+                                                            }}>
+                                                                {c.status}
+                                                            </span>
+                                                        </td>
+                                                        <td style={{ color: '#888' }}>{new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short' }).format(new Date(c.inTime))}</td>
+                                                        <td style={{ color: '#888' }}>{c.outTime ? new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short' }).format(new Date(c.outTime)) : '-'}</td>
+                                                        <td>
+                                                            <div style={{ display: 'flex', gap: '5px' }}>
+                                                                <button
+                                                                    onClick={() => handleEditClick(c)}
+                                                                    style={{ color: '#fff', border: '1px solid #444', padding: '6px 12px', backgroundColor: 'transparent', borderRadius: '4px' }}
+                                                                >
+                                                                    Sửa
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDeleteInventory(c.id, c.serial)}
+                                                                    style={{ color: '#fff', border: '1px solid red', padding: '6px 12px', backgroundColor: 'rgba(255,0,0,0.1)', borderRadius: '4px' }}
+                                                                >
+                                                                    Xóa
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </>
+                                                )}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         )}
                     </div>
                 )}
