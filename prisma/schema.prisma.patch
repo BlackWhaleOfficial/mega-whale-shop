@@ -1,0 +1,8 @@
+--- prisma/schema.prisma 2024-05-18
++++ prisma/schema.prisma 2024-05-18
+@@ -5,4 +5,5 @@
+ datasource db {
+   provider = "postgresql"
+   url      = env("DATABASE_URL")
++  directUrl = env("DIRECT_URL")
+ }
