@@ -388,19 +388,22 @@ function CartContent() {
                                                 }}
                                             >−</button>
                                             <span style={{ color: '#fff', fontWeight: 600, minWidth: '24px', textAlign: 'center' }}>{item.qty}</span>
-                                            <button
-                                                onClick={() => handleUpdateQty(item.id, 1)}
-                                                style={{
-                                                    width: '28px', height: '28px',
-                                                    backgroundColor: '#222',
-                                                    border: '1px solid #444',
-                                                    color: '#fff',
-                                                    borderRadius: '4px',
-                                                    cursor: 'pointer',
-                                                    fontWeight: 'bold', fontSize: '1rem',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                                }}
-                                            >+</button>
+                                            {/* Chỉ hiện nút + nếu KHÔNG phải membership */}
+                                            {!item.id.startsWith('goi_') && (
+                                                <button
+                                                    onClick={() => handleUpdateQty(item.id, 1)}
+                                                    style={{
+                                                        width: '28px', height: '28px',
+                                                        backgroundColor: '#222',
+                                                        border: '1px solid #444',
+                                                        color: '#fff',
+                                                        borderRadius: '4px',
+                                                        cursor: 'pointer',
+                                                        fontWeight: 'bold', fontSize: '1rem',
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                    }}
+                                                >+</button>
+                                            )}
                                         </div>
                                     </td>
                                     <td style={{ paddingTop: '2rem', paddingBottom: '1.5rem', borderBottom: '1px solid #333', color: 'var(--primary)', fontWeight: 600, textAlign: 'right', fontSize: '1.1rem' }}>

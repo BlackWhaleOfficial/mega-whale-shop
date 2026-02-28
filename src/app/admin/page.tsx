@@ -33,6 +33,8 @@ export default function AdminDashboard() {
     const [manualWCash, setManualWCash] = useState<number | ''>('');
     const [editingInventoryId, setEditingInventoryId] = useState<string | null>(null);
     const [editFormData, setEditFormData] = useState<any>({});
+    const [systemStats, setSystemStats] = useState<any>(null);
+    const [systemStatsLoading, setSystemStatsLoading] = useState(false);
 
     const [membershipDiscounts] = useState([
         { code: 'TGG 1% (Gói Cá Con)', percent: 1 },
@@ -96,6 +98,12 @@ export default function AdminDashboard() {
                 .then(res => res.json())
                 .then(data => setInventoryCards(data || []))
                 .catch(err => console.error(err));
+            // Lấy live system stats
+            setSystemStatsLoading(true);
+            fetch('/api/admin/system-stats')
+                .then(res => res.json())
+                .then(data => { setSystemStats(data); setSystemStatsLoading(false); })
+                .catch(() => setSystemStatsLoading(false));
         }
     }, [isAdmin, activeTab]);
 
@@ -378,27 +386,96 @@ export default function AdminDashboard() {
                     <div>
                         <h3 style={{ fontSize: '1.5rem', textTransform: 'uppercase', marginBottom: '2rem' }}>Tổng Quan Hệ Thống</h3>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
-                            <div style={{ backgroundColor: '#222', padding: '2rem', border: '1px solid #333', borderRadius: '8px' }}>
-                                <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Lượng Truy Cập Hôm Nay</p>
-                                <h4 style={{ fontSize: '2rem', color: '#fff' }}>1,284</h4>
-                                <p style={{ color: 'var(--primary)', fontSize: '0.8rem', marginTop: '10px' }}>+12% so với tuần trước</p>
-                            </div>
-                            <div style={{ backgroundColor: '#222', padding: '2rem', border: '1px solid #333', borderRadius: '8px' }}>
-                                <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Dữ liệu Web (Capacity)</p>
-                                <h4 style={{ fontSize: '2rem', color: '#fff' }}>0.01 / 0.5 GB</h4>
-                                <p style={{ color: 'var(--primary)', fontSize: '0.8rem', marginTop: '10px' }}>Neon Postgres</p>
-                            </div>
+
+                            {/* Tổng Doanh Thu */}
                             <div style={{ backgroundColor: '#222', padding: '2rem', border: '1px solid #333', borderRadius: '8px' }}>
                                 <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Tổng Doanh Thu</p>
                                 <h4 style={{ fontSize: '2rem', color: '#fff' }}>{new Intl.NumberFormat('vi-VN').format(allOrders.filter(o => o.status === 'DONE').reduce((acc, o) => acc + o.totalAmount, 0))}₫</h4>
                                 <p style={{ color: '#aaa', fontSize: '0.8rem', marginTop: '10px' }}>Đơn hàng thành công</p>
                             </div>
+
+                            {/* Tổng Lợi Nhuận */}
                             <div style={{ backgroundColor: '#222', padding: '2rem', border: '1px solid #333', borderRadius: '8px' }}>
                                 <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Tổng Lợi Nhuận</p>
                                 <h4 style={{ fontSize: '2rem', color: 'var(--primary)' }}>{new Intl.NumberFormat('vi-VN').format(inventoryCards.filter(c => c.status === 'DONE').reduce((acc, c) => acc + ((c.price || 0) - (c.cost || 0)), 0))}₫</h4>
                                 <p style={{ color: 'rgba(68, 214, 44, 0.8)', fontSize: '0.8rem', marginTop: '10px' }}>Từ thẻ Garena đã bán</p>
                             </div>
+
+                            {/* Supabase DB Size — LIVE */}
+                            <div style={{ backgroundColor: '#222', padding: '2rem', border: `1px solid ${systemStats?.supabase ? '#1c6b3a' : '#333'}`, borderRadius: '8px' }}>
+                                <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Database (Supabase)</p>
+                                {systemStatsLoading ? (
+                                    <h4 style={{ fontSize: '1.5rem', color: '#555' }}>Đang tải...</h4>
+                                ) : systemStats?.supabase ? (
+                                    <>
+                                        <h4 style={{ fontSize: '2rem', color: '#fff' }}>{systemStats.supabase.label}</h4>
+                                        {/* Progress bar */}
+                                        <div style={{ width: '100%', height: '6px', backgroundColor: '#333', borderRadius: '3px', overflow: 'hidden', marginTop: '12px' }}>
+                                            <div style={{
+                                                width: `${systemStats.supabase.dbUsedPercent}%`,
+                                                height: '100%',
+                                                backgroundColor: parseFloat(systemStats.supabase.dbUsedPercent) > 80 ? '#ff4d4f' : 'var(--primary)',
+                                                transition: 'width 0.5s ease'
+                                            }} />
+                                        </div>
+                                        <p style={{ color: 'var(--primary)', fontSize: '0.8rem', marginTop: '8px' }}>🟢 Live · {systemStats.supabase.dbUsedPercent}% dùng</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <h4 style={{ fontSize: '2rem', color: '#fff' }}>-- / 0.5 GB</h4>
+                                        <p style={{ color: '#ff4d4f', fontSize: '0.8rem', marginTop: '10px' }}>Không lấy được dữ liệu</p>
+                                    </>
+                                )}
+                            </div>
+
+                            {/* Vercel Usage */}
+                            <div style={{ backgroundColor: '#222', padding: '2rem', border: '1px solid #333', borderRadius: '8px' }}>
+                                <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Vercel Usage</p>
+                                {systemStatsLoading ? (
+                                    <h4 style={{ fontSize: '1.5rem', color: '#555' }}>Đang tải...</h4>
+                                ) : systemStats?.vercel?.hasToken ? (
+                                    <>
+                                        <h4 style={{ fontSize: '1.4rem', color: '#fff' }}>Đã kết nối</h4>
+                                        <p style={{ color: 'var(--primary)', fontSize: '0.8rem', marginTop: '10px' }}>🟢 Vercel API</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <h4 style={{ fontSize: '1.3rem', color: '#FFD700' }}>Cần Token</h4>
+                                        <p style={{ color: '#aaa', fontSize: '0.75rem', marginTop: '8px', lineHeight: 1.5 }}>
+                                            Thêm <code style={{ color: 'var(--primary)', backgroundColor: '#111', padding: '1px 4px', borderRadius: '3px' }}>VERCEL_TOKEN</code> vào .env để xem live
+                                        </p>
+                                    </>
+                                )}
+                            </div>
+
+                            {/* App Stats */}
+                            <div style={{ backgroundColor: '#222', padding: '2rem', border: '1px solid #333', borderRadius: '8px' }}>
+                                <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Người Dùng</p>
+                                <h4 style={{ fontSize: '2rem', color: '#fff' }}>{systemStats?.app?.userCount ?? '...'}</h4>
+                                <p style={{ color: '#aaa', fontSize: '0.8rem', marginTop: '10px' }}>Tài khoản đã đăng ký</p>
+                            </div>
+
+                            <div style={{ backgroundColor: '#222', padding: '2rem', border: '1px solid #333', borderRadius: '8px' }}>
+                                <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Đơn Hoàn Thành</p>
+                                <h4 style={{ fontSize: '2rem', color: '#fff' }}>{systemStats?.app?.orderCount ?? '...'}</h4>
+                                <p style={{ color: 'var(--primary)', fontSize: '0.8rem', marginTop: '10px' }}>Giao dịch thành công</p>
+                            </div>
+
                         </div>
+
+                        {/* Thông báo về Vercel Analytics */}
+                        {!systemStats?.vercel?.hasToken && !systemStatsLoading && (
+                            <div style={{ marginTop: '2rem', padding: '1.5rem', backgroundColor: 'rgba(255,215,0,0.05)', border: '1px solid rgba(255,215,0,0.2)', borderRadius: '8px' }}>
+                                <p style={{ color: '#FFD700', fontWeight: 600, marginBottom: '8px' }}>⚠️ Để xem Vercel Analytics & Speed Insights live:</p>
+                                <ol style={{ color: '#aaa', fontSize: '0.9rem', lineHeight: 2, paddingLeft: '20px' }}>
+                                    <li>Tạo token tại: <code style={{ color: 'var(--primary)' }}>vercel.com/account/tokens</code></li>
+                                    <li>Thêm vào <code style={{ color: 'var(--primary)' }}>.env</code>: <code style={{ color: '#fff' }}>VERCEL_TOKEN=...</code></li>
+                                    <li>Thêm <code style={{ color: 'var(--primary)' }}>VERCEL_PROJECT_ID=...</code> (lấy trong Project Settings → General)</li>
+                                    <li>Redeploy để áp dụng</li>
+                                </ol>
+                                <p style={{ color: '#888', fontSize: '0.8rem', marginTop: '8px' }}>Lưu ý: Vercel Analytics API chỉ có dữ liệu sau khi cài package <code>@vercel/analytics</code></p>
+                            </div>
+                        )}
                     </div>
                 )}
 
