@@ -64,6 +64,7 @@ function CartContent() {
     const [isCheckout, setIsCheckout] = useState(false);
     const [isRemoved, setIsRemoved] = useState(false);
     const [whaleCash, setWhaleCash] = useState(0);
+    const [walletLoaded, setWalletLoaded] = useState(false);
 
     // New states for order tracking
     const [orderId, setOrderId] = useState<string>('');
@@ -87,7 +88,9 @@ function CartContent() {
                 if (data.whaleCash !== undefined) {
                     setWhaleCash(data.whaleCash);
                 }
-            });
+                setWalletLoaded(true);
+            })
+            .catch(() => setWalletLoaded(true));
     }, []);
 
     useEffect(() => {
@@ -375,11 +378,12 @@ function CartContent() {
                         </button>
 
                         <button
-                            onClick={handleWCashPayment}
-                            style={{ width: '100%', padding: '20px', fontSize: '1.2rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', backgroundColor: '#FFD700', color: '#000', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 600, transition: '0.3s' }}
+                            onClick={walletLoaded ? handleWCashPayment : undefined}
+                            disabled={!walletLoaded}
+                            style={{ width: '100%', padding: '20px', fontSize: '1.2rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', backgroundColor: walletLoaded ? '#FFD700' : '#999', color: '#000', border: 'none', borderRadius: '4px', cursor: walletLoaded ? 'pointer' : 'not-allowed', fontWeight: 600, transition: '0.3s' }}
                         >
                             <div style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#000', color: '#FFD700', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.8rem', border: '2px solid #000' }}>W</div>
-                            <span>Sử dụng WCash</span>
+                            <span>{walletLoaded ? `Sử dụng WCash (${new Intl.NumberFormat('vi-VN').format(whaleCash)} W)` : 'Đang tải...'}</span>
                         </button>
                     </div>
 
