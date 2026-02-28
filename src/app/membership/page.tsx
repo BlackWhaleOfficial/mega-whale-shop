@@ -62,6 +62,16 @@ export default function MembershipPage() {
     const router = useRouter();
 
     const handleBuy = (id: string) => {
+        // Kiểm tra giỏ hàng đã có membership chưa
+        try {
+            const stored = localStorage.getItem('cartItems');
+            const cartItems = stored ? JSON.parse(stored) : [];
+            const alreadyHasMembership = cartItems.some((i: any) => i.id.startsWith('goi_'));
+            if (alreadyHasMembership) {
+                alert('Giỏ hàng của bạn đã có 1 gói Membership. Vui lòng hoàn tất đơn hiện tại hoặc xóa gói cũ trước khi thêm gói mới!');
+                return;
+            }
+        } catch (e) { }
         router.push(`/cart?item=${id}&qty=1`);
     };
 

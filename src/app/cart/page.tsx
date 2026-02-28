@@ -24,6 +24,16 @@ function CartContent() {
         const qtyParam = searchParams.get('qty');
 
         if (itemParam) {
+            // Kiểm tra nếu là membership, chỉ cho 1 cái cùng lúc
+            const isMembership = itemParam.startsWith('goi_');
+            if (isMembership) {
+                const alreadyHasMembership = items.some((i: any) => i.id.startsWith('goi_'));
+                if (alreadyHasMembership) {
+                    // Strip params ngay để không bị loop, sau đó hiển thị alert
+                    router.replace('/cart?membershipDup=1');
+                    return;
+                }
+            }
             const existing = items.find((i: any) => i.id === itemParam);
             if (existing) {
                 existing.qty += parseInt(qtyParam || '1');
@@ -34,6 +44,20 @@ function CartContent() {
             localStorage.setItem('cartQty', items.reduce((sum, i) => sum + i.qty, 0).toString());
             window.dispatchEvent(new Event('storage'));
             router.replace('/cart'); // strip params
+            return;
+        }
+
+        // Hiện thông báo nếu vừa bị chặn vì trùng membership
+        const membershipDup = searchParams.get('membershipDup');
+        if (membershipDup === '1') {
+            setCartItems(items);
+            setIsLoaded(true);
+            setModalConfig({
+                isOpen: true,
+                type: 'alert',
+                message: 'Giỏ hàng của bạn đã có 1 gói Membership. Bạn chỉ được đăng ký 1 gói mỗi lần. Vui lòng hoàn tất đơn hiện tại trước.'
+            });
+            router.replace('/cart');
             return;
         }
 
@@ -241,6 +265,20 @@ function CartContent() {
         }
     };
 
+    const handleUpdateQty = (id: string, delta: number) => {
+        const newItems = cartItems.map((i: any) => {
+            if (i.id === id) {
+                const newQty = Math.max(1, i.qty + delta);
+                return { ...i, qty: newQty };
+            }
+            return i;
+        });
+        setCartItems(newItems);
+        localStorage.setItem('cartItems', JSON.stringify(newItems));
+        localStorage.setItem('cartQty', newItems.reduce((sum: number, i: any) => sum + i.qty, 0).toString());
+        window.dispatchEvent(new Event('storage'));
+    };
+
     const handlePaymentDone = async () => {
         if (selectedDiscountId) {
             // we could mark it used here or in the cart/confirm API. The original logic was doing it via api/cart/checkout.
@@ -331,14 +369,46 @@ function CartContent() {
                         <tbody>
                             {detailedItems.map((item, idx) => (
                                 <tr key={idx}>
-                                    <td style={{ paddingTop: '2rem', fontSize: '1.2rem', fontWeight: 500 }}>{item.name}</td>
-                                    <td style={{ paddingTop: '2rem', color: '#aaa' }}>x{item.qty}</td>
-                                    <td style={{ padding: '1.5rem', borderBottom: '1px solid #333', color: 'var(--primary)', fontWeight: 600, textAlign: 'right', fontSize: '1.1rem' }}>
+                                    <td style={{ paddingTop: '2rem', paddingBottom: '1.5rem', fontSize: '1.2rem', fontWeight: 500 }}>{item.name}</td>
+                                    <td style={{ paddingTop: '2rem', paddingBottom: '1.5rem' }}>
+                                        {/* Nút chỉnh số lượng */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <button
+                                                onClick={() => handleUpdateQty(item.id, -1)}
+                                                disabled={item.qty <= 1}
+                                                style={{
+                                                    width: '28px', height: '28px',
+                                                    backgroundColor: item.qty <= 1 ? '#333' : '#222',
+                                                    border: '1px solid #444',
+                                                    color: item.qty <= 1 ? '#555' : '#fff',
+                                                    borderRadius: '4px',
+                                                    cursor: item.qty <= 1 ? 'not-allowed' : 'pointer',
+                                                    fontWeight: 'bold', fontSize: '1rem',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                }}
+                                            >−</button>
+                                            <span style={{ color: '#fff', fontWeight: 600, minWidth: '24px', textAlign: 'center' }}>{item.qty}</span>
+                                            <button
+                                                onClick={() => handleUpdateQty(item.id, 1)}
+                                                style={{
+                                                    width: '28px', height: '28px',
+                                                    backgroundColor: '#222',
+                                                    border: '1px solid #444',
+                                                    color: '#fff',
+                                                    borderRadius: '4px',
+                                                    cursor: 'pointer',
+                                                    fontWeight: 'bold', fontSize: '1rem',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                }}
+                                            >+</button>
+                                        </div>
+                                    </td>
+                                    <td style={{ paddingTop: '2rem', paddingBottom: '1.5rem', borderBottom: '1px solid #333', color: 'var(--primary)', fontWeight: 600, textAlign: 'right', fontSize: '1.1rem' }}>
                                         {new Intl.NumberFormat('vi-VN').format(item.total)}₫
                                     </td>
-                                    <td style={{ padding: '1.5rem', textAlign: 'right' }}>
+                                    <td style={{ paddingTop: '2rem', paddingBottom: '1.5rem', textAlign: 'right', borderBottom: '1px solid #333' }}>
                                         <button onClick={() => handleRemoveItem(item.id)} style={{ color: '#ff4d4f', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>
-                                            X
+                                            ✕
                                         </button>
                                     </td>
                                 </tr>

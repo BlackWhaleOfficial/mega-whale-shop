@@ -10,23 +10,29 @@ export async function POST() {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Find the active membership order
-        const latestMembershipOrder = await prisma.order.findFirst({
-            where: {
-                userId: session.id,
-                status: 'DONE',
-                productName: {
-                    in: [
-                        'Gói Cá Voi', 'Gói Cá Mập Megalodon', 'Gói Cá Mập', 'Gói Cá Con',
-                        'Membership 888k', 'Membership 588k', 'Membership 100k', 'Membership 25k',
-                        'Gói 888k', 'Gói 588k', 'Gói 100k', 'Gói 25k'
-                    ]
-                }
-            },
-            orderBy: {
-                createdAt: 'desc'
+        // Tìm order membership active gần nhất
+        const membershipKeywords = [
+            'Gói Cá Voi', 'Gói Cá Mập Megalodon', 'Gói Cá Mập', 'Gói Cá Con',
+            'Membership 888k', 'Membership 588k', 'Membership 100k', 'Membership 25k',
+            'Gói 888k', 'Gói 588k', 'Gói 100k', 'Gói 25k'
+        ];
+
+        let latestMembershipOrder: any = null;
+        for (const keyword of membershipKeywords) {
+            const found = await prisma.order.findFirst({
+                where: {
+                    userId: session.id,
+                    status: 'DONE',
+                    productName: { contains: keyword, not: { contains: '(Đã Hủy)' } }
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+            if (found) {
+                latestMembershipOrder = found;
+                break;
             }
-        });
+        }
+
 
         if (!latestMembershipOrder) {
             return NextResponse.json({ error: 'Không tìm thấy gói hội viên đang hoạt động' }, { status: 400 });
