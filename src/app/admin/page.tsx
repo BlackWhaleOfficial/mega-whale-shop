@@ -191,13 +191,22 @@ export default function AdminDashboard() {
         }
     };
 
+    const CARD_PRESETS: Record<number, { qh: number; cost: number; price: number }> = {
+        100000: { qh: 204, cost: 96000, price: 97000 },
+        200000: { qh: 408, cost: 192000, price: 194000 },
+        500000: { qh: 1020, cost: 480000, price: 485000 },
+    };
+
     const handleEditClick = (item: any) => {
         setEditingInventoryId(item.id);
         setEditFormData({
             game: item.game,
             serial: item.serial,
             pin: item.pin,
+            cardValue: item.cardValue || 100000,
             qh: item.qh || item.cardValue,
+            cost: item.cost || 0,
+            price: item.price || 0,
             status: item.status
         });
     };
@@ -780,6 +789,7 @@ export default function AdminDashboard() {
                                             <th style={{ padding: '15px 0' }}>Game</th>
                                             <th>Serial</th>
                                             <th>Mã Nạp</th>
+                                            <th>Mệnh Giá</th>
                                             <th>Quân Huy</th>
                                             <th>Giá Nhập</th>
                                             <th>Giá Bán</th>
@@ -804,12 +814,32 @@ export default function AdminDashboard() {
                                                         <td>
                                                             <input value={editFormData.pin || ''} onChange={(e) => setEditFormData({ ...editFormData, pin: e.target.value })} style={{ width: '100%', padding: '5px', backgroundColor: '#333', color: '#fff', border: 'none', borderRadius: '4px' }} />
                                                         </td>
+                                                        {/* Dropdown Mệnh Giá — auto-fill QH/giá */}
                                                         <td>
-                                                            <input type="number" value={editFormData.qh || ''} onChange={(e) => setEditFormData({ ...editFormData, qh: parseInt(e.target.value) || 0 })} style={{ width: '100%', padding: '5px', backgroundColor: '#333', color: '#fff', border: 'none', borderRadius: '4px' }} />
+                                                            <select
+                                                                value={editFormData.cardValue || 100000}
+                                                                onChange={(e) => {
+                                                                    const cv = parseInt(e.target.value);
+                                                                    const preset = CARD_PRESETS[cv];
+                                                                    setEditFormData({
+                                                                        ...editFormData,
+                                                                        cardValue: cv,
+                                                                        qh: preset.qh,
+                                                                        cost: preset.cost,
+                                                                        price: preset.price,
+                                                                    });
+                                                                }}
+                                                                style={{ padding: '5px', backgroundColor: '#333', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '0.85rem' }}
+                                                            >
+                                                                <option value={100000}>100k</option>
+                                                                <option value={200000}>200k</option>
+                                                                <option value={500000}>500k</option>
+                                                            </select>
                                                         </td>
-                                                        <td style={{ color: '#888', fontSize: '0.9rem' }}>-</td>
-                                                        <td style={{ color: '#888', fontSize: '0.9rem' }}>-</td>
-                                                        <td style={{ color: '#888', fontSize: '0.9rem' }}>-</td>
+                                                        <td style={{ color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.9rem' }}>{new Intl.NumberFormat('vi-VN').format(editFormData.qh || 0)}</td>
+                                                        <td style={{ color: '#aaa', fontSize: '0.9rem' }}>{new Intl.NumberFormat('vi-VN').format(editFormData.cost || 0)}₫</td>
+                                                        <td style={{ color: '#aaa', fontSize: '0.9rem' }}>{new Intl.NumberFormat('vi-VN').format(editFormData.price || 0)}₫</td>
+                                                        <td style={{ color: 'rgba(68,214,44,1)', fontWeight: 'bold', fontSize: '0.9rem' }}>{new Intl.NumberFormat('vi-VN').format((editFormData.price || 0) - (editFormData.cost || 0))}₫</td>
                                                         <td>
                                                             <select value={editFormData.status || ''} onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value })} style={{ padding: '5px', backgroundColor: '#333', color: '#fff', border: 'none', borderRadius: '4px' }}>
                                                                 <option value="NEW">NEW</option>
@@ -831,6 +861,10 @@ export default function AdminDashboard() {
                                                         <td style={{ padding: '20px 0', fontWeight: 'bold' }}>{c.game}</td>
                                                         <td style={{ color: '#aaa' }}>{c.serial}</td>
                                                         <td style={{ color: '#fff', letterSpacing: '1px' }}>{c.pin}</td>
+                                                        {/* Mệnh giá */}
+                                                        <td style={{ color: '#FFD700', fontWeight: 700, fontSize: '0.9rem' }}>
+                                                            {c.cardValue === 500000 ? '500k' : c.cardValue === 200000 ? '200k' : '100k'}
+                                                        </td>
                                                         <td style={{ color: 'var(--primary)', fontWeight: 'bold' }}>{new Intl.NumberFormat('vi-VN').format(c.qh || c.cardValue)}</td>
                                                         <td style={{ color: '#aaa', fontSize: '0.9rem' }}>{new Intl.NumberFormat('vi-VN').format(c.cost || 0)}₫</td>
                                                         <td style={{ color: '#aaa', fontSize: '0.9rem' }}>{new Intl.NumberFormat('vi-VN').format(c.price || 0)}₫</td>

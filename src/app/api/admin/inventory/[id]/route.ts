@@ -9,7 +9,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         if (!session || !session.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await request.json();
-        const { status, game, serial, pin, qh, cardValue } = body;
+        const { status, game, serial, pin, qh, cardValue, cost, price } = body;
 
         const dataToUpdate: any = {};
         if (status !== undefined) dataToUpdate.status = status;
@@ -18,6 +18,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         if (pin !== undefined) dataToUpdate.pin = pin;
         if (qh !== undefined) dataToUpdate.qh = parseInt(qh) || 0;
         if (cardValue !== undefined) dataToUpdate.cardValue = parseInt(cardValue) || 0;
+        if (cost !== undefined) dataToUpdate.cost = parseInt(cost) || 0;
+        if (price !== undefined) dataToUpdate.price = parseInt(price) || 0;
 
         const item = await prisma.inventory.update({
             where: { id: params.id },
