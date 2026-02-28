@@ -60,21 +60,24 @@ export async function POST(request: Request) {
 
 
             if (cardValue) {
-                // Find available inventory
+                const neededQty = Number(item.qty) || 1;
                 const availableCards = await prisma.inventory.findMany({
                     where: {
                         status: 'NEW',
                         cardValue: cardValue,
                         id: { notIn: allAssignedItems.map(i => i.id) }
                     },
-                    take: parseInt(item.qty) || 1
+                    take: neededQty
                 });
 
-                if (availableCards.length < (parseInt(item.qty) || 1)) {
-                    return NextResponse.json({ error: `Hết thẻ mệnh giá để xuất cho ${item.name}!` }, { status: 400 });
+                if (availableCards.length < neededQty) {
+                    return NextResponse.json({
+                        error: `Kho không đủ thẻ! Cần ${neededQty} thẻ ${item.name} nhưng chỉ còn ${availableCards.length} thẻ.`
+                    }, { status: 400 });
                 }
                 allAssignedItems.push(...availableCards);
             }
+
         }
 
         // Apply discount if any
