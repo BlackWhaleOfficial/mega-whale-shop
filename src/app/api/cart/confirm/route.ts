@@ -46,16 +46,18 @@ export async function POST(request: Request) {
             }
 
             // Determine if it's a card OR a membership containing a card
-            let cardValue = null;
+            let cardValue: number | null = null;
 
             if (item.name.startsWith('Garena Card ')) {
-                const valStr = item.name.replace('Garena Card ', '').replace(' VNĐ', '');
-                cardValue = parseInt(valStr) / 1000;
+                // Tên có dạng: "Garena Card 100000 VNĐ" hoặc "Garena Card 100000 VND"
+                const valStr = item.name.replace('Garena Card ', '').replace(/\s*VN[ĐD]$/i, '').trim();
+                cardValue = parseInt(valStr); // DB lưu 100000, 200000, 500000 — KHÔNG chia 1000
             } else if (['Gói Cá Mập', 'Gói Cá Mập Megalodon', 'Gói 100k', 'Membership 100k', 'Gói 588k', 'Membership 588k'].includes(item.name)) {
-                cardValue = 100;
+                cardValue = 100000; // 100k card
             } else if (['Gói Cá Voi', 'Gói 888k', 'Membership 888k'].includes(item.name)) {
-                cardValue = 200;
+                cardValue = 200000; // 200k card
             }
+
 
             if (cardValue) {
                 // Find available inventory
