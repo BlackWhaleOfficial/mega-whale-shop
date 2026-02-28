@@ -11,7 +11,7 @@
   "dependencies": {
     "@netlify/plugin-nextjs": "^5.15.8",
     "@prisma/client": "^5.10.2",
-    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
     "cookie": "^1.1.1",
     "framer-motion": "^12.34.3",
     "jsonwebtoken": "^9.0.3",
@@ -22,7 +22,7 @@
     "react-dom": "^18"
   },
   "devDependencies": {
-    "@types/bcrypt": "^6.0.0",
+    "@types/bcryptjs": "^3.0.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^18",
