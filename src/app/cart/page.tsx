@@ -135,11 +135,18 @@ function CartContent() {
                 ? getMembershipName(id)
                 : `Garena Card ${id.split('_')[1] || '50000'} VNĐ`;
 
+        // Giá bán chiết khấu cho thẻ Garena (shop chiết khấu)
+        const garenaDiscountedPrice: Record<string, number> = {
+            '100000': 97000,
+            '200000': 194000,
+            '500000': 485000,
+        };
+
         const itemPrice = id.includes('topup')
             ? parseInt(id.split('_')[1] || '0') * 1000
             : id.includes('goi')
                 ? parseInt(id.replace('goi_', '0').replace('k', '000') || '0')
-                : parseInt(id.split('_')[1] || '50000');
+                : garenaDiscountedPrice[id.split('_')[1]] ?? parseInt(id.split('_')[1] || '50000');
 
         return { id, name: itemName, price: itemPrice, qty: quantity, total: itemPrice * quantity };
     };

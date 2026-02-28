@@ -39,6 +39,17 @@ export default function NapGamePage() {
         router.push('/cart');
     };
 
+    // Bảng giá chiết khấu của shop
+    const discountMap: Record<string, { sell: number; save: number }> = {
+        '100000': { sell: 97000, save: 3000 },
+        '200000': { sell: 194000, save: 6000 },
+        '500000': { sell: 485000, save: 15000 },
+    };
+
+    const currentInfo = discountMap[amount];
+    const qty = parseInt(quantity) || 1;
+    const billTotal = currentInfo ? currentInfo.sell * qty : 0;
+
     return (
         <div style={{ padding: '8rem 5%', backgroundColor: '#000', minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <h1 className="section-title">Nạp Quân Huy</h1>
@@ -68,6 +79,26 @@ export default function NapGamePage() {
                             <option value="200000">200.000 VNĐ</option>
                             <option value="500000">500.000 VNĐ</option>
                         </select>
+
+                        {/* Hiển thị giá bán chiết khấu ngay sau khi chọn mệnh giá */}
+                        {currentInfo && (
+                            <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                                <span style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '1.3rem' }}>
+                                    🏷️ Giá bán: {new Intl.NumberFormat('vi-VN').format(currentInfo.sell)}đ
+                                </span>
+                                <span style={{
+                                    backgroundColor: 'var(--primary)',
+                                    color: '#000',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 700,
+                                    padding: '2px 8px',
+                                    borderRadius: '20px',
+                                    letterSpacing: '0.5px'
+                                }}>
+                                    Tiết kiệm {new Intl.NumberFormat('vi-VN').format(currentInfo.save)}đ
+                                </span>
+                            </div>
+                        )}
                     </div>
 
                     <div>
@@ -81,6 +112,14 @@ export default function NapGamePage() {
                             onChange={(e) => setQuantity(e.target.value)}
                             style={{ padding: '15px', fontSize: '1.2rem', backgroundColor: '#000', border: '1px solid #444', color: '#fff' }}
                         />
+                    </div>
+
+                    {/* Preview tổng tiền theo số lượng */}
+                    <div style={{ backgroundColor: '#000', border: '1px solid #333', padding: '1rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ color: '#aaa', fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Tổng thanh toán</span>
+                        <span style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '1.4rem' }}>
+                            {new Intl.NumberFormat('vi-VN').format(billTotal)}đ
+                        </span>
                     </div>
 
                     <button type="submit" className="btn-primary" style={{ marginTop: '1rem', padding: '20px', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
