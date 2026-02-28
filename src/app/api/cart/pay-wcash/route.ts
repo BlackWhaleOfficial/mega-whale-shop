@@ -14,7 +14,7 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { itemName, total, qty, discountId, items } = body;
 
-        const wcashCost = total / 1000;
+        const wcashCost = Math.round(total / 1000); // Làm tròn, 1 WCash = 1.000đ
 
         // Verify user has enough WCash
         const user = await prisma.user.findUnique({

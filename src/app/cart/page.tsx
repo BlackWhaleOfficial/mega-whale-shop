@@ -206,16 +206,16 @@ function CartContent() {
     };
 
     const handleWCashPayment = () => {
-        const wcashCost = finalTotal / 1000;
+        const wcashCost = Math.round(finalTotal / 1000); // Làm tròn, 1 WCash = 1.000đ
         if (whaleCash < wcashCost) {
-            setModalConfig({ isOpen: true, type: 'alert', message: 'Bạn không đủ số dư WCash để thanh toán đơn hàng này!' });
+            setModalConfig({ isOpen: true, type: 'alert', message: `Không đủ số dư WCash! Cần ${wcashCost.toLocaleString('vi-VN')} W, bạn đang có ${whaleCash.toLocaleString('vi-VN')} W.` });
             return;
         }
 
         setModalConfig({
             isOpen: true,
             type: 'confirm',
-            message: `Xác nhận thanh toán ${new Intl.NumberFormat('vi-VN').format(wcashCost)} WCash cho đơn hàng này?`,
+            message: `Xác nhận thanh toán ${wcashCost.toLocaleString('vi-VN')} WCash cho đơn hàng này?`,
             onConfirm: executeWCashPayment
         });
     };
@@ -460,10 +460,28 @@ function CartContent() {
                         <button
                             onClick={walletLoaded ? handleWCashPayment : undefined}
                             disabled={!walletLoaded}
-                            style={{ width: '100%', padding: '20px', fontSize: '1.2rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', backgroundColor: walletLoaded ? '#FFD700' : '#999', color: '#000', border: 'none', borderRadius: '4px', cursor: walletLoaded ? 'pointer' : 'not-allowed', fontWeight: 600, transition: '0.3s' }}
+                            style={{
+                                width: '100%', padding: '20px', fontSize: '1.2rem',
+                                display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px',
+                                backgroundColor: !walletLoaded ? '#999' : whaleCash < Math.round(finalTotal / 1000) ? '#555' : '#FFD700',
+                                color: !walletLoaded ? '#000' : whaleCash < Math.round(finalTotal / 1000) ? '#aaa' : '#000',
+                                border: 'none', borderRadius: '4px',
+                                cursor: walletLoaded ? 'pointer' : 'not-allowed',
+                                fontWeight: 600, transition: '0.3s',
+                                position: 'relative'
+                            }}
                         >
                             <div style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#000', color: '#FFD700', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.8rem', border: '2px solid #000' }}>W</div>
-                            <span>{walletLoaded ? `Sử dụng WCash (${new Intl.NumberFormat('vi-VN').format(whaleCash)} W)` : 'Đang tải...'}</span>
+                            {walletLoaded ? (
+                                <span>
+                                    Sử dụng WCash ({Math.round(finalTotal / 1000).toLocaleString('vi-VN')} W)
+                                    {whaleCash < Math.round(finalTotal / 1000) && (
+                                        <span style={{ marginLeft: '8px', fontSize: '0.85rem', opacity: 0.8 }}>— Không đủ số dư</span>
+                                    )}
+                                </span>
+                            ) : (
+                                <span>Đang tải...</span>
+                            )}
                         </button>
                     </div>
 
