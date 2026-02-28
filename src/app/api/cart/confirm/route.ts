@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../lib/prisma';
 import { getSession } from '../../../../../lib/auth';
+import { sendNewOrderNotification } from '../../../../../lib/mailer';
 
 export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
@@ -109,7 +110,26 @@ export async function POST(request: Request) {
             });
         }
 
+        // ─── Gửi email thông báo cho admin ────────────────────────────────
+        try {
+            const user = await prisma.user.findUnique({ where: { id: session.id } });
+            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://megawhaleshop.vercel.app';
+            await sendNewOrderNotification({
+                orderId: order.id,
+                buyerName: user?.username || session.id,
+                productName: itemName,
+                quantity: parseInt(qty) || 1,
+                totalAmount: total,
+                createdAt: order.createdAt,
+                baseUrl,
+            });
+        } catch (mailErr) {
+            // Không để lỗi mail ảnh hưởng đến đơn hàng
+            console.error('Mail notification error (non-critical):', mailErr);
+        }
+
         return NextResponse.json({ orderId: order.id, status: 'PENDING' });
+
 
     } catch (error) {
         console.error('Checkout error:', error);
