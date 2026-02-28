@@ -92,7 +92,7 @@ export async function POST(request: Request) {
             }
         }
 
-        // Apply discount if any
+        // Apply discount if any (before transaction)
         if (discountId) {
             await prisma.userDiscount.update({
                 where: { id: discountId },
@@ -100,47 +100,50 @@ export async function POST(request: Request) {
             });
         }
 
-        // Make transaction
-        await prisma.$transaction([
-            // Deduct WCash
-            prisma.user.update({
+        // Interactive transaction — lấy orderId trực tiếp từ create
+        const createdOrder = await prisma.$transaction(async (tx) => {
+            // 1. Trừ WCash
+            await tx.user.update({
                 where: { id: session.id },
                 data: { whaleCash: { decrement: wcashCost } }
-            }),
-            // Create Order
-            prisma.order.create({
+            });
+
+            // 2. Tạo đơn hàng và lấy kết quả (có id)
+            const order = await tx.order.create({
                 data: {
                     userId: session.id,
                     productName: itemName,
-                    quantity: parseInt(qty) || 1,
+                    quantity: Number(qty) || 1,
                     totalAmount: total,
                     status: 'DONE',
                     items: {
-                        connect: allAssignedItems.map((item: any) => ({ id: item.id }))
+                        connect: allAssignedItems.map((inv: any) => ({ id: inv.id }))
                     }
                 }
-            }),
-            // Update Inventory status
-            ...(allAssignedItems.length > 0 ? [
-                prisma.inventory.updateMany({
-                    where: { id: { in: allAssignedItems.map((item: any) => item.id) } },
-                    data: { status: 'DONE', outTime: new Date() }
-                })
-            ] : [])
-        ]);
+            });
 
-        const order = await prisma.order.findFirst({
-            where: { userId: session.id, productName: itemName },
-            orderBy: { createdAt: 'desc' }
+            // 3. Cập nhật trạng thái thẻ Garena → DONE
+            if (allAssignedItems.length > 0) {
+                await tx.inventory.updateMany({
+                    where: { id: { in: allAssignedItems.map((inv: any) => inv.id) } },
+                    data: { status: 'DONE', outTime: new Date() }
+                });
+            }
+
+            return order; // trả về order với id đầy đủ
         });
 
+        console.log('[pay-wcash] Created order:', createdOrder.id);
+
+        // Grant membership nếu cần
         for (const item of cartItems) {
             if (membershipNames.includes(item.name)) {
-                await grantMembershipPerks(session.id, item.name, parseInt(item.qty) || 1);
+                await grantMembershipPerks(session.id, item.name, Number(item.qty) || 1);
             }
         }
 
-        return NextResponse.json({ orderId: order?.id, status: 'DONE' });
+        return NextResponse.json({ orderId: createdOrder.id, status: 'DONE' });
+
 
     } catch (error) {
         console.error('WCash Checkout error:', error);
