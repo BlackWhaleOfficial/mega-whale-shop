@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import Link from 'next/link';
+import { Analytics } from '@vercel/analytics/next';
 
 import Navbar from '@/components/Navbar';
 
@@ -49,6 +50,7 @@ export default function RootLayout({
                         <p>&copy; 2026 Mega Whale Shop. All rights reserved.</p>
                     </div>
                 </footer>
+                <Analytics />
             </body>
         </html>
     );
