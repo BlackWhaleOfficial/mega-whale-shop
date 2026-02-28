@@ -14,7 +14,7 @@ export async function GET() {
         // ─── 1. Supabase DB Size (qua Prisma raw query) ─────────────────────
         let dbSizeBytes = 0;
         let dbSizeGB = '0.000';
-        let dbLimitGB = 0.5; // Free plan limit
+        const dbLimitGB = 0.5; // Free plan limit
         try {
             const result: any[] = await prisma.$queryRaw`
                 SELECT pg_database_size(current_database()) as size_bytes
@@ -27,58 +27,82 @@ export async function GET() {
             console.error('DB size query error:', e);
         }
 
-        // ─── 2. Vercel Usage (Fast Data Transfer) ────────────────────────────
-        let vercelUsage: any = null;
+        // ─── 2. Vercel API ────────────────────────────────────────────────────
         const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
-        const VERCEL_TEAM_ID = process.env.VERCEL_TEAM_ID; // optional
-        const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID; // optional
+        const VERCEL_TEAM_ID = process.env.VERCEL_TEAM_ID;
+        const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
+
+        let vercelData: any = {
+            hasToken: !!VERCEL_TOKEN,
+            deployments: null,
+            analytics: null,
+            usage: null,
+        };
 
         if (VERCEL_TOKEN) {
+            const headers: Record<string, string> = {
+                Authorization: `Bearer ${VERCEL_TOKEN}`,
+            };
+            const teamQ = VERCEL_TEAM_ID ? `?teamId=${VERCEL_TEAM_ID}` : '';
+
+            // 2a. Lấy deployment gần nhất
             try {
-                // Get current billing period usage
-                const now = new Date();
-                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-                const headers: Record<string, string> = {
-                    Authorization: `Bearer ${VERCEL_TOKEN}`,
-                };
+                const deplRes = await fetch(
+                    `https://api.vercel.com/v6/deployments${teamQ}&projectId=${VERCEL_PROJECT_ID}&limit=5`,
+                    { headers }
+                );
+                if (deplRes.ok) {
+                    const deplData = await deplRes.json();
+                    vercelData.deployments = deplData.deployments?.map((d: any) => ({
+                        url: d.url,
+                        state: d.readyState,
+                        createdAt: d.createdAt,
+                        meta: d.meta,
+                    }));
+                }
+            } catch (e) { console.error('Deployments fetch error:', e); }
 
-                let usageUrl = `https://api.vercel.com/v2/usage`;
-                if (VERCEL_TEAM_ID) usageUrl += `?teamId=${VERCEL_TEAM_ID}`;
-
-                const usageRes = await fetch(usageUrl, { headers });
+            // 2b. Usage metrics (bandwidth, functions)
+            try {
+                const usageRes = await fetch(
+                    `https://api.vercel.com/v2/usage${VERCEL_TEAM_ID ? `?teamId=${VERCEL_TEAM_ID}` : ''}`,
+                    { headers }
+                );
                 if (usageRes.ok) {
-                    vercelUsage = await usageRes.json();
+                    vercelData.usage = await usageRes.json();
                 }
-            } catch (e) {
-                console.error('Vercel usage fetch error:', e);
+            } catch (e) { console.error('Usage fetch error:', e); }
+
+            // 2c. Web Analytics (Hobby plan có giới hạn)
+            if (VERCEL_PROJECT_ID) {
+                try {
+                    const now = new Date();
+                    const from = new Date(now);
+                    from.setDate(from.getDate() - 7); // 7 ngày gần nhất
+
+                    const analyticsRes = await fetch(
+                        `https://vercel.com/api/web-analytics/summary?projectId=${VERCEL_PROJECT_ID}&from=${from.toISOString()}&to=${now.toISOString()}&environment=production&teamId=${VERCEL_TEAM_ID || ''}`,
+                        { headers }
+                    );
+                    if (analyticsRes.ok) {
+                        vercelData.analytics = await analyticsRes.json();
+                    } else {
+                        // Thử endpoint khác
+                        const res2 = await fetch(
+                            `https://api.vercel.com/v1/web-analytics/${VERCEL_PROJECT_ID}/stats?period=day&teamId=${VERCEL_TEAM_ID}`,
+                            { headers }
+                        );
+                        if (res2.ok) vercelData.analytics = await res2.json();
+                    }
+                } catch (e) { /* Analytics API có thể không available với Hobby */ }
             }
         }
 
-        // ─── 3. Vercel Analytics — cần package @vercel/analytics + data ─────
-        // Analytics visitor data không có public API cho Free plan.
-        // Với Pro plan: https://vercel.com/docs/rest-api/endpoints/analytics
-        let analyticsData: any = null;
-        if (VERCEL_TOKEN && VERCEL_PROJECT_ID) {
-            try {
-                const now = new Date();
-                const yesterday = new Date(now);
-                yesterday.setDate(yesterday.getDate() - 1);
-
-                const analyticsUrl = `https://vercel.com/api/web-analytics/timeseries?projectId=${VERCEL_PROJECT_ID}&from=${yesterday.toISOString()}&to=${now.toISOString()}&environment=production&filter=%7B%7D`;
-                const analyticsRes = await fetch(analyticsUrl, {
-                    headers: { Authorization: `Bearer ${VERCEL_TOKEN}` }
-                });
-                if (analyticsRes.ok) {
-                    analyticsData = await analyticsRes.json();
-                }
-            } catch (e) {
-                // Analytics API may not be available on free plan
-            }
-        }
-
-        // ─── 4. User stats từ DB ─────────────────────────────────────────────
+        // ─── 3. App stats từ DB ──────────────────────────────────────────────
         const userCount = await prisma.user.count();
         const orderCount = await prisma.order.count({ where: { status: 'DONE' } });
+        const pendingCount = await prisma.order.count({ where: { status: 'PENDING' } });
+        const inventoryCount = await prisma.inventory.count({ where: { status: 'NEW' } });
 
         return NextResponse.json({
             supabase: {
@@ -88,14 +112,12 @@ export async function GET() {
                 dbUsedPercent: Math.min(100, (parseFloat(dbSizeGB) / dbLimitGB) * 100).toFixed(1),
                 label: `${dbSizeGB} / ${dbLimitGB} GB`,
             },
-            vercel: {
-                hasToken: !!VERCEL_TOKEN,
-                usage: vercelUsage,
-                analytics: analyticsData,
-            },
+            vercel: vercelData,
             app: {
                 userCount,
                 orderCount,
+                pendingCount,
+                inventoryCount, // thẻ còn trong kho
             }
         });
 
