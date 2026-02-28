@@ -15,8 +15,8 @@ export function verifyToken(token: string) {
     }
 }
 
-export function getSession() {
-    const cookieStore = cookies();
+export async function getSession() {
+    const cookieStore = await cookies();
     const token = cookieStore.get('session')?.value;
     if (!token) return null;
     return verifyToken(token) as any;

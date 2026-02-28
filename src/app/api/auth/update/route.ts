@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 export const dynamic = 'force-dynamic';
 export async function PUT(req: Request) {
     try {
-        const session = getSession();
+        const session = await getSession();
         if (!session) {
             return NextResponse.json({ error: 'Chưa đăng nhập' }, { status: 401 });
         }

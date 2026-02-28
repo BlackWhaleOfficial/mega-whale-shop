@@ -5,7 +5,7 @@ import { prisma } from '../../../../../lib/prisma';
 export const dynamic = 'force-dynamic';
 export async function GET() {
     try {
-        const session = getSession();
+        const session = await getSession();
         if (!session) {
             return NextResponse.json({ authenticated: false }, { status: 401 });
         }
