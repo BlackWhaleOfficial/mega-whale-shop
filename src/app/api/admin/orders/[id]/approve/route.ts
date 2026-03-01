@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../../../lib/prisma';
 import { getSession } from '../../../../../../../lib/auth';
 import { grantMembershipPerks } from '../../../../../../../lib/membership';
+import { sendOrderInvoice } from '../../../../../../../lib/mailer';
 
 export const dynamic = 'force-dynamic';
 export async function POST(
@@ -16,7 +17,7 @@ export async function POST(
 
         const order = await prisma.order.findUnique({
             where: { id: params.id },
-            include: { items: true }
+            include: { items: true, user: true }
         });
 
         if (!order) {
@@ -55,6 +56,24 @@ export async function POST(
                     }
                 });
             }
+        }
+
+        // Gửi email hóa đơn cho khách (non-critical)
+        try {
+            if (order.user?.email) {
+                await sendOrderInvoice({
+                    toEmail: order.user.email,
+                    buyerName: order.user.username,
+                    orderId: order.id,
+                    productName: order.productName,
+                    quantity: order.quantity,
+                    totalAmount: order.totalAmount,
+                    approvedAt: new Date(),
+                    paymentMethod: 'bank',
+                });
+            }
+        } catch (mailErr) {
+            console.error('Invoice email error (non-critical):', mailErr);
         }
 
         return NextResponse.json({ success: true });

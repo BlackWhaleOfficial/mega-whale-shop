@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../lib/prisma';
 import { getSession } from '../../../../../lib/auth';
 import { grantMembershipPerks } from '../../../../../lib/membership';
+import { sendOrderInvoice } from '../../../../../lib/mailer';
 
 export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
@@ -140,6 +141,24 @@ export async function POST(request: Request) {
             if (membershipNames.includes(item.name)) {
                 await grantMembershipPerks(session.id, item.name, Number(item.qty) || 1);
             }
+        }
+
+        // Gửi email hóa đơn WCash (non-critical)
+        try {
+            if (user?.email) {
+                await sendOrderInvoice({
+                    toEmail: user.email,
+                    buyerName: user.username,
+                    orderId: createdOrder.id,
+                    productName: itemName,
+                    quantity: Number(qty) || 1,
+                    totalAmount: total,
+                    approvedAt: new Date(),
+                    paymentMethod: 'wcash',
+                });
+            }
+        } catch (mailErr) {
+            console.error('Invoice email error (non-critical):', mailErr);
         }
 
         return NextResponse.json({ orderId: createdOrder.id, status: 'DONE' });

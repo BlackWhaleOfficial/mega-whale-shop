@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../../../lib/prisma';
 import { grantMembershipPerks } from '../../../../../../../lib/membership';
-import { verifyEmailActionToken } from '../../../../../../../lib/mailer';
+import { verifyEmailActionToken, sendOrderInvoice } from '../../../../../../../lib/mailer';
 
 export const dynamic = 'force-dynamic';
 
@@ -78,6 +78,24 @@ export async function GET(
                         data: { whaleCash: { increment: amount } }
                     });
                 }
+            }
+
+            // Gửi email hóa đơn cho khách (non-critical)
+            try {
+                if (order.user?.email) {
+                    await sendOrderInvoice({
+                        toEmail: order.user.email,
+                        buyerName: order.user.username,
+                        orderId: order.id,
+                        productName: order.productName,
+                        quantity: order.quantity,
+                        totalAmount: order.totalAmount,
+                        approvedAt: new Date(),
+                        paymentMethod: 'bank',
+                    });
+                }
+            } catch (mailErr) {
+                console.error('Invoice email error (non-critical):', mailErr);
             }
 
             return new Response(renderPage(
