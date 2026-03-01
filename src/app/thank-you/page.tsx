@@ -44,30 +44,40 @@ export default async function ThankYouPage({ searchParams }: { searchParams: { o
                     </h2>
 
                     {order.items.length > 0 ? (
-                        order.items.map((item, idx) => (
-                            <div key={item.id} style={{ marginBottom: '2rem', paddingBottom: '2rem', borderBottom: idx !== order.items.length - 1 ? '1px dashed #333' : 'none' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr' }}>
-                                        <span style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.9rem' }}>Tên Sản Phẩm:</span>
-                                        <strong style={{ color: '#fff', fontSize: '1.1rem' }}>{order.productName}</strong>
-                                    </div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr' }}>
-                                        <span style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.9rem' }}>Ngày:</span>
-                                        <strong style={{ color: '#fff' }}>
-                                            {new Intl.DateTimeFormat('vi-VN', { timeStyle: 'short', dateStyle: 'short' }).format(new Date(order.updatedAt))}
-                                        </strong>
-                                    </div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr' }}>
-                                        <span style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.9rem' }}>Serial:</span>
-                                        <strong style={{ color: 'var(--primary)', letterSpacing: '2px' }}>{item.serial}</strong>
-                                    </div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr' }}>
-                                        <span style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.9rem' }}>Mã Nạp:</span>
-                                        <strong style={{ color: 'var(--primary)', letterSpacing: '2px', fontSize: '1.2rem' }}>{item.pin}</strong>
+                        order.items.map((item, idx) => {
+                            // Bỏ phần " x3", " x2"... vì mỗi item đã là 1 thẻ riêng
+                            const cleanName = order.productName.replace(/\s+x\d+$/i, '').trim();
+                            return (
+                                <div key={item.id} style={{ marginBottom: '2rem', paddingBottom: '2rem', borderBottom: idx !== order.items.length - 1 ? '1px dashed #333' : 'none' }}>
+                                    {order.items.length > 1 && (
+                                        <p style={{ color: '#555', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.5rem' }}>
+                                            Thẻ {idx + 1}/{order.items.length}
+                                        </p>
+                                    )}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr' }}>
+                                            <span style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.9rem' }}>Tên Sản Phẩm:</span>
+                                            <strong style={{ color: '#fff', fontSize: '1.1rem' }}>{cleanName}</strong>
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr' }}>
+                                            <span style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.9rem' }}>Ngày:</span>
+                                            <strong style={{ color: '#fff' }}>
+                                                {new Intl.DateTimeFormat('vi-VN', { timeStyle: 'short', dateStyle: 'short' }).format(new Date(order.updatedAt))}
+                                            </strong>
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr' }}>
+                                            <span style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.9rem' }}>Serial:</span>
+                                            <strong style={{ color: 'var(--primary)', letterSpacing: '2px' }}>{item.serial}</strong>
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr' }}>
+                                            <span style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.9rem' }}>Mã Nạp:</span>
+                                            <strong style={{ color: 'var(--primary)', letterSpacing: '2px', fontSize: '1.2rem' }}>{item.pin}</strong>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))
+                            );
+                        })
+
                     ) : (
                         <div style={{ color: '#ccc' }}>
                             <p>Sản phẩm đã được nạp trực tiếp vào tài khoản ({order.productName}).</p>
