@@ -7,17 +7,18 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
     try {
-        const { email } = await req.json();
-        if (!email) {
-            return NextResponse.json({ error: 'Vui lòng nhập email.' }, { status: 400 });
+        const { username, email } = await req.json();
+        if (!username || !email) {
+            return NextResponse.json({ error: 'Vui lòng nhập đầy đủ tên tài khoản và email.' }, { status: 400 });
         }
 
-        // Tìm user theo email
-        const user = await prisma.user.findUnique({ where: { email } });
+        // Tìm user theo username
+        const user = await prisma.user.findUnique({ where: { username } });
 
-        // Luôn trả về thành công để tránh dò email (security best practice)
-        if (!user) {
-            return NextResponse.json({ ok: true });
+        // Kiểm tra user tồn tại VÀ email có khớp không
+        if (!user || user.email.toLowerCase() !== email.trim().toLowerCase()) {
+            // Trả về lỗi rõ ràng — tên tài khoản hoặc email không đúng
+            return NextResponse.json({ error: 'Tên tài khoản hoặc email không đúng. Vui lòng kiểm tra lại.' }, { status: 400 });
         }
 
         // Tạo token ngẫu nhiên
@@ -25,9 +26,9 @@ export async function POST(req: Request) {
         const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 giờ
 
         // Lưu token vào DB (xoá token cũ cùng email trước)
-        await prisma.passwordResetToken.deleteMany({ where: { email } });
+        await prisma.passwordResetToken.deleteMany({ where: { email: user.email } });
         await prisma.passwordResetToken.create({
-            data: { token, email, expiresAt }
+            data: { token, email: user.email, expiresAt }
         });
 
         // Gửi email
@@ -44,7 +45,7 @@ export async function POST(req: Request) {
 
         await transporter.sendMail({
             from: `"Mega Whale Shop" <${process.env.GMAIL_USER}>`,
-            to: email,
+            to: user.email,
             subject: '🔐 Đặt lại mật khẩu - Mega Whale Shop',
             html: `
                 <div style="font-family: 'Inter', Arial, sans-serif; background: #000; color: #fff; padding: 40px; max-width: 600px; margin: 0 auto;">
