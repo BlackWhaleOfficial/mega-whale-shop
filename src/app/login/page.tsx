@@ -57,7 +57,15 @@ function LoginForm() {
                     required
                     style={{ padding: '15px', backgroundColor: '#000', border: '1px solid #444', color: '#fff', width: '100%', marginBottom: '2rem' }}
                 />
-                <button type="submit" className="btn-primary" style={{ width: '100%', marginBottom: '1.5rem' }}>Đăng Nhập</button>
+                <button type="submit" className="btn-primary" style={{ width: '100%', marginBottom: '1rem' }}>Đăng Nhập</button>
+                <div style={{ marginBottom: '1.5rem', textAlign: 'right' }}>
+                    <Link href="/forgot-password" style={{ color: '#888', fontSize: '0.85rem', textDecoration: 'none' }}
+                        onMouseOver={(e) => (e.currentTarget.style.color = 'var(--primary)')}
+                        onMouseOut={(e) => (e.currentTarget.style.color = '#888')}
+                    >
+                        Quên mật khẩu?
+                    </Link>
+                </div>
                 <p style={{ color: '#888', fontSize: '0.9rem' }}>
                     Chưa có tài khoản? <Link href={`/register${redirectTo !== '/' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} style={{ color: 'var(--primary)', textDecoration: 'underline' }}>Đăng ký ngay</Link>
                 </p>

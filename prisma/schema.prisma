@@ -97,3 +97,12 @@ model Transaction {
   status    String   @default("PENDING")
   createdAt DateTime @default(now())
 }
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  email     String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
