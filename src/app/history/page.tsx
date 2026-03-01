@@ -184,7 +184,7 @@ export default function HistoryPage() {
                                                         }}>
                                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                                 <span style={{ color: 'var(--primary)', fontWeight: 600, fontSize: '1.1rem' }}>Sản phẩm #{idx + 1}</span>
-                                                                <span style={{ color: '#888', fontSize: '0.9rem' }}>Mệnh giá: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.cardValue * 1000)}</span>
+                                                                <span style={{ color: '#888', fontSize: '0.9rem' }}>Mệnh giá: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.cardValue)}</span>
                                                             </div>
 
                                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
