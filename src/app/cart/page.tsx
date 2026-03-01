@@ -188,6 +188,8 @@ function CartContent() {
     const finalTotal = total - appliedDiscount;
 
     const handleCheckout = () => {
+        // Reset modal state trước để tránh state cũ từ WCash click hiển thị nhầm
+        setModalConfig({ isOpen: false, type: 'alert', message: '' });
         setIsCheckout(true);
     };
 
@@ -351,266 +353,268 @@ function CartContent() {
     }
 
     return (
-        <div style={{ padding: '8rem 5%', backgroundColor: '#000', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <h1 className="section-title" style={{ textAlign: 'center', marginBottom: '4rem', border: 'none' }}>Giỏ Hàng Của Bạn</h1>
+        <>
+            <div style={{ padding: '8rem 5%', backgroundColor: '#000', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <h1 className="section-title" style={{ textAlign: 'center', marginBottom: '4rem', border: 'none' }}>Giỏ Hàng Của Bạn</h1>
 
-            {!isCheckout ? (
-                <div style={{ width: '100%', maxWidth: '800px', backgroundColor: '#111', padding: '3rem', border: '1px solid #333' }}>
+                {!isCheckout ? (
+                    <div style={{ width: '100%', maxWidth: '800px', backgroundColor: '#111', padding: '3rem', border: '1px solid #333' }}>
 
-                    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '3rem', color: '#fff' }}>
-                        <thead>
-                            <tr style={{ borderBottom: '1px solid #333', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.9rem', color: '#888' }}>
-                                <th style={{ paddingBottom: '1rem' }}>Sản phẩm</th>
-                                <th style={{ paddingBottom: '1rem' }}>Số lượng</th>
-                                <th style={{ paddingBottom: '1rem', textAlign: 'right' }}>Thành tiền</th>
-                                <th style={{ paddingBottom: '1rem', textAlign: 'right', width: '50px' }}></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {detailedItems.map((item, idx) => (
-                                <tr key={idx}>
-                                    <td style={{ paddingTop: '2rem', paddingBottom: '1.5rem', fontSize: '1.2rem', fontWeight: 500 }}>{item.name}</td>
-                                    <td style={{ paddingTop: '2rem', paddingBottom: '1.5rem' }}>
-                                        {/* Nút chỉnh số lượng */}
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <button
-                                                onClick={() => handleUpdateQty(item.id, -1)}
-                                                disabled={item.qty <= 1}
-                                                style={{
-                                                    width: '28px', height: '28px',
-                                                    backgroundColor: item.qty <= 1 ? '#333' : '#222',
-                                                    border: '1px solid #444',
-                                                    color: item.qty <= 1 ? '#555' : '#fff',
-                                                    borderRadius: '4px',
-                                                    cursor: item.qty <= 1 ? 'not-allowed' : 'pointer',
-                                                    fontWeight: 'bold', fontSize: '1rem',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                                }}
-                                            >−</button>
-                                            <span style={{ color: '#fff', fontWeight: 600, minWidth: '24px', textAlign: 'center' }}>{item.qty}</span>
-                                            {/* Chỉ hiện nút + nếu KHÔNG phải membership */}
-                                            {!item.id.startsWith('goi_') && (
+                        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '3rem', color: '#fff' }}>
+                            <thead>
+                                <tr style={{ borderBottom: '1px solid #333', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.9rem', color: '#888' }}>
+                                    <th style={{ paddingBottom: '1rem' }}>Sản phẩm</th>
+                                    <th style={{ paddingBottom: '1rem' }}>Số lượng</th>
+                                    <th style={{ paddingBottom: '1rem', textAlign: 'right' }}>Thành tiền</th>
+                                    <th style={{ paddingBottom: '1rem', textAlign: 'right', width: '50px' }}></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {detailedItems.map((item, idx) => (
+                                    <tr key={idx}>
+                                        <td style={{ paddingTop: '2rem', paddingBottom: '1.5rem', fontSize: '1.2rem', fontWeight: 500 }}>{item.name}</td>
+                                        <td style={{ paddingTop: '2rem', paddingBottom: '1.5rem' }}>
+                                            {/* Nút chỉnh số lượng */}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <button
-                                                    onClick={() => handleUpdateQty(item.id, 1)}
+                                                    onClick={() => handleUpdateQty(item.id, -1)}
+                                                    disabled={item.qty <= 1}
                                                     style={{
                                                         width: '28px', height: '28px',
-                                                        backgroundColor: '#222',
+                                                        backgroundColor: item.qty <= 1 ? '#333' : '#222',
                                                         border: '1px solid #444',
-                                                        color: '#fff',
+                                                        color: item.qty <= 1 ? '#555' : '#fff',
                                                         borderRadius: '4px',
-                                                        cursor: 'pointer',
+                                                        cursor: item.qty <= 1 ? 'not-allowed' : 'pointer',
                                                         fontWeight: 'bold', fontSize: '1rem',
                                                         display: 'flex', alignItems: 'center', justifyContent: 'center'
                                                     }}
-                                                >+</button>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td style={{ paddingTop: '2rem', paddingBottom: '1.5rem', borderBottom: '1px solid #333', color: 'var(--primary)', fontWeight: 600, textAlign: 'right', fontSize: '1.1rem' }}>
-                                        {new Intl.NumberFormat('vi-VN').format(item.total)}₫
-                                    </td>
-                                    <td style={{ paddingTop: '2rem', paddingBottom: '1.5rem', textAlign: 'right', borderBottom: '1px solid #333' }}>
-                                        <button onClick={() => handleRemoveItem(item.id)} style={{ color: '#ff4d4f', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>
-                                            ✕
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-
-                    <div style={{ borderTop: '1px solid #333', paddingTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-
-                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                            <select
-                                value={selectedDiscountId}
-                                onChange={e => setSelectedDiscountId(e.target.value)}
-                                style={{ flex: 1, padding: '15px', backgroundColor: '#000', border: '1px solid #444', color: '#fff' }}
-                            >
-                                <option value="">-- Chọn mã giảm giá của bạn --</option>
-                                {groupedDiscounts.map((d: any) => (
-                                    <option key={d.id} value={d.id}>{d.codeName} (Giảm {d.discountPercent}% - Còn: {d.quantity} mã)</option>
+                                                >−</button>
+                                                <span style={{ color: '#fff', fontWeight: 600, minWidth: '24px', textAlign: 'center' }}>{item.qty}</span>
+                                                {/* Chỉ hiện nút + nếu KHÔNG phải membership */}
+                                                {!item.id.startsWith('goi_') && (
+                                                    <button
+                                                        onClick={() => handleUpdateQty(item.id, 1)}
+                                                        style={{
+                                                            width: '28px', height: '28px',
+                                                            backgroundColor: '#222',
+                                                            border: '1px solid #444',
+                                                            color: '#fff',
+                                                            borderRadius: '4px',
+                                                            cursor: 'pointer',
+                                                            fontWeight: 'bold', fontSize: '1rem',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                        }}
+                                                    >+</button>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td style={{ paddingTop: '2rem', paddingBottom: '1.5rem', borderBottom: '1px solid #333', color: 'var(--primary)', fontWeight: 600, textAlign: 'right', fontSize: '1.1rem' }}>
+                                            {new Intl.NumberFormat('vi-VN').format(item.total)}₫
+                                        </td>
+                                        <td style={{ paddingTop: '2rem', paddingBottom: '1.5rem', textAlign: 'right', borderBottom: '1px solid #333' }}>
+                                            <button onClick={() => handleRemoveItem(item.id)} style={{ color: '#ff4d4f', background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>
+                                                ✕
+                                            </button>
+                                        </td>
+                                    </tr>
                                 ))}
-                            </select>
-                        </div>
+                            </tbody>
+                        </table>
 
-                        {appliedDiscount > 0 && (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--primary)', fontWeight: 600 }}>
-                                <span>Giảm giá</span>
-                                <span>-{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(appliedDiscount)}</span>
+                        <div style={{ borderTop: '1px solid #333', paddingTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                <select
+                                    value={selectedDiscountId}
+                                    onChange={e => setSelectedDiscountId(e.target.value)}
+                                    style={{ flex: 1, padding: '15px', backgroundColor: '#000', border: '1px solid #444', color: '#fff' }}
+                                >
+                                    <option value="">-- Chọn mã giảm giá của bạn --</option>
+                                    {groupedDiscounts.map((d: any) => (
+                                        <option key={d.id} value={d.id}>{d.codeName} (Giảm {d.discountPercent}% - Còn: {d.quantity} mã)</option>
+                                    ))}
+                                </select>
                             </div>
-                        )}
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px solid #333', marginTop: '1rem' }}>
-                            <span style={{ fontSize: '1.5rem', fontWeight: 300, textTransform: 'uppercase' }}>Tổng Cộng</span>
-                            <span style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
-                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(finalTotal)}
-                            </span>
-                        </div>
-
-                    </div>
-
-                    <div style={{ marginTop: '3rem' }}>
-                        <p style={{ color: '#888', marginBottom: '1rem', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px' }}>Phương Thức Thanh Toán</p>
-
-                        <button onClick={handleCheckout} className="btn-primary" style={{ width: '100%', padding: '20px', fontSize: '1.2rem', marginBottom: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
-                            <CreditCard size={24} /> <span>Chuyển khoản ngân hàng</span>
-                        </button>
-
-                        <button
-                            onClick={walletLoaded ? handleWCashPayment : undefined}
-                            disabled={!walletLoaded}
-                            style={{
-                                width: '100%', padding: '20px', fontSize: '1.2rem',
-                                display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px',
-                                backgroundColor: !walletLoaded ? '#999' : whaleCash < Math.round(finalTotal / 1000) ? '#555' : '#FFD700',
-                                color: !walletLoaded ? '#000' : whaleCash < Math.round(finalTotal / 1000) ? '#aaa' : '#000',
-                                border: 'none', borderRadius: '4px',
-                                cursor: walletLoaded ? 'pointer' : 'not-allowed',
-                                fontWeight: 600, transition: '0.3s',
-                                position: 'relative'
-                            }}
-                        >
-                            <div style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#000', color: '#FFD700', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.8rem', border: '2px solid #000' }}>W</div>
-                            {walletLoaded ? (
-                                <span>
-                                    Sử dụng WCash ({Math.round(finalTotal / 1000).toLocaleString('vi-VN')} W)
-                                    {whaleCash < Math.round(finalTotal / 1000) && (
-                                        <span style={{ marginLeft: '8px', fontSize: '0.85rem', opacity: 0.8 }}>— Không đủ số dư</span>
-                                    )}
-                                </span>
-                            ) : (
-                                <span>Đang tải...</span>
+                            {appliedDiscount > 0 && (
+                                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--primary)', fontWeight: 600 }}>
+                                    <span>Giảm giá</span>
+                                    <span>-{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(appliedDiscount)}</span>
+                                </div>
                             )}
-                        </button>
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px solid #333', marginTop: '1rem' }}>
+                                <span style={{ fontSize: '1.5rem', fontWeight: 300, textTransform: 'uppercase' }}>Tổng Cộng</span>
+                                <span style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--primary)' }}>
+                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(finalTotal)}
+                                </span>
+                            </div>
+
+                        </div>
+
+                        <div style={{ marginTop: '3rem' }}>
+                            <p style={{ color: '#888', marginBottom: '1rem', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px' }}>Phương Thức Thanh Toán</p>
+
+                            <button onClick={handleCheckout} className="btn-primary" style={{ width: '100%', padding: '20px', fontSize: '1.2rem', marginBottom: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+                                <CreditCard size={24} /> <span>Chuyển khoản ngân hàng</span>
+                            </button>
+
+                            <button
+                                onClick={walletLoaded ? handleWCashPayment : undefined}
+                                disabled={!walletLoaded}
+                                style={{
+                                    width: '100%', padding: '20px', fontSize: '1.2rem',
+                                    display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px',
+                                    backgroundColor: !walletLoaded ? '#999' : whaleCash < Math.round(finalTotal / 1000) ? '#555' : '#FFD700',
+                                    color: !walletLoaded ? '#000' : whaleCash < Math.round(finalTotal / 1000) ? '#aaa' : '#000',
+                                    border: 'none', borderRadius: '4px',
+                                    cursor: walletLoaded ? 'pointer' : 'not-allowed',
+                                    fontWeight: 600, transition: '0.3s',
+                                    position: 'relative'
+                                }}
+                            >
+                                <div style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#000', color: '#FFD700', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.8rem', border: '2px solid #000' }}>W</div>
+                                {walletLoaded ? (
+                                    <span>
+                                        Sử dụng WCash ({Math.round(finalTotal / 1000).toLocaleString('vi-VN')} W)
+                                        {whaleCash < Math.round(finalTotal / 1000) && (
+                                            <span style={{ marginLeft: '8px', fontSize: '0.85rem', opacity: 0.8 }}>— Không đủ số dư</span>
+                                        )}
+                                    </span>
+                                ) : (
+                                    <span>Đang tải...</span>
+                                )}
+                            </button>
+                        </div>
+
                     </div>
+                ) : (
+                    <>
+                        <div style={{ width: '100%', maxWidth: '600px', backgroundColor: '#111', padding: '4rem', border: '1px solid var(--primary)', textAlign: 'center' }}>
 
-                </div>
-            ) : (
-                <>
-                    <div style={{ width: '100%', maxWidth: '600px', backgroundColor: '#111', padding: '4rem', border: '1px solid var(--primary)', textAlign: 'center' }}>
+                            <h2 style={{ fontSize: '2rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '2px' }}>
+                                Thông tin chuyển khoản
+                            </h2>
+                            <p style={{ color: '#aaa', marginBottom: '3rem', fontSize: '1.1rem', lineHeight: 1.6 }}>
+                                Vui lòng quét mã QR bên dưới hoặc chuyển khoản theo thông tin để hoàn tất đơn hàng. Giao dịch sẽ được duyệt tự động.
+                            </p>
 
-                        <h2 style={{ fontSize: '2rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '2px' }}>
-                            Thông tin chuyển khoản
-                        </h2>
-                        <p style={{ color: '#aaa', marginBottom: '3rem', fontSize: '1.1rem', lineHeight: 1.6 }}>
-                            Vui lòng quét mã QR bên dưới hoặc chuyển khoản theo thông tin để hoàn tất đơn hàng. Giao dịch sẽ được duyệt tự động.
-                        </p>
-
-                        <div style={{ backgroundColor: '#fff', padding: '2rem', display: 'inline-block', marginBottom: '3rem', borderRadius: '16px' }}>
-                            <img src="/qr-placeholder.jpg" alt="Techcombank QR Code" style={{ width: '300px', height: 'auto', objectFit: 'contain' }} />
-                        </div>
-
-                        <div style={{ textAlign: 'left', backgroundColor: '#000', padding: '2rem', border: '1px solid #333' }}>
-                            <div style={{ marginBottom: '1rem' }}>
-                                <span style={{ color: '#888', display: 'block', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px' }}>Ngân hàng</span>
-                                <strong style={{ fontSize: '1.2rem', color: '#fff' }}>Techcombank</strong>
+                            <div style={{ backgroundColor: '#fff', padding: '2rem', display: 'inline-block', marginBottom: '3rem', borderRadius: '16px' }}>
+                                <img src="/qr-placeholder.jpg" alt="Techcombank QR Code" style={{ width: '300px', height: 'auto', objectFit: 'contain' }} />
                             </div>
-                            <div style={{ marginBottom: '1rem' }}>
-                                <span style={{ color: '#888', display: 'block', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px' }}>Số Tài Khoản</span>
-                                <strong style={{ fontSize: '1.5rem', color: 'var(--primary)', letterSpacing: '2px' }}>77 2939 9999</strong>
-                            </div>
-                            <div>
-                                <span style={{ color: '#888', display: 'block', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px' }}>Số Tiền</span>
-                                <strong style={{ fontSize: '1.5rem', color: '#fff' }}>{new Intl.NumberFormat('vi-VN').format(finalTotal)} VNĐ</strong>
-                            </div>
-                        </div>
 
-                        {orderStatus === 'IDLE' && (
-                            <>
-                                <button onClick={handlePaymentDone} className="btn-primary" style={{ display: 'flex', width: '100%', marginTop: '3rem', padding: '16px', justifyContent: 'center', fontSize: '1.2rem' }}>
-                                    Đã Thanh Toán
-                                </button>
-                                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                                    <Link href="/" className="btn-outline" style={{ display: 'block', width: '50%', boxSizing: 'border-box', textAlign: 'center' }}>
-                                        Trở về trang chủ
-                                    </Link>
-                                    <button
-                                        onClick={handleCancelOrder}
-                                        style={{
-                                            width: '50%',
-                                            padding: '12px 24px',
-                                            backgroundColor: 'transparent',
-                                            border: '1px solid #ff4d4f',
-                                            color: '#ff4d4f',
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '2px',
-                                            fontWeight: 600,
-                                            cursor: 'pointer',
-                                            transition: '0.3s'
-                                        }}
-                                        onMouseOver={(e: any) => { e.target.style.backgroundColor = '#ff4d4f'; e.target.style.color = '#fff'; }}
-                                        onMouseOut={(e: any) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#ff4d4f'; }}
-                                    >
-                                        Hủy đơn
+                            <div style={{ textAlign: 'left', backgroundColor: '#000', padding: '2rem', border: '1px solid #333' }}>
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <span style={{ color: '#888', display: 'block', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px' }}>Ngân hàng</span>
+                                    <strong style={{ fontSize: '1.2rem', color: '#fff' }}>Techcombank</strong>
+                                </div>
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <span style={{ color: '#888', display: 'block', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px' }}>Số Tài Khoản</span>
+                                    <strong style={{ fontSize: '1.5rem', color: 'var(--primary)', letterSpacing: '2px' }}>77 2939 9999</strong>
+                                </div>
+                                <div>
+                                    <span style={{ color: '#888', display: 'block', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px' }}>Số Tiền</span>
+                                    <strong style={{ fontSize: '1.5rem', color: '#fff' }}>{new Intl.NumberFormat('vi-VN').format(finalTotal)} VNĐ</strong>
+                                </div>
+                            </div>
+
+                            {orderStatus === 'IDLE' && (
+                                <>
+                                    <button onClick={handlePaymentDone} className="btn-primary" style={{ display: 'flex', width: '100%', marginTop: '3rem', padding: '16px', justifyContent: 'center', fontSize: '1.2rem' }}>
+                                        Đã Thanh Toán
                                     </button>
-                                </div>
-                            </>
-                        )}
+                                    <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                                        <Link href="/" className="btn-outline" style={{ display: 'block', width: '50%', boxSizing: 'border-box', textAlign: 'center' }}>
+                                            Trở về trang chủ
+                                        </Link>
+                                        <button
+                                            onClick={handleCancelOrder}
+                                            style={{
+                                                width: '50%',
+                                                padding: '12px 24px',
+                                                backgroundColor: 'transparent',
+                                                border: '1px solid #ff4d4f',
+                                                color: '#ff4d4f',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '2px',
+                                                fontWeight: 600,
+                                                cursor: 'pointer',
+                                                transition: '0.3s'
+                                            }}
+                                            onMouseOver={(e: any) => { e.target.style.backgroundColor = '#ff4d4f'; e.target.style.color = '#fff'; }}
+                                            onMouseOut={(e: any) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#ff4d4f'; }}
+                                        >
+                                            Hủy đơn
+                                        </button>
+                                    </div>
+                                </>
+                            )}
 
-                        {(orderStatus === 'PENDING' || orderStatus === 'DONE' || orderStatus === 'CANCELLED') && (
-                            <div style={{ marginTop: '3rem', textAlign: 'left', backgroundColor: '#000', padding: '2rem', border: `1px dashed ${orderStatus === 'CANCELLED' ? '#ff4d4f' : 'var(--primary)'}` }}>
-                                <h3 style={{ color: orderStatus === 'CANCELLED' ? '#ff4d4f' : 'var(--primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    {orderStatus === 'PENDING' ? (
-                                        <>
-                                            <div className="spinner" style={{ width: '20px', height: '20px', border: '3px solid rgba(68, 214, 44, 0.3)', borderTop: '3px solid var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-                                            Chờ Xác Nhận
-                                        </>
-                                    ) : orderStatus === 'DONE' ? (
-                                        <>
-                                            <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '12px' }}>✓</div>
-                                            Đã Xác Nhận
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#ff4d4f', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '12px' }}>✕</div>
-                                            Thanh toán thất bại
-                                        </>
-                                    )}
-                                </h3>
-                                <p style={{ color: orderStatus === 'CANCELLED' ? '#ff4d4f' : '#aaa', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                                    {orderStatus === 'PENDING'
-                                        ? 'Hệ thống đang chờ Admin kiểm tra và duyệt thanh toán của bạn...'
-                                        : orderStatus === 'DONE'
-                                            ? 'Thanh toán thành công! Sẵn sàng nhận hàng.'
-                                            : 'Thanh toán không thành công. Số tiền chuyển khoản của bạn đã sai, chúng tôi không hoàn trả trong trường hợp cố tình chuyển khoản thiếu. Vui lòng chụp màn hình bill chuyển khoản gửi Admin (Zalo - 070 830 9879).'}
-                                </p>
+                            {(orderStatus === 'PENDING' || orderStatus === 'DONE' || orderStatus === 'CANCELLED') && (
+                                <div style={{ marginTop: '3rem', textAlign: 'left', backgroundColor: '#000', padding: '2rem', border: `1px dashed ${orderStatus === 'CANCELLED' ? '#ff4d4f' : 'var(--primary)'}` }}>
+                                    <h3 style={{ color: orderStatus === 'CANCELLED' ? '#ff4d4f' : 'var(--primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        {orderStatus === 'PENDING' ? (
+                                            <>
+                                                <div className="spinner" style={{ width: '20px', height: '20px', border: '3px solid rgba(68, 214, 44, 0.3)', borderTop: '3px solid var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                                                Chờ Xác Nhận
+                                            </>
+                                        ) : orderStatus === 'DONE' ? (
+                                            <>
+                                                <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '12px' }}>✓</div>
+                                                Đã Xác Nhận
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#ff4d4f', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '12px' }}>✕</div>
+                                                Thanh toán thất bại
+                                            </>
+                                        )}
+                                    </h3>
+                                    <p style={{ color: orderStatus === 'CANCELLED' ? '#ff4d4f' : '#aaa', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                                        {orderStatus === 'PENDING'
+                                            ? 'Hệ thống đang chờ Admin kiểm tra và duyệt thanh toán của bạn...'
+                                            : orderStatus === 'DONE'
+                                                ? 'Thanh toán thành công! Sẵn sàng nhận hàng.'
+                                                : 'Thanh toán không thành công. Số tiền chuyển khoản của bạn đã sai, chúng tôi không hoàn trả trong trường hợp cố tình chuyển khoản thiếu. Vui lòng chụp màn hình bill chuyển khoản gửi Admin (Zalo - 070 830 9879).'}
+                                    </p>
 
-                                <div style={{ width: '100%', height: '8px', backgroundColor: '#222', borderRadius: '4px', overflow: 'hidden' }}>
-                                    <div style={{
-                                        width: `${progress}%`,
-                                        height: '100%',
-                                        backgroundColor: orderStatus === 'CANCELLED' ? '#ff4d4f' : 'var(--primary)',
-                                        transition: 'width 0.4s ease',
-                                        boxShadow: `0 0 10px ${orderStatus === 'CANCELLED' ? '#ff4d4f' : 'var(--primary)'}`
-                                    }} />
+                                    <div style={{ width: '100%', height: '8px', backgroundColor: '#222', borderRadius: '4px', overflow: 'hidden' }}>
+                                        <div style={{
+                                            width: `${progress}%`,
+                                            height: '100%',
+                                            backgroundColor: orderStatus === 'CANCELLED' ? '#ff4d4f' : 'var(--primary)',
+                                            transition: 'width 0.4s ease',
+                                            boxShadow: `0 0 10px ${orderStatus === 'CANCELLED' ? '#ff4d4f' : 'var(--primary)'}`
+                                        }} />
+                                    </div>
+                                    <div style={{ textAlign: 'right', color: orderStatus === 'CANCELLED' ? '#ff4d4f' : 'var(--primary)', fontSize: '0.8rem', marginTop: '8px', fontWeight: 'bold' }}>
+                                        {progress}%
+                                    </div>
                                 </div>
-                                <div style={{ textAlign: 'right', color: orderStatus === 'CANCELLED' ? '#ff4d4f' : 'var(--primary)', fontSize: '0.8rem', marginTop: '8px', fontWeight: 'bold' }}>
-                                    {progress}%
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                            )}
+                        </div>
 
-                    <style dangerouslySetInnerHTML={{
-                        __html: `
+                        <style dangerouslySetInnerHTML={{
+                            __html: `
                         @keyframes spin {
                             0% { transform: rotate(0deg); }
                             100% { transform: rotate(360deg); }
                         }
                     `}} />
+                    </>
+                )}
 
-                    <Modal
-                        isOpen={modalConfig.isOpen}
-                        type={modalConfig.type}
-                        message={modalConfig.message}
-                        onConfirm={modalConfig.onConfirm}
-                        onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
-                    />
-                </>
-            )}
-
-        </div>
+            </div>
+            {/* Modal luôn render ngoài ternary — hiện được ở cả 2 state isCheckout=true/false */}
+            <Modal
+                isOpen={modalConfig.isOpen}
+                type={modalConfig.type}
+                message={modalConfig.message}
+                onConfirm={modalConfig.onConfirm}
+                onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+            />
+        </>
     );
 }
 
