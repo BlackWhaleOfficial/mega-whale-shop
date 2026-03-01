@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Modal from '../../components/Modal';
 
-export default function RegisterPage() {
+function RegisterForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const redirectTo = searchParams.get('redirect') || '/';
+
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -39,7 +42,9 @@ export default function RegisterPage() {
                 message: 'Đăng ký thành công! Chào mừng V.I.P',
                 onClose: () => {
                     setModalConfig(prev => ({ ...prev, isOpen: false }));
-                    router.push('/login');
+                    // Redirect to login with redirect param preserved
+                    const loginUrl = redirectTo !== '/' ? `/login?redirect=${encodeURIComponent(redirectTo)}` : '/login';
+                    router.push(loginUrl);
                 }
             });
         } else {
@@ -51,6 +56,11 @@ export default function RegisterPage() {
         <div style={{ padding: '8rem 5%', display: 'flex', justifyContent: 'center', minHeight: '80vh' }}>
             <form onSubmit={handleRegister} style={{ width: '100%', maxWidth: '400px', backgroundColor: '#111', padding: '3rem', textAlign: 'center', border: '1px solid #333' }}>
                 <h2 className="section-title" style={{ fontSize: '1.5rem', marginBottom: '2rem', border: 'none' }}>Đăng Ký Tài Khoản</h2>
+                {redirectTo !== '/' && (
+                    <div style={{ color: '#aaa', fontSize: '0.85rem', marginBottom: '1.5rem', padding: '10px', backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '6px' }}>
+                        Vui lòng đăng ký để tiếp tục
+                    </div>
+                )}
                 {error && <div style={{ color: 'red', marginBottom: '1rem', fontSize: '0.9rem' }}>{error}</div>}
 
                 <input
@@ -82,7 +92,7 @@ export default function RegisterPage() {
 
                 <button type="submit" className="btn-primary" style={{ width: '100%', marginBottom: '1.5rem' }}>Đăng Ký</button>
                 <p style={{ color: '#888', fontSize: '0.9rem' }}>
-                    Đã có tài khoản? <Link href="/login" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>Trở về đăng nhập</Link>
+                    Đã có tài khoản? <Link href={redirectTo !== '/' ? `/login?redirect=${encodeURIComponent(redirectTo)}` : '/login'} style={{ color: 'var(--primary)', textDecoration: 'underline' }}>Trở về đăng nhập</Link>
                 </p>
             </form>
 
@@ -93,5 +103,13 @@ export default function RegisterPage() {
                 onClose={modalConfig.onClose}
             />
         </div>
+    );
+}
+
+export default function RegisterPage() {
+    return (
+        <Suspense>
+            <RegisterForm />
+        </Suspense>
     );
 }

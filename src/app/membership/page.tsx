@@ -61,7 +61,20 @@ const memberships = [
 export default function MembershipPage() {
     const router = useRouter();
 
-    const handleBuy = (id: string) => {
+    const handleBuy = async (id: string) => {
+        // Kiểm tra đăng nhập
+        try {
+            const authRes = await fetch('/api/auth/me');
+            const authData = await authRes.json();
+            if (!authData.authenticated) {
+                router.push('/login?redirect=/membership');
+                return;
+            }
+        } catch {
+            router.push('/login?redirect=/membership');
+            return;
+        }
+
         // Kiểm tra giỏ hàng đã có membership chưa
         try {
             const stored = localStorage.getItem('cartItems');
@@ -74,6 +87,7 @@ export default function MembershipPage() {
         } catch (e) { }
         router.push(`/cart?item=${id}&qty=1`);
     };
+
 
     return (
         <div style={{ padding: '8rem 5%', backgroundColor: '#000', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', fontFamily: "'Inter', sans-serif" }}>

@@ -9,8 +9,22 @@ export default function NapGamePage() {
     const [amount, setAmount] = useState('100000');
     const [quantity, setQuantity] = useState('1');
 
-    const handleBuy = (e: React.FormEvent) => {
+    const handleBuy = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Kiểm tra đăng nhập
+        try {
+            const authRes = await fetch('/api/auth/me');
+            const authData = await authRes.json();
+            if (!authData.authenticated) {
+                router.push('/login?redirect=/nap-game');
+                return;
+            }
+        } catch {
+            router.push('/login?redirect=/nap-game');
+            return;
+        }
+
         const itemId = `garena_${amount}`;
         const addQty = parseInt(quantity);
 
@@ -38,6 +52,7 @@ export default function NapGamePage() {
         window.dispatchEvent(new Event('storage'));
         router.push('/cart');
     };
+
 
     // Bảng giá chiết khấu của shop
     const discountMap: Record<string, { sell: number; save: number }> = {

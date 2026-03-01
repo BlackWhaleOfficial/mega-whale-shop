@@ -12,8 +12,26 @@ function CartContent() {
 
     const [cartItems, setCartItems] = useState<any[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
+    const [authChecked, setAuthChecked] = useState(false);
+
+    // Auth guard: redirect to login if not authenticated
+    useEffect(() => {
+        fetch('/api/auth/me')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.authenticated) {
+                    router.replace('/login?redirect=/cart');
+                } else {
+                    setAuthChecked(true);
+                }
+            })
+            .catch(() => {
+                router.replace('/login?redirect=/cart');
+            });
+    }, [router]);
 
     useEffect(() => {
+        if (!authChecked) return;
         let items: any[] = [];
         try {
             const stored = localStorage.getItem('cartItems');
@@ -72,7 +90,7 @@ function CartContent() {
 
         setCartItems(items);
         setIsLoaded(true);
-    }, [searchParams, router]);
+    }, [searchParams, router, authChecked]);
 
     const [discounts, setDiscounts] = useState<any[]>([]);
 
