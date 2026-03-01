@@ -178,10 +178,13 @@ function CartContent() {
     const detailedItems = cartItems.map(i => getProductDetails(i.id, i.qty));
     const total = detailedItems.reduce((sum, i) => sum + i.total, 0);
 
+    // Nếu giỏ có sản phẩm WCash top-up → không cho mã giảm giá và không cho thanh toán WCash
+    const hasTopup = detailedItems.some(i => i.id.startsWith('topup_'));
+
     const combinedItemName = detailedItems.map(i => `${i.name} x${i.qty}`).join(', ');
     const combinedQty = detailedItems.reduce((sum, i) => sum + i.qty, 0).toString();
 
-    const activeDiscount = discounts.find(d => d.id === selectedDiscountId);
+    const activeDiscount = !hasTopup && discounts.find(d => d.id === selectedDiscountId);
     let appliedDiscount = activeDiscount ? Math.floor(total * (activeDiscount.discountPercent / 100)) : 0;
     if (appliedDiscount > 100000) appliedDiscount = 100000;
 
@@ -426,12 +429,20 @@ function CartContent() {
 
                             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                                 <select
-                                    value={selectedDiscountId}
-                                    onChange={e => setSelectedDiscountId(e.target.value)}
-                                    style={{ flex: 1, padding: '15px', backgroundColor: '#000', border: '1px solid #444', color: '#fff' }}
+                                    value={hasTopup ? '' : selectedDiscountId}
+                                    onChange={e => !hasTopup && setSelectedDiscountId(e.target.value)}
+                                    disabled={hasTopup}
+                                    style={{
+                                        flex: 1, padding: '15px',
+                                        backgroundColor: hasTopup ? '#1a1a1a' : '#000',
+                                        border: `1px solid ${hasTopup ? '#333' : '#444'}`,
+                                        color: hasTopup ? '#555' : '#fff',
+                                        cursor: hasTopup ? 'not-allowed' : 'default',
+                                        opacity: hasTopup ? 0.5 : 1
+                                    }}
                                 >
-                                    <option value="">-- Chọn mã giảm giá của bạn --</option>
-                                    {groupedDiscounts.map((d: any) => (
+                                    <option value="">{hasTopup ? '-- Không áp dụng mã giảm giá cho WCash --' : '-- Chọn mã giảm giá của bạn --'}</option>
+                                    {!hasTopup && groupedDiscounts.map((d: any) => (
                                         <option key={d.id} value={d.id}>{d.codeName} (Giảm {d.discountPercent}% - Còn: {d.quantity} mã)</option>
                                     ))}
                                 </select>
@@ -461,21 +472,23 @@ function CartContent() {
                             </button>
 
                             <button
-                                onClick={walletLoaded ? handleWCashPayment : undefined}
-                                disabled={!walletLoaded}
+                                onClick={!hasTopup && walletLoaded ? handleWCashPayment : undefined}
+                                disabled={hasTopup || !walletLoaded}
                                 style={{
                                     width: '100%', padding: '20px', fontSize: '1.2rem',
                                     display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px',
-                                    backgroundColor: !walletLoaded ? '#999' : whaleCash < Math.round(finalTotal / 1000) ? '#555' : '#FFD700',
-                                    color: !walletLoaded ? '#000' : whaleCash < Math.round(finalTotal / 1000) ? '#aaa' : '#000',
+                                    backgroundColor: hasTopup ? '#333' : (!walletLoaded ? '#999' : whaleCash < Math.round(finalTotal / 1000) ? '#555' : '#FFD700'),
+                                    color: hasTopup ? '#888' : (!walletLoaded ? '#000' : whaleCash < Math.round(finalTotal / 1000) ? '#aaa' : '#000'),
                                     border: 'none', borderRadius: '4px',
-                                    cursor: walletLoaded ? 'pointer' : 'not-allowed',
+                                    cursor: (hasTopup || !walletLoaded) ? 'not-allowed' : 'pointer',
                                     fontWeight: 600, transition: '0.3s',
                                     position: 'relative'
                                 }}
                             >
-                                <div style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#000', color: '#FFD700', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.8rem', border: '2px solid #000' }}>W</div>
-                                {walletLoaded ? (
+                                <div style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: hasTopup ? '#555' : '#000', color: hasTopup ? '#888' : '#FFD700', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.8rem', border: '2px solid transparent' }}>W</div>
+                                {hasTopup ? (
+                                    <span>Không hỗ trợ thanh toán</span>
+                                ) : walletLoaded ? (
                                     <span>
                                         Sử dụng WCash ({Math.round(finalTotal / 1000).toLocaleString('vi-VN')} W)
                                         {whaleCash < Math.round(finalTotal / 1000) && (
@@ -486,6 +499,7 @@ function CartContent() {
                                     <span>Đang tải...</span>
                                 )}
                             </button>
+
                         </div>
 
                     </div>
