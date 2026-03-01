@@ -138,7 +138,8 @@ export default function HistoryPage() {
                                                     Sản Phẩm & Tổng Tiền
                                                 </div>
                                                 <div style={{ color: '#fff', fontSize: '1.1rem', fontWeight: 600 }}>
-                                                    {order.productName} <span style={{ color: '#aaa', fontWeight: 'normal', fontSize: '0.9rem', marginLeft: '5px' }}>(x{itemCount})</span>
+                                                    {order.productName.replace(/\s+x\d+$/i, '').trim()}
+                                                    {itemCount > 1 && <span style={{ color: '#aaa', fontWeight: 'normal', fontSize: '0.9rem', marginLeft: '5px' }}>({itemCount} thẻ)</span>}
                                                 </div>
                                                 <div style={{ color: 'var(--primary)', fontSize: '1.2rem', fontWeight: 700 }}>
                                                     {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalAmount)}
