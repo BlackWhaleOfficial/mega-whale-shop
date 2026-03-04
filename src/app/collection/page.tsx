@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface GameAccount {
     id: string;
@@ -22,54 +23,81 @@ interface GameAccount {
     createdAt?: string;
 }
 
+const swipeConfidenceThreshold = 10000;
+const swipePower = (offset: number, velocity: number) => {
+    return Math.abs(offset) * velocity;
+};
+
 const GachaTab = ({ activeTab, banners, bannerNames, currentBanner, setCurrentBanner, setShowBannerInfo, handleGacha, gachaLoading, rollCounts }: any) => {
     if (activeTab !== 'gacha') return null;
+
+    const paginate = (newDirection: number) => {
+        let nextIndex = currentBanner + newDirection;
+        if (nextIndex < 0) nextIndex = banners.length - 1;
+        if (nextIndex >= banners.length) nextIndex = 0;
+        setCurrentBanner(nextIndex);
+    };
 
     const bannerName = bannerNames[currentBanner];
     const currentRolls = rollCounts.find((r: any) => r.bannerName === bannerName)?.count || 0;
     const rollsLeft = 150 - (currentRolls % 150);
 
     return (
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem', padding: '0 10px' }}>
             <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div style={{
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    height: 'clamp(250px, 35vw, 450px)',
+                    height: 'clamp(300px, 50vw, 600px)',
                     width: '100%',
                     overflow: 'hidden',
-                    position: 'relative'
+                    position: 'relative',
+                    borderRadius: '24px',
+                    backgroundColor: '#000'
                 }}>
-                    {banners.map((src: string, index: number) => {
-                        const isActive = index === currentBanner;
-                        const isNext = index === (currentBanner + 1) % banners.length;
+                    <AnimatePresence initial={false} custom={currentBanner}>
+                        <motion.div
+                            key={currentBanner}
+                            drag="x"
+                            dragConstraints={{ left: 0, right: 0 }}
+                            dragElastic={1}
+                            onDragEnd={(e, { offset, velocity }) => {
+                                const swipe = swipePower(offset.x, velocity.x);
+                                if (swipe < -swipeConfidenceThreshold) {
+                                    paginate(1);
+                                } else if (swipe > swipeConfidenceThreshold) {
+                                    paginate(-1);
+                                }
+                            }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ opacity: { duration: 0.3 } }}
+                            style={{ position: 'absolute', width: '100%', height: '100%', cursor: 'grab' }}
+                            onClick={() => setShowBannerInfo(true)}
+                        >
+                            <Image src={banners[currentBanner]} fill style={{ objectFit: 'cover' }} alt="Gacha Banner" priority unoptimized />
+                        </motion.div>
+                    </AnimatePresence>
 
-                        let style: any = {
-                            position: 'absolute',
-                            transition: 'all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)',
-                            borderRadius: '24px',
-                            overflow: 'hidden',
-                            width: isActive ? '75%' : '55%',
-                            zIndex: isActive ? 10 : 1,
-                            opacity: isActive ? 1 : 0.4,
-                            filter: isActive ? 'none' : 'blur(3px)',
-                            transform: isActive
-                                ? 'translateX(0) scale(1)'
-                                : (isNext ? 'translateX(90%) scale(0.85)' : 'translateX(-90%) scale(0.85)'),
-                            cursor: 'pointer',
-                            boxShadow: isActive ? '0 10px 40px rgba(0,0,0,0.8)' : 'none'
-                        };
-
-                        return (
-                            <div key={src} style={style} onClick={() => isActive ? setShowBannerInfo(true) : setCurrentBanner(index)}>
-                                <div style={{ position: 'relative', width: '100%', height: '100%', aspectRatio: '21/9' }}>
-                                    <Image src={src} fill style={{ objectFit: 'cover' }} alt="Gacha Banner" priority={isActive} />
-                                </div>
-                            </div>
-                        );
-                    })}
+                    {/* Navigation Arrows for Tablet/Desktop */}
+                    <button
+                        onClick={(e) => { e.stopPropagation(); paginate(-1); }}
+                        style={{ position: 'absolute', left: '20px', zIndex: 12, background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', padding: '10px', borderRadius: '50%', cursor: 'pointer' }}
+                        className="hidden-mobile"
+                    >
+                        <ChevronLeft size={24} />
+                    </button>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); paginate(1); }}
+                        style={{ position: 'absolute', right: '20px', zIndex: 12, background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', padding: '10px', borderRadius: '50%', cursor: 'pointer' }}
+                        className="hidden-mobile"
+                    >
+                        <ChevronRight size={24} />
+                    </button>
                 </div>
+
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', zIndex: 11 }}>
                     {banners.map((_: any, index: number) => (
                         <div
@@ -88,18 +116,19 @@ const GachaTab = ({ activeTab, banners, bannerNames, currentBanner, setCurrentBa
                 </div>
             </div>
 
-            <div style={{ textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.5)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(233,196,106,0.3)', alignSelf: 'center' }}>
+            <div style={{ textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.5)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(233,196,106,0.3)', alignSelf: 'center', width: '100%', maxWidth: '500px' }}>
                 <div style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 600 }}>Tích lũy: <span style={{ color: '#e9c46a' }}>{currentRolls}</span> lượt</div>
                 <div style={{ color: '#aaa', fontSize: '0.9rem', marginTop: '5px' }}>Còn <span style={{ color: '#fff' }}>{rollsLeft}</span> lượt nữa chắc chắn nhận <span style={{ color: 'var(--primary)' }}>REG Skin SSS</span></div>
             </div>
 
-            <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
                 <button
                     onClick={() => handleGacha('FREE')}
                     disabled={gachaLoading}
                     style={{
-                        padding: '1.5rem 3rem',
-                        fontSize: '1.4rem',
+                        flex: 1,
+                        padding: '1.2rem 1rem',
+                        fontSize: 'clamp(0.9rem, 4vw, 1.3rem)',
                         fontWeight: 800,
                         backgroundColor: '#e9c46a',
                         color: '#000',
@@ -117,8 +146,9 @@ const GachaTab = ({ activeTab, banners, bannerNames, currentBanner, setCurrentBa
                     onClick={() => handleGacha('PAID')}
                     disabled={gachaLoading}
                     style={{
-                        padding: '1.5rem 4rem',
-                        fontSize: '1.4rem',
+                        flex: 1,
+                        padding: '1.2rem 1rem',
+                        fontSize: 'clamp(0.9rem, 4vw, 1.3rem)',
                         fontWeight: 800,
                         backgroundColor: '#e9c46a',
                         color: '#000',
@@ -294,33 +324,67 @@ export default function CollectionPage() {
             backgroundAttachment: 'fixed',
             padding: '10rem 5% 5rem'
         }}>
-            <div style={{ maxWidth: '1200px', margin: '0 auto 2rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                <button onClick={() => setActiveTab('gacha')} style={{ padding: '1.5rem', fontSize: '1.4rem', fontWeight: 800, backgroundColor: activeTab === 'gacha' ? '#e9c46a' : 'transparent', color: activeTab === 'gacha' ? '#000' : '#888', border: '3px solid #e9c46a', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.3s ease', textTransform: 'uppercase', boxShadow: activeTab === 'gacha' ? '0 0 30px rgba(233,196,106,0.3)' : 'none' }}>NGUYỆN ƯỚC BIỂN CẢ</button>
-                <button onClick={() => setActiveTab('collection')} style={{ padding: '1.5rem', fontSize: '1.4rem', fontWeight: 800, backgroundColor: activeTab === 'collection' ? '#e9c46a' : 'transparent', color: activeTab === 'collection' ? '#000' : '#888', border: '3px solid #e9c46a', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.3s ease', textTransform: 'uppercase', boxShadow: activeTab === 'collection' ? '0 0 30px rgba(233,196,106,0.3)' : 'none' }}>Bộ Sưu Tập</button>
+            <div style={{ maxWidth: '1200px', margin: '0 auto 2.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <button
+                    onClick={() => setActiveTab('gacha')}
+                    style={{
+                        padding: 'clamp(1rem, 3vw, 1.5rem)',
+                        fontSize: 'clamp(0.85rem, 3vw, 1.2rem)',
+                        fontWeight: 800,
+                        backgroundColor: activeTab === 'gacha' ? '#e9c46a' : 'transparent',
+                        color: activeTab === 'gacha' ? '#000' : '#888',
+                        border: '3px solid #e9c46a',
+                        borderRadius: '16px',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        textTransform: 'uppercase',
+                        boxShadow: activeTab === 'gacha' ? '0 0 30px rgba(233,196,106,0.3)' : 'none'
+                    }}
+                >
+                    NGUYỆN ƯỚC BIỂN CẢ
+                </button>
+                <button
+                    onClick={() => setActiveTab('collection')}
+                    style={{
+                        padding: 'clamp(1rem, 3vw, 1.5rem)',
+                        fontSize: 'clamp(0.85rem, 3vw, 1.2rem)',
+                        fontWeight: 800,
+                        backgroundColor: activeTab === 'collection' ? '#e9c46a' : 'transparent',
+                        color: activeTab === 'collection' ? '#000' : '#888',
+                        border: '3px solid #e9c46a',
+                        borderRadius: '16px',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        textTransform: 'uppercase',
+                        boxShadow: activeTab === 'collection' ? '0 0 30px rgba(233,196,106,0.3)' : 'none'
+                    }}
+                >
+                    BỘ SƯU TẬP
+                </button>
             </div>
 
             {activeTab === 'collection' ? (
-                <div>
-                    <div className="glass" style={{ maxWidth: '1200px', margin: '0 auto 3rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', padding: '1.5rem', borderRadius: '20px' }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                    <div className="glass" style={{ margin: '0 auto 3rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', padding: '1.5rem', borderRadius: '20px' }}>
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                            <span style={{ color: '#fff', fontSize: '0.9rem', fontWeight: 600, textTransform: 'uppercase' }}>Sắp xếp theo:</span>
+                            <span style={{ color: '#fff', fontSize: '0.9rem', fontWeight: 600, textTransform: 'uppercase' }}>Sắp xếp:</span>
                             <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ backgroundColor: '#111', color: '#fff', border: '1px solid #333', padding: '8px 15px', borderRadius: '6px', cursor: 'pointer' }}>
                                 <option value="newest">Mới nhất</option>
                                 <option value="oldest">Cũ nhất</option>
-                                <option value="price-asc">Giá từ thấp đến cao</option>
-                                <option value="price-desc">Giá từ cao đến thấp</option>
+                                <option value="price-asc">Giá thấp</option>
+                                <option value="price-desc">Giá cao</option>
                             </select>
                         </div>
                         <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
                             <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#666' }} size={18} />
-                            <input type="text" placeholder="Tìm kiếm theo ID, Rank..." value={search} onChange={(e) => setSearch(e.target.value)} className="glass-input" style={{ width: '100%', padding: '10px 15px 10px 40px', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', outline: 'none' }} />
+                            <input type="text" placeholder="Tìm ID, Rank..." value={search} onChange={(e) => setSearch(e.target.value)} className="glass-input" style={{ width: '100%', padding: '10px 15px 10px 40px', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', outline: 'none' }} />
                         </div>
                     </div>
 
                     {loading ? (
                         <div style={{ textAlign: 'center', padding: '5rem', color: 'var(--primary)' }}>Đang tải danh sách...</div>
                     ) : paginatedAccounts.length > 0 ? (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '2rem' }}>
                             {paginatedAccounts.map(acc => (
                                 <div key={acc.id} className="glass-card img-optimize" style={{ overflow: 'hidden', padding: 0, cursor: 'pointer' }} onClick={() => router.push(`/acc/${acc.gameId}`)}>
                                     <div style={{ height: '180px', backgroundColor: '#000', position: 'relative' }}>
@@ -454,6 +518,14 @@ export default function CollectionPage() {
                     </div>
                 </div>
             )}
+
+            <style jsx global>{`
+                @media (max-width: 768px) {
+                    .hidden-mobile {
+                        display: none !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 }
