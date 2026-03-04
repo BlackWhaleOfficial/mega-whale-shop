@@ -59,7 +59,7 @@ const GachaTab = ({ activeTab, banners, currentBanner, setCurrentBanner, setShow
                         return (
                             <div key={src} style={style} onClick={() => isActive ? setShowBannerInfo(true) : setCurrentBanner(index)}>
                                 <div style={{ position: 'relative', width: '100%', height: '100%', aspectRatio: '21/9' }}>
-                                    <Image src={src} fill style={{ objectFit: 'cover' }} alt="Gacha Banner" priority={isActive} unoptimized />
+                                    <Image src={src} fill style={{ objectFit: 'cover' }} alt="Gacha Banner" priority={isActive} />
                                 </div>
                             </div>
                         );
@@ -145,11 +145,7 @@ export default function CollectionPage() {
     const [gachaType, setGachaType] = useState<'FREE' | 'PAID'>('FREE');
     const [gachaLoading, setGachaLoading] = useState(false);
 
-    const banners = [
-        'https://drive.google.com/uc?export=view&id=12JVrwNpcT8MEDdw3ftuKdxt9kp3YYVMf',
-        'https://drive.google.com/uc?export=view&id=1rEqbvpHmzDehkK0o2PRHvDYUWda7IM-2',
-        'https://drive.google.com/uc?export=view&id=1dFsjMj38r1X5H5HKEFXRutUj0uNPVxAg'
-    ];
+    const banners = ['/banner1.png', '/banner2.png', '/banner3.png'];
     const bannerNames = ['Nhật Nguyệt Thánh Linh', 'Hỗn Độn Thần Ma', 'Mộng Giới Thần Chủ'];
     const [currentBanner, setCurrentBanner] = useState(0);
     const [showBannerInfo, setShowBannerInfo] = useState(false);
