@@ -25,6 +25,7 @@ export default function AccountDetailPage({ params }: { params: { id: string } }
     const [acc, setAcc] = useState<GameAccount | null>(null);
     const [loading, setLoading] = useState(true);
     const [mainLoadingError, setMainLoadingError] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         fetch(`/api/accounts/${params.id}`)
@@ -76,8 +77,40 @@ export default function AccountDetailPage({ params }: { params: { id: string } }
 
     if (loading) {
         return (
-            <div style={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a' }}>
-                <div style={{ color: 'var(--primary)', fontSize: '1.2rem' }}>Đang tải thông tin...</div>
+            <div style={{
+                minHeight: '100vh',
+                backgroundImage: "linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('/collection-bg.png')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundAttachment: 'fixed',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+            }}>
+                <div className="glass" style={{
+                    padding: '3rem 5rem',
+                    borderRadius: '20px',
+                    border: '1px solid rgba(0,255,100,0.2)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '1rem'
+                }}>
+                    <div style={{
+                        width: '50px',
+                        height: '50px',
+                        border: '4px solid rgba(0,255,100,0.2)',
+                        borderTopColor: 'var(--primary)',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite'
+                    }} className="spinner" />
+                    <div style={{ color: 'var(--primary)', fontSize: '1.2rem', fontWeight: 600, letterSpacing: '1px' }}>
+                        ĐANG TẢI TRANG...
+                    </div>
+                </div>
+                <style jsx>{`
+                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                `}</style>
             </div>
         );
     }
@@ -130,7 +163,13 @@ export default function AccountDetailPage({ params }: { params: { id: string } }
                             <img src={mainImageUrl} style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', border: '2px solid transparent', borderRadius: '8px', cursor: 'pointer', opacity: 0.5 }} alt="Thumb 3" />
                         </div>
                         <div style={{ flex: 1, position: 'relative' }}>
-                            <img src={mainImageUrl} style={{ width: '100%', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }} alt="Main Acc" />
+                            <img
+                                src={mainImageUrl}
+                                style={{ width: '100%', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}
+                                alt="Main Acc"
+                                onClick={() => setIsModalOpen(true)}
+                                title="Bấm để phóng to"
+                            />
                         </div>
                     </div>
 
@@ -213,8 +252,8 @@ export default function AccountDetailPage({ params }: { params: { id: string } }
                             </span>
                             {discountPercent > 0 && (
                                 <span style={{
-                                    backgroundColor: 'rgba(0,255,100,0.2)',
-                                    color: 'var(--primary)',
+                                    backgroundColor: 'rgba(255,50,50,0.2)',
+                                    color: '#ff4444',
                                     padding: '4px 10px',
                                     borderRadius: '8px',
                                     fontSize: '1rem',
@@ -343,6 +382,34 @@ export default function AccountDetailPage({ params }: { params: { id: string } }
                     }
                 }
             `}</style>
+            {/* Image Zoom Modal */}
+            {isModalOpen && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0, left: 0, right: 0, bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.9)',
+                        zIndex: 9999,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        padding: '2rem'
+                    }}
+                    onClick={() => setIsModalOpen(false)}
+                >
+                    <img
+                        src={mainImageUrl}
+                        style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px', border: '2px solid var(--primary)', cursor: 'zoom-out' }}
+                        alt="Zoomed Acc"
+                    />
+                    <button
+                        style={{ position: 'absolute', top: '20px', right: '30px', background: 'transparent', border: 'none', color: '#fff', fontSize: '3rem', cursor: 'pointer', opacity: 0.7 }}
+                        onClick={() => setIsModalOpen(false)}
+                    >
+                        &times;
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
