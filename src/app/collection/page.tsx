@@ -258,6 +258,7 @@ export default function CollectionPage() {
     const bannerNames = ['Nhật Nguyệt Thánh Linh', 'Hỗn Độn Thần Ma', 'Mộng Giới Thần Chủ'];
     const [currentBanner, setCurrentBanner] = useState(0);
     const [showBannerInfo, setShowBannerInfo] = useState(false);
+    const [popupInfo, setPopupInfo] = useState<{ message: string, onOk?: () => void } | null>(null);
 
     const [rollCounts, setRollCounts] = useState<any[]>([]);
 
@@ -303,8 +304,7 @@ export default function CollectionPage() {
             }
 
             if (!res.ok) {
-                alert(data.error || 'Có lỗi xảy ra khi gacha!');
-                setGachaLoading(false);
+                setPopupInfo({ message: data.error || 'Có lỗi xảy ra khi gacha!', onOk: () => setGachaLoading(false) });
                 return;
             }
 
@@ -332,10 +332,10 @@ export default function CollectionPage() {
             } else {
                 setGachaResult(data.account);
             }
+            setGachaLoading(false);
         } catch (e) {
-            alert('Lỗi kết nối gacha!');
+            setPopupInfo({ message: 'Lỗi kết nối gacha!', onOk: () => setGachaLoading(false) });
         }
-        setGachaLoading(false);
     };
 
     const handleGachaAction = async (action: 'CLAIM' | 'SELL', accId?: string) => {
@@ -352,37 +352,44 @@ export default function CollectionPage() {
             const data = await res.json();
 
             if (!res.ok) {
-                alert(data.error || 'Có lỗi xảy ra!');
+                setPopupInfo({ message: data.error || 'Có lỗi xảy ra!' });
                 return;
             }
 
             if (gachaResults.length > 1) {
-                // If multi pull, just mark as processed and alert
+                const onOkCallback = () => {
+                    setGachaResults(prev => {
+                        const next = prev.filter(a => a.id !== idToProcess);
+                        if (next.length <= 1) {
+                            setIsGachaPlaying(false);
+                            setVideoEnded(false);
+                            window.location.reload();
+                        }
+                        return next;
+                    });
+                };
+
                 if (action === 'SELL') {
-                    alert(`Đã bán thành công. Bạn được hoàn ${data.refund} WCash!`);
+                    setPopupInfo({ message: `Đã bán thành công. Bạn được hoàn ${data.refund} WCash!`, onOk: onOkCallback });
                 } else {
-                    alert('Đã nhận tài khoản thành công!');
-                }
-                // Optionally remove from list
-                setGachaResults(prev => prev.filter(a => a.id !== idToProcess));
-                if (gachaResults.length <= 1) {
-                    setIsGachaPlaying(false);
-                    setVideoEnded(false);
-                    window.location.reload();
+                    setPopupInfo({ message: 'Đã nhận tài khoản thành công!', onOk: onOkCallback });
                 }
             } else {
+                const onOkCallback = () => {
+                    setIsGachaPlaying(false);
+                    setVideoEnded(false);
+                    setGachaResult(null);
+                    window.location.reload();
+                };
+
                 if (action === 'SELL') {
-                    alert(`Đã bán thành công. Bạn được hoàn ${data.refund} WCash!`);
+                    setPopupInfo({ message: `Đã bán thành công. Bạn được hoàn ${data.refund} WCash!`, onOk: onOkCallback });
                 } else {
-                    alert('Tài khoản Gacha đã được cập nhật vào trạng thái giao dịch của bạn thành công!');
+                    setPopupInfo({ message: 'Tài khoản Gacha đã được cập nhật vào trạng thái giao dịch của bạn thành công!', onOk: onOkCallback });
                 }
-                setIsGachaPlaying(false);
-                setVideoEnded(false);
-                setGachaResult(null);
-                window.location.reload();
             }
         } catch (e) {
-            alert('Lỗi kết nối!');
+            setPopupInfo({ message: 'Lỗi kết nối!' });
         }
     };
 
@@ -659,6 +666,48 @@ export default function CollectionPage() {
                     </motion.div>
                 </div>
             )}
+
+            <AnimatePresence>
+                {popupInfo && (
+                    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999999, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)' }}>
+                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} style={{
+                            backgroundColor: '#111',
+                            border: '1px solid rgba(233,196,106,0.5)',
+                            borderRadius: '24px',
+                            padding: '2.5rem',
+                            maxWidth: '400px',
+                            width: '90%',
+                            boxShadow: '0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(233,196,106,0.1)',
+                            textAlign: 'center',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '1.5rem'
+                        }}>
+                            <div style={{ color: '#fff', fontSize: '1.2rem', lineHeight: '1.5', fontWeight: 600 }}>
+                                {popupInfo.message}
+                            </div>
+                            <button onClick={() => {
+                                if (popupInfo.onOk) popupInfo.onOk();
+                                setPopupInfo(null);
+                            }} style={{
+                                marginTop: '1rem',
+                                padding: '12px 30px',
+                                backgroundColor: '#e9c46a',
+                                color: '#000',
+                                border: 'none',
+                                borderRadius: '12px',
+                                fontWeight: 800,
+                                fontSize: '1rem',
+                                cursor: 'pointer',
+                                textTransform: 'uppercase',
+                                alignSelf: 'center'
+                            }}>
+                                ĐỒNG Ý
+                            </button>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
