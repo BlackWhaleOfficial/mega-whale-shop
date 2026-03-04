@@ -38,15 +38,17 @@ export async function POST(request: Request) {
                 const currentRollNum = baseRoll + i;
                 let targetTag = 'REG';
 
+                const sssTag = `REG SSS banner ${bannerIndex + 1}`;
+
                 // Pity check: 150 rolls (Sao Hộ Mệnh)
                 if (currentRollNum % 150 === 0) {
-                    targetTag = 'REG có sẵn skin SSS';
+                    targetTag = sssTag;
                 } else {
                     const r = Math.random() * 100;
                     if (r < 0.0000001) {
                         targetTag = 'Full Skin';
                     } else if (r < 0.0000001 + 0.0001) {
-                        targetTag = 'REG có sẵn skin SSS';
+                        targetTag = sssTag;
                     } else {
                         targetTag = 'REG';
                     }

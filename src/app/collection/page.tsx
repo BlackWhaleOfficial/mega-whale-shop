@@ -430,7 +430,7 @@ export default function CollectionPage() {
     const allFilteredAccounts = accounts
         .filter(acc => {
             // Hide REG and REG SSS from collection list
-            if (acc.bannerTag === 'REG' || acc.bannerTag === 'REG có sẵn skin SSS') return false;
+            if (acc.bannerTag === 'REG' || acc.bannerTag === 'REG có sẵn skin SSS' || acc.bannerTag?.startsWith('REG SSS banner')) return false;
 
             return acc.gameId.toLowerCase().includes(search.toLowerCase()) ||
                 acc.rank.toLowerCase().includes(search.toLowerCase());

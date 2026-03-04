@@ -439,7 +439,7 @@ export default function AdminDashboard() {
         );
     });
     const filteredGalleryAccounts = gameAccounts.filter(acc => {
-        const isReg = acc.bannerTag === 'REG' || acc.bannerTag === 'REG có sẵn skin SSS';
+        const isReg = acc.bannerTag === 'REG' || acc.bannerTag === 'REG có sẵn skin SSS' || acc.bannerTag?.startsWith('REG SSS banner');
         if (galleryTab === 'REG') {
             if (!isReg) return false;
         } else {
@@ -1187,7 +1187,9 @@ export default function AdminDashboard() {
                                         <select className="glass-input" value={newAccountData.bannerTag} onChange={e => setNewAccountData({ ...newAccountData, bannerTag: e.target.value })}>
                                             <option value="Auto">Auto (Dựa trên giá)</option>
                                             <option value="Full Skin">Full Skin</option>
-                                            <option value="REG có sẵn skin SSS">REG có sẵn skin SSS</option>
+                                            <option value="REG SSS banner 1">REG SSS banner 1</option>
+                                            <option value="REG SSS banner 2">REG SSS banner 2</option>
+                                            <option value="REG SSS banner 3">REG SSS banner 3</option>
                                             <option value="VIP">VIP</option>
                                             <option value="Nor">Nor</option>
                                             <option value="REG">REG</option>
