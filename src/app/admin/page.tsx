@@ -72,6 +72,7 @@ export default function AdminDashboard() {
                         const base64Data = webpDataUrl.split(',')[1];
                         const formData = new FormData();
                         formData.append('image', base64Data);
+                        formData.append('type', 'base64');
                         try {
                             const res = await fetch('https://api.imgur.com/3/image', {
                                 method: 'POST',
@@ -82,9 +83,11 @@ export default function AdminDashboard() {
                             if (data.success) {
                                 setNewAccountData(prev => ({ ...prev, image: data.data.link }));
                             } else {
-                                alert('Upload ảnh thất bại!');
+                                console.error('Imgur API Error:', data);
+                                alert(`Upload ảnh thất bại! ${data.data?.error?.message || data.data?.error || ''}`);
                             }
                         } catch (err) {
+                            console.error('Imgur Network Error:', err);
                             alert('Lỗi kết nối API upload ảnh.');
                         }
                     }
