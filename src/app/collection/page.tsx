@@ -358,39 +358,60 @@ export default function CollectionPage() {
             {/* TAB: GACHA MODULE */}
             {activeTab === 'gacha' && (
                 <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                    <div style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        height: '400px',
-                        gap: '2rem',
-                        overflow: 'hidden',
-                        position: 'relative'
-                    }}>
-                        {banners.map((src, index) => {
-                            const isActive = index === currentBanner;
-                            let style: any = {
-                                position: 'absolute',
-                                transition: 'all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)',
-                                borderRadius: '24px',
-                                overflow: 'hidden',
-                                width: isActive ? '65%' : '40%',
-                                zIndex: isActive ? 10 : 1,
-                                opacity: isActive ? 1 : 0.3,
-                                filter: isActive ? 'none' : 'blur(4px)',
-                                transform: isActive
-                                    ? 'translateX(0) scale(1)'
-                                    : (index === (currentBanner + 1) % banners.length ? 'translateX(70%) scale(0.85)' : 'translateX(-70%) scale(0.85)'),
-                                cursor: isActive ? 'default' : 'pointer',
-                                boxShadow: isActive ? '0 10px 40px rgba(0,0,0,0.8)' : 'none'
-                            };
+                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            height: 'clamp(250px, 35vw, 450px)',
+                            width: '100%',
+                            overflow: 'hidden',
+                            position: 'relative'
+                        }}>
+                            {banners.map((src, index) => {
+                                const isActive = index === currentBanner;
+                                const isNext = index === (currentBanner + 1) % banners.length;
 
-                            return (
-                                <div key={src} style={style} onClick={() => !isActive && setCurrentBanner(index)}>
-                                    <img src={src} style={{ width: '100%', display: 'block', aspectRatio: '21/9', objectFit: 'cover' }} alt="Gacha Banner" />
-                                </div>
-                            );
-                        })}
+                                let style: any = {
+                                    position: 'absolute',
+                                    transition: 'all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                                    borderRadius: '24px',
+                                    overflow: 'hidden',
+                                    width: isActive ? '75%' : '55%',
+                                    zIndex: isActive ? 10 : 1,
+                                    opacity: isActive ? 1 : 0.4,
+                                    filter: isActive ? 'none' : 'blur(3px)',
+                                    transform: isActive
+                                        ? 'translateX(0) scale(1)'
+                                        : (isNext ? 'translateX(90%) scale(0.85)' : 'translateX(-90%) scale(0.85)'),
+                                    cursor: isActive ? 'default' : 'pointer',
+                                    boxShadow: isActive ? '0 10px 40px rgba(0,0,0,0.8)' : 'none'
+                                };
+
+                                return (
+                                    <div key={src} style={style} onClick={() => !isActive && setCurrentBanner(index)}>
+                                        <img src={src} style={{ width: '100%', display: 'block', aspectRatio: '21/9', objectFit: 'cover' }} alt="Gacha Banner" />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        {/* Pagination Indicator */}
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', zIndex: 11 }}>
+                            {banners.map((_, index) => (
+                                <div
+                                    key={index}
+                                    onClick={() => setCurrentBanner(index)}
+                                    style={{
+                                        width: index === currentBanner ? '30px' : '10px',
+                                        height: '10px',
+                                        borderRadius: '5px',
+                                        backgroundColor: index === currentBanner ? '#00ff88' : 'rgba(255, 255, 255, 0.3)',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.3s'
+                                    }}
+                                />
+                            ))}
+                        </div>
                     </div>
 
                     <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', flexWrap: 'wrap' }}>
