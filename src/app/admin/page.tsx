@@ -430,10 +430,10 @@ export default function AdminDashboard() {
     });
 
     return (
-        <div style={{ padding: '8rem 5%', minHeight: '100vh', display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+        <div style={{ padding: '8rem 5%', minHeight: '100vh', display: 'flex', gap: '2rem', flexWrap: 'wrap', backgroundColor: '#000' }}>
 
             {/* Sidebar */}
-            <div className="glass" style={{ width: '250px', flexGrow: 1, maxWidth: '300px', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', height: 'fit-content', borderRadius: '24px' }}>
+            <div className="admin-panel-bg" style={{ width: '250px', flexGrow: 1, maxWidth: '300px', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '10px', height: 'fit-content', borderRadius: '16px' }}>
                 <h2 style={{ color: 'var(--primary)', marginBottom: '2rem', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '1.2rem' }}>Quản Trị</h2>
 
                 <button
@@ -487,7 +487,8 @@ export default function AdminDashboard() {
 
                 <button
                     onClick={() => setActiveTab('posts')}
-                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'posts' ? 'rgba(255,255,255,0.05)' : 'transparent', color: activeTab === 'posts' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'posts' ? '2px solid var(--primary)' : '2px solid transparent', border: 'none', cursor: 'pointer', transition: '0.3s' }}
+                    className="admin-sidebar-item"
+                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'posts' ? '#111' : 'transparent', color: activeTab === 'posts' ? 'var(--primary)' : '#888', textTransform: 'uppercase', fontSize: '0.85rem', letterSpacing: '1px', borderLeft: activeTab === 'posts' ? '2px solid var(--primary)' : '2px solid transparent', border: 'none', cursor: 'pointer' }}
                 >
                     Post
                 </button>
@@ -495,7 +496,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Content */}
-            <div className="glass" style={{ flex: '1 1 600px', minWidth: 0, padding: 'clamp(1rem, 5vw, 3rem)', borderRadius: '24px', overflowX: 'auto' }}>
+            <div className="admin-panel-bg" style={{ flex: '1 1 600px', minWidth: 0, padding: 'clamp(1rem, 5vw, 3rem)', borderRadius: '16px', overflowX: 'auto' }}>
 
                 {activeTab === 'overview' && (
                     <div>
@@ -503,7 +504,7 @@ export default function AdminDashboard() {
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
 
                             {/* Tổng Doanh Thu */}
-                            <div className="glass-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                            <div className="admin-card-solid" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderRadius: '12px' }}>
                                 <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Tổng Doanh Thu</p>
                                 <h4 style={{ fontSize: '1.75rem', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={new Intl.NumberFormat('vi-VN').format(allOrders.filter(o => o.status === 'DONE').reduce((acc, o) => acc + o.totalAmount, 0)) + '₫'}>
                                     {new Intl.NumberFormat('vi-VN').format(allOrders.filter(o => o.status === 'DONE').reduce((acc, o) => acc + o.totalAmount, 0))}₫
@@ -512,7 +513,7 @@ export default function AdminDashboard() {
                             </div>
 
                             {/* Tổng Lợi Nhuận */}
-                            <div className="glass-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                            <div className="admin-card-solid" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderRadius: '12px' }}>
                                 <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Tổng Lợi Nhuận</p>
                                 <h4 style={{ fontSize: '1.75rem', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={new Intl.NumberFormat('vi-VN').format(inventoryCards.filter(c => c.status === 'DONE').reduce((acc, c) => acc + ((c.price || 0) - (c.cost || 0)), 0)) + '₫'}>
                                     {new Intl.NumberFormat('vi-VN').format(inventoryCards.filter(c => c.status === 'DONE').reduce((acc, c) => acc + ((c.price || 0) - (c.cost || 0)), 0))}₫
@@ -521,7 +522,7 @@ export default function AdminDashboard() {
                             </div>
 
                             {/* Supabase DB Size — LIVE */}
-                            <div className="glass-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', minWidth: 0, border: systemStats?.supabase ? '1px solid rgba(68, 214, 44, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)' }}>
+                            <div className="admin-card-solid" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', minWidth: 0, border: systemStats?.supabase ? '1px solid rgba(68, 214, 44, 0.3)' : '1px solid #222', borderRadius: '12px' }}>
                                 <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Database (Supabase)</p>
                                 {systemStatsLoading ? (
                                     <h4 style={{ fontSize: '1.2rem', color: '#555' }}>Đang tải...</h4>
@@ -548,7 +549,7 @@ export default function AdminDashboard() {
                             </div>
 
                             {/* Vercel — Deployment & Usage */}
-                            <div className="glass-card" style={{ padding: '2rem', border: systemStats?.vercel?.hasToken ? '1px solid rgba(68, 214, 44, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)' }}>
+                            <div className="admin-card-solid" style={{ padding: '2rem', border: systemStats?.vercel?.hasToken ? '1px solid rgba(68, 214, 44, 0.3)' : '1px solid #222', borderRadius: '12px' }}>
                                 <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Vercel Deploy</p>
                                 {systemStatsLoading ? (
                                     <h4 style={{ fontSize: '1.5rem', color: '#555' }}>Đang tải...</h4>
@@ -580,14 +581,14 @@ export default function AdminDashboard() {
                             </div>
 
                             {/* Kho Thẻ Còn */}
-                            <div className="glass-card" style={{ padding: '2rem', minWidth: 0 }}>
+                            <div className="admin-card-solid" style={{ padding: '2rem', minWidth: 0, borderRadius: '12px' }}>
                                 <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Kho Thẻ Còn</p>
                                 <h4 style={{ fontSize: '1.75rem', color: '#fff' }}>{systemStats?.app?.inventoryCount ?? '...'}</h4>
                                 <p style={{ color: '#aaa', fontSize: '0.8rem', marginTop: '10px' }}>Thẻ Garena chưa bán</p>
                             </div>
 
                             {/* Đơn Chờ Duyệt */}
-                            <div className="glass-card" style={{ padding: '2rem', minWidth: 0, border: (systemStats?.app?.pendingCount ?? 0) > 0 ? '1px solid rgba(255, 77, 79, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)' }}>
+                            <div className="admin-card-solid" style={{ padding: '2rem', minWidth: 0, border: (systemStats?.app?.pendingCount ?? 0) > 0 ? '1px solid rgba(255, 77, 79, 0.3)' : '1px solid #222', borderRadius: '12px' }}>
                                 <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Đơn Chờ Duyệt</p>
                                 <h4 style={{ fontSize: '1.75rem', color: (systemStats?.app?.pendingCount ?? 0) > 0 ? '#ff4d4f' : '#fff' }}>{systemStats?.app?.pendingCount ?? '...'}</h4>
                                 <p style={{ color: '#aaa', fontSize: '0.8rem', marginTop: '10px' }}>Cần xử lý</p>
@@ -1074,7 +1075,7 @@ export default function AdminDashboard() {
                         </div>
 
                         {showAddAccountForm && (
-                            <div className="glass" style={{ padding: '2.5rem', borderRadius: '24px', marginBottom: '2.5rem', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div className="admin-card-solid" style={{ padding: '2.5rem', borderRadius: '16px', marginBottom: '2.5rem', border: '1px solid #222', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                 <h4 style={{ color: 'var(--primary)', fontSize: '1.5rem', marginBottom: '1rem', fontWeight: 700 }}>Thông Tin Tài Khoản</h4>
 
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
@@ -1148,13 +1149,13 @@ export default function AdminDashboard() {
                                     </div>
                                     <div>
                                         <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Giá gốc (Gạch bỏ)</label>
-                                        <input type="number" className="glass-input" value={newAccountData.originalPrice} onChange={e => setNewAccountData({ ...newAccountData, originalPrice: e.target.value })} />
+                                        <input type="number" style={{ backgroundColor: '#111', border: '1px solid #333', color: '#fff', padding: '10px' }} value={newAccountData.originalPrice} onChange={e => setNewAccountData({ ...newAccountData, originalPrice: e.target.value })} />
                                     </div>
                                 </div>
 
                                 <div>
                                     <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Ghi chú / Mô tả</label>
-                                    <textarea className="glass-input" value={newAccountData.notes} onChange={e => setNewAccountData({ ...newAccountData, notes: e.target.value })} style={{ minHeight: '100px', resize: 'vertical' }} />
+                                    <textarea style={{ backgroundColor: '#111', border: '1px solid #333', color: '#fff', padding: '10px', width: '100%', minHeight: '100px', resize: 'vertical' }} value={newAccountData.notes} onChange={e => setNewAccountData({ ...newAccountData, notes: e.target.value })} />
                                 </div>
 
                                 <button onClick={handleAddAccount} className="btn-primary" style={{ padding: '15px 35px', alignSelf: 'flex-start', borderRadius: '12px', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
