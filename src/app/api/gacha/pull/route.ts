@@ -117,8 +117,7 @@ export async function POST(request: Request) {
                         userId,
                         amount: cost,
                         type: 'GACHA_PULL',
-                        status: 'DONE',
-                        notes: `Gacha ${pullCount}x pull on ${bannerName}`
+                        status: 'DONE'
                     }
                 }),
                 // Set accounts to pending
