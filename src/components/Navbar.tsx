@@ -248,83 +248,139 @@ export default function Navbar() {
                 <div style={{
                     position: 'fixed',
                     top: 0,
-                    right: 0,
-                    width: '100%',
+                    left: 0,
+                    width: '100vw',
                     height: '100vh',
-                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    backgroundColor: 'rgba(0,0,0,0.6)',
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
                     zIndex: 200,
                     display: 'flex',
                     justifyContent: 'flex-end'
-                }}>
+                }} onClick={() => setMobileMenuOpen(false)}>
                     <div style={{
-                        width: '280px',
-                        height: '100%',
-                        backgroundColor: '#111',
-                        borderLeft: '1px solid #333',
+                        width: '300px',
+                        height: '100vh',
+                        background: 'rgba(10, 10, 10, 0.95)',
+                        borderLeft: '1px solid rgba(255, 255, 255, 0.1)',
                         display: 'flex',
                         flexDirection: 'column',
-                        padding: '1rem',
-                        animation: 'slideIn 0.3s forwards'
-                    }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '2rem' }}>
-                            <button onClick={() => setMobileMenuOpen(false)} style={{ color: '#fff', cursor: 'pointer' }}>
-                                <X size={24} />
+                        padding: '2rem 1.5rem',
+                        position: 'relative',
+                        boxShadow: '-10px 0 50px rgba(0,0,0,0.5)',
+                        animation: 'slideInRight 0.3s ease-out'
+                    }} onClick={e => e.stopPropagation()}>
+                        <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '2.5rem' }}>
+                            <button
+                                onClick={() => setMobileMenuOpen(false)}
+                                style={{
+                                    color: '#fff',
+                                    cursor: 'pointer',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    width: '40px',
+                                    height: '40px',
+                                    borderRadius: '12px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <X size={20} />
                             </button>
                         </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', fontWeight: 600, fontSize: '1.1rem', textTransform: 'uppercase' }}>
-                            <Link href="/nap-game" onClick={() => setMobileMenuOpen(false)} style={{ color: pathname === '/nap-game' ? 'var(--primary)' : '#fff', textDecoration: 'none' }}>
-                                Nạp Quân Huy
-                            </Link>
-                            <Link href="/collection" onClick={() => setMobileMenuOpen(false)} style={{ color: pathname === '/collection' ? 'var(--primary)' : '#fff', textDecoration: 'none' }}>
-                                Bộ Sưu Tập
-                            </Link>
-                            <Link href="/membership" onClick={() => setMobileMenuOpen(false)} style={{ color: pathname === '/membership' ? 'var(--primary)' : '#fff', textDecoration: 'none' }}>
-                                Membership
-                            </Link>
-                            <Link href="/history" onClick={() => setMobileMenuOpen(false)} style={{ color: pathname === '/history' ? 'var(--primary)' : '#fff', textDecoration: 'none' }}>
-                                Lịch Sử Mua
-                            </Link>
-                            <a href="https://www.facebook.com/MegaWhaleAOV" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} style={{ color: '#fff', textDecoration: 'none' }}>
-                                Hỗ Trợ
-                            </a>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <div style={{ color: '#555', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '10px' }}>Menu Điều Hướng</div>
+
+                            {[
+                                { href: '/nap-game', label: 'Nạp Quân Huy' },
+                                { href: '/collection', label: 'Bộ Sưu Tập' },
+                                { href: '/membership', label: 'Membership' },
+                                { href: '/history', label: 'Lịch Sử Mua' },
+                                { href: 'https://www.facebook.com/MegaWhaleAOV', label: 'Hỗ Trợ', isExt: true }
+                            ].map((item) => (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    target={item.isExt ? '_blank' : undefined}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    style={{
+                                        color: pathname === item.href ? 'var(--primary)' : '#fff',
+                                        textDecoration: 'none',
+                                        fontSize: '1.2rem',
+                                        fontWeight: 700,
+                                        padding: '12px 15px',
+                                        borderRadius: '12px',
+                                        background: pathname === item.href ? 'rgba(68,214,44,0.1)' : 'transparent',
+                                        transition: 'all 0.3s'
+                                    }}
+                                >
+                                    {item.label}
+                                </Link>
+                            ))}
                         </div>
 
-                        <div style={{ height: '1px', backgroundColor: '#333', margin: '2rem 0' }}></div>
+                        <div style={{ height: '1px', backgroundColor: 'rgba(255,255,255,0.05)', margin: '2rem 0' }}></div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', color: '#aaa', fontSize: '1rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             {user ? (
                                 <>
-                                    <div style={{ color: '#fff', fontWeight: 600, marginBottom: '0.5rem' }}>Chào, {user.username || 'User'}</div>
-                                    <Link href="/profile" onClick={() => setMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: '#aaa' }}>
+                                    <div style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.2rem', marginBottom: '0.5rem', padding: '0 15px' }}>Hi, {user.username || 'User'}!</div>
+                                    <Link href="/profile" onClick={() => setMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none', color: '#888', padding: '10px 15px', fontSize: '1rem', fontWeight: 600 }}>
                                         <Info size={18} /> Thông tin cá nhân
                                     </Link>
-                                    <Link href="/wallet" onClick={() => setMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: '#aaa' }}>
-                                        <Wallet size={18} /> Ví ({user.whaleCash} WC)
+                                    <Link href="/wallet" onClick={() => setMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none', color: '#888', padding: '10px 15px', fontSize: '1rem', fontWeight: 600 }}>
+                                        <Wallet size={18} /> Ví của tôi ({user.whaleCash} WC)
                                     </Link>
                                     {user.isAdmin && (
-                                        <Link href="/admin" onClick={() => setMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: '#aaa' }}>
-                                            <Settings size={18} /> Quản lí Web
+                                        <Link href="/admin" onClick={() => setMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none', color: '#888', padding: '10px 15px', fontSize: '1rem', fontWeight: 600 }}>
+                                            <Settings size={18} /> Quản lí hệ thống
                                         </Link>
                                     )}
-                                    <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '10px', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', color: '#ff4444', marginTop: '1rem' }}>
-                                        <LogOut size={18} /> Đăng xuất
+                                    <button
+                                        onClick={handleLogout}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '12px',
+                                            textAlign: 'left',
+                                            background: 'rgba(255,77,79,0.1)',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            color: '#ff4d4f',
+                                            marginTop: '1.5rem',
+                                            padding: '12px 20px',
+                                            borderRadius: '12px',
+                                            fontWeight: 700,
+                                            fontSize: '1rem'
+                                        }}
+                                    >
+                                        <LogOut size={18} /> Đăng xuất tài khoản
                                     </button>
                                 </>
                             ) : (
-                                <>
-                                    <Link href="/login" onClick={() => setMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: '#fff' }}>
-                                        <User size={18} /> Đăng nhập
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+                                    <Link href="/login" onClick={() => setMobileMenuOpen(false)} style={{ background: 'var(--primary)', color: '#000', textAlign: 'center', padding: '14px', borderRadius: '12px', textDecoration: 'none', fontWeight: 800, fontSize: '1.1rem' }}>
+                                        Đăng nhập
                                     </Link>
-                                    <Link href="/register" onClick={() => setMobileMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: '#fff' }}>
-                                        <Info size={18} /> Đăng ký
+                                    <Link href="/register" onClick={() => setMobileMenuOpen(false)} style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', textAlign: 'center', padding: '14px', borderRadius: '12px', textDecoration: 'none', fontWeight: 800, fontSize: '1.1rem' }}>
+                                        Đăng ký ngay
                                     </Link>
-                                </>
+                                </div>
                             )}
                         </div>
                     </div>
                 </div>
             )}
+
+            <style jsx global>{`
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `}</style>
         </nav>
     );
 }

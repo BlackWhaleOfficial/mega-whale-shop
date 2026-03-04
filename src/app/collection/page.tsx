@@ -23,11 +23,6 @@ interface GameAccount {
     createdAt?: string;
 }
 
-const swipeConfidenceThreshold = 10000;
-const swipePower = (offset: number, velocity: number) => {
-    return Math.abs(offset) * velocity;
-};
-
 const GachaTab = ({ activeTab, banners, bannerNames, currentBanner, setCurrentBanner, setShowBannerInfo, handleGacha, gachaLoading, rollCounts }: any) => {
     if (activeTab !== 'gacha') return null;
 
@@ -43,101 +38,149 @@ const GachaTab = ({ activeTab, banners, bannerNames, currentBanner, setCurrentBa
     const rollsLeft = 150 - (currentRolls % 150);
 
     return (
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem', padding: '0 10px' }}>
-            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem', padding: '0 10px' }}>
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 <div style={{
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    height: 'clamp(300px, 50vw, 600px)',
+                    height: 'clamp(280px, 45vw, 550px)',
                     width: '100%',
-                    overflow: 'hidden',
                     position: 'relative',
-                    borderRadius: '24px',
-                    backgroundColor: '#000'
+                    perspective: '1000px',
+                    padding: '20px 0'
                 }}>
-                    <AnimatePresence initial={false} custom={currentBanner}>
-                        <motion.div
-                            key={currentBanner}
-                            drag="x"
-                            dragConstraints={{ left: 0, right: 0 }}
-                            dragElastic={1}
-                            onDragEnd={(e, { offset, velocity }) => {
-                                const swipe = swipePower(offset.x, velocity.x);
-                                if (swipe < -swipeConfidenceThreshold) {
-                                    paginate(1);
-                                } else if (swipe > swipeConfidenceThreshold) {
-                                    paginate(-1);
-                                }
-                            }}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ opacity: { duration: 0.3 } }}
-                            style={{ position: 'absolute', width: '100%', height: '100%', cursor: 'grab' }}
-                            onClick={() => setShowBannerInfo(true)}
-                        >
-                            <Image src={banners[currentBanner]} fill style={{ objectFit: 'cover' }} alt="Gacha Banner" priority unoptimized />
-                        </motion.div>
+                    <AnimatePresence initial={false}>
+                        {banners.map((src: string, index: number) => {
+                            const offset = index - currentBanner;
+                            // Handle circular offset
+                            let normalizedOffset = offset;
+                            if (offset > 1) normalizedOffset = offset - banners.length;
+                            if (offset < -1) normalizedOffset = offset + banners.length;
+
+                            const isActive = normalizedOffset === 0;
+                            const isSide = Math.abs(normalizedOffset) === 1;
+
+                            if (!isActive && !isSide) return null;
+
+                            return (
+                                <motion.div
+                                    key={src}
+                                    style={{
+                                        position: 'absolute',
+                                        width: isActive ? 'clamp(90%, 80vw, 850px)' : 'clamp(60%, 50vw, 500px)',
+                                        zIndex: isActive ? 10 : 5,
+                                        borderRadius: '32px',
+                                        overflow: 'hidden',
+                                        cursor: isActive ? 'pointer' : 'pointer',
+                                        boxShadow: isActive ? '0 20px 80px rgba(0,255,136,0.3)' : '0 10px 30px rgba(0,0,0,0.5)',
+                                        border: isActive ? '2px solid rgba(0,255,136,0.5)' : '1px solid rgba(255,255,255,0.1)'
+                                    }}
+                                    initial={false}
+                                    animate={{
+                                        x: normalizedOffset * (isActive ? 0 : (typeof window !== 'undefined' && window.innerWidth < 768 ? 85 : 95)) + '%',
+                                        scale: isActive ? 1 : 0.85,
+                                        rotateY: normalizedOffset * -15,
+                                        opacity: isActive ? 1 : 0.4,
+                                        filter: isActive ? 'none' : 'blur(4px)',
+                                    }}
+                                    transition={{
+                                        type: 'spring',
+                                        stiffness: 260,
+                                        damping: 25
+                                    }}
+                                    drag="x"
+                                    dragConstraints={{ left: 0, right: 0 }}
+                                    dragElastic={0.2}
+                                    onDragEnd={(_, info) => {
+                                        if (info.offset.x < -50) paginate(1);
+                                        if (info.offset.x > 50) paginate(-1);
+                                    }}
+                                    onClick={() => isActive ? setShowBannerInfo(true) : setCurrentBanner(index)}
+                                >
+                                    <div style={{ position: 'relative', width: '100%', aspectRatio: '21/9' }}>
+                                        <Image src={src} fill style={{ objectFit: 'cover' }} alt="Gacha Banner" priority={isActive} unoptimized />
+                                        {isActive && (
+                                            <div style={{
+                                                position: 'absolute',
+                                                bottom: 0,
+                                                left: 0,
+                                                right: 0,
+                                                padding: '2rem',
+                                                background: 'linear-gradient(transparent, rgba(0,0,0,0.9))',
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'flex-end'
+                                            }}>
+                                                <div style={{ color: '#fff' }}>
+                                                    <div style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '4px' }}>BANNER HIỆN TẠI</div>
+                                                    <div style={{ fontSize: 'clamp(1rem, 4vw, 1.8rem)', fontWeight: 900, textTransform: 'uppercase' }}>{bannerNames[currentBanner]}</div>
+                                                </div>
+                                                <div style={{ background: 'rgba(255,255,255,0.1)', padding: '8px 15px', borderRadius: '12px', backdropFilter: 'blur(10px)', color: '#fff', fontSize: '0.8rem', fontWeight: 600 }}>Chi tiết ⓘ</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
                     </AnimatePresence>
 
-                    {/* Navigation Arrows for Tablet/Desktop */}
+                    {/* Navigation Buttons */}
                     <button
                         onClick={(e) => { e.stopPropagation(); paginate(-1); }}
-                        style={{ position: 'absolute', left: '20px', zIndex: 12, background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', padding: '10px', borderRadius: '50%', cursor: 'pointer' }}
-                        className="hidden-mobile"
+                        style={{ position: 'absolute', left: '2%', zIndex: 15, background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '12px', borderRadius: '50%', cursor: 'pointer', backdropFilter: 'blur(10px)' }}
                     >
-                        <ChevronLeft size={24} />
+                        <ChevronLeft size={28} />
                     </button>
                     <button
                         onClick={(e) => { e.stopPropagation(); paginate(1); }}
-                        style={{ position: 'absolute', right: '20px', zIndex: 12, background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', padding: '10px', borderRadius: '50%', cursor: 'pointer' }}
-                        className="hidden-mobile"
+                        style={{ position: 'absolute', right: '2%', zIndex: 15, background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '12px', borderRadius: '50%', cursor: 'pointer', backdropFilter: 'blur(10px)' }}
                     >
-                        <ChevronRight size={24} />
+                        <ChevronRight size={28} />
                     </button>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', zIndex: 11 }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', zIndex: 11 }}>
                     {banners.map((_: any, index: number) => (
                         <div
                             key={index}
                             onClick={() => setCurrentBanner(index)}
                             style={{
-                                width: index === currentBanner ? '30px' : '10px',
-                                height: '10px',
-                                borderRadius: '5px',
-                                backgroundColor: index === currentBanner ? '#00ff88' : 'rgba(255, 255, 255, 0.3)',
+                                width: index === currentBanner ? '40px' : '12px',
+                                height: '6px',
+                                borderRadius: '3px',
+                                backgroundColor: index === currentBanner ? 'var(--primary)' : 'rgba(255, 255, 255, 0.2)',
                                 cursor: 'pointer',
-                                transition: 'all 0.3s'
+                                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                             }}
                         />
                     ))}
                 </div>
             </div>
 
-            <div style={{ textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.5)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(233,196,106,0.3)', alignSelf: 'center', width: '100%', maxWidth: '500px' }}>
-                <div style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 600 }}>Tích lũy: <span style={{ color: '#e9c46a' }}>{currentRolls}</span> lượt</div>
-                <div style={{ color: '#aaa', fontSize: '0.9rem', marginTop: '5px' }}>Còn <span style={{ color: '#fff' }}>{rollsLeft}</span> lượt nữa chắc chắn nhận <span style={{ color: 'var(--primary)' }}>REG Skin SSS</span></div>
+            <div style={{ textAlign: 'center', backgroundColor: 'rgba(255,255,255,0.03)', padding: '1.2rem', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', alignSelf: 'center', width: '100%', maxWidth: '600px', backdropFilter: 'blur(10px)' }}>
+                <div style={{ color: '#fff', fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontWeight: 700 }}>Tích lũy: <span style={{ color: 'var(--primary)', textShadow: '0 0 10px rgba(68,214,44,0.5)' }}>{currentRolls}</span> lượt quay</div>
+                <div style={{ color: '#888', fontSize: '0.85rem', marginTop: '6px', letterSpacing: '0.5px' }}>Còn <span style={{ color: '#fff' }}>{rollsLeft}</span> lượt nữa chắc chắn nhận <span style={{ color: 'var(--primary)', fontWeight: 700 }}>REG Skin SSS</span></div>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', width: '100%', maxWidth: '800px', margin: '0 auto' }}>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', width: '100%', maxWidth: '900px', margin: '0 auto' }}>
                 <button
                     onClick={() => handleGacha('FREE')}
                     disabled={gachaLoading}
                     style={{
                         flex: 1,
-                        padding: '1.2rem 1rem',
-                        fontSize: 'clamp(0.9rem, 4vw, 1.3rem)',
-                        fontWeight: 800,
-                        backgroundColor: '#e9c46a',
+                        padding: '1.3rem 1rem',
+                        fontSize: 'clamp(0.85rem, 3.5vw, 1.2rem)',
+                        fontWeight: 900,
+                        backgroundColor: '#fff',
                         color: '#000',
                         border: 'none',
-                        borderRadius: '50px',
+                        borderRadius: '16px',
                         cursor: gachaLoading ? 'not-allowed' : 'pointer',
-                        boxShadow: '0 10px 20px rgba(233,196,106,0.3)',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
                         opacity: gachaLoading ? 0.7 : 1,
-                        transition: 'all 0.3s'
+                        transition: 'all 0.3s',
+                        textTransform: 'uppercase'
                     }}
                 >
                     Test nhân phẩm (FREE)
@@ -147,17 +190,18 @@ const GachaTab = ({ activeTab, banners, bannerNames, currentBanner, setCurrentBa
                     disabled={gachaLoading}
                     style={{
                         flex: 1,
-                        padding: '1.2rem 1rem',
-                        fontSize: 'clamp(0.9rem, 4vw, 1.3rem)',
-                        fontWeight: 800,
-                        backgroundColor: '#e9c46a',
+                        padding: '1.3rem 1rem',
+                        fontSize: 'clamp(0.85rem, 3.5vw, 1.2rem)',
+                        fontWeight: 900,
+                        backgroundColor: 'var(--primary)',
                         color: '#000',
                         border: 'none',
-                        borderRadius: '50px',
+                        borderRadius: '16px',
                         cursor: gachaLoading ? 'not-allowed' : 'pointer',
-                        boxShadow: '0 10px 20px rgba(233,196,106,0.3)',
+                        boxShadow: '0 10px 30px rgba(68,214,44,0.3)',
                         opacity: gachaLoading ? 0.7 : 1,
-                        transition: 'all 0.3s'
+                        transition: 'all 0.3s',
+                        textTransform: 'uppercase'
                     }}
                 >
                     1x ( 9 WCash )
@@ -324,21 +368,22 @@ export default function CollectionPage() {
             backgroundAttachment: 'fixed',
             padding: '10rem 5% 5rem'
         }}>
-            <div style={{ maxWidth: '1200px', margin: '0 auto 2.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto 3rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <button
                     onClick={() => setActiveTab('gacha')}
                     style={{
-                        padding: 'clamp(1rem, 3vw, 1.5rem)',
-                        fontSize: 'clamp(0.85rem, 3vw, 1.2rem)',
-                        fontWeight: 800,
-                        backgroundColor: activeTab === 'gacha' ? '#e9c46a' : 'transparent',
+                        padding: '1.2rem',
+                        fontSize: 'clamp(0.8rem, 3vw, 1.1rem)',
+                        fontWeight: 900,
+                        backgroundColor: activeTab === 'gacha' ? 'var(--primary)' : 'rgba(255,255,255,0.02)',
                         color: activeTab === 'gacha' ? '#000' : '#888',
-                        border: '3px solid #e9c46a',
+                        border: activeTab === 'gacha' ? 'none' : '1px solid rgba(255,255,255,0.1)',
                         borderRadius: '16px',
                         cursor: 'pointer',
-                        transition: 'all 0.3s ease',
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                         textTransform: 'uppercase',
-                        boxShadow: activeTab === 'gacha' ? '0 0 30px rgba(233,196,106,0.3)' : 'none'
+                        letterSpacing: '1px',
+                        boxShadow: activeTab === 'gacha' ? '0 10px 40px rgba(68,214,44,0.3)' : 'none'
                     }}
                 >
                     NGUYỆN ƯỚC BIỂN CẢ
@@ -346,17 +391,18 @@ export default function CollectionPage() {
                 <button
                     onClick={() => setActiveTab('collection')}
                     style={{
-                        padding: 'clamp(1rem, 3vw, 1.5rem)',
-                        fontSize: 'clamp(0.85rem, 3vw, 1.2rem)',
-                        fontWeight: 800,
-                        backgroundColor: activeTab === 'collection' ? '#e9c46a' : 'transparent',
+                        padding: '1.2rem',
+                        fontSize: 'clamp(0.8rem, 3vw, 1.1rem)',
+                        fontWeight: 900,
+                        backgroundColor: activeTab === 'collection' ? 'var(--primary)' : 'rgba(255,255,255,0.02)',
                         color: activeTab === 'collection' ? '#000' : '#888',
-                        border: '3px solid #e9c46a',
+                        border: activeTab === 'collection' ? 'none' : '1px solid rgba(255,255,255,0.1)',
                         borderRadius: '16px',
                         cursor: 'pointer',
-                        transition: 'all 0.3s ease',
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                         textTransform: 'uppercase',
-                        boxShadow: activeTab === 'collection' ? '0 0 30px rgba(233,196,106,0.3)' : 'none'
+                        letterSpacing: '1px',
+                        boxShadow: activeTab === 'collection' ? '0 10px 40px rgba(68,214,44,0.3)' : 'none'
                     }}
                 >
                     BỘ SƯU TẬP
@@ -365,10 +411,10 @@ export default function CollectionPage() {
 
             {activeTab === 'collection' ? (
                 <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                    <div className="glass" style={{ margin: '0 auto 3rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', padding: '1.5rem', borderRadius: '20px' }}>
-                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                            <span style={{ color: '#fff', fontSize: '0.9rem', fontWeight: 600, textTransform: 'uppercase' }}>Sắp xếp:</span>
-                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ backgroundColor: '#111', color: '#fff', border: '1px solid #333', padding: '8px 15px', borderRadius: '6px', cursor: 'pointer' }}>
+                    <div className="glass" style={{ margin: '0 auto 3rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', padding: '1.5rem', borderRadius: '24px' }}>
+                        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                            <span style={{ color: '#888', fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase' }}>Sắp xếp:</span>
+                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={{ backgroundColor: '#151515', color: '#fff', border: '1px solid #333', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer', fontSize: '0.9rem' }}>
                                 <option value="newest">Mới nhất</option>
                                 <option value="oldest">Cũ nhất</option>
                                 <option value="price-asc">Giá thấp</option>
@@ -376,40 +422,44 @@ export default function CollectionPage() {
                             </select>
                         </div>
                         <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
-                            <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#666' }} size={18} />
-                            <input type="text" placeholder="Tìm ID, Rank..." value={search} onChange={(e) => setSearch(e.target.value)} className="glass-input" style={{ width: '100%', padding: '10px 15px 10px 40px', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', outline: 'none' }} />
+                            <Search style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '#666' }} size={20} />
+                            <input type="text" placeholder="Tìm ID, Rank..." value={search} onChange={(e) => setSearch(e.target.value)} className="glass-input" style={{ width: '100%', padding: '12px 20px 12px 45px', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', outline: 'none', borderRadius: '12px' }} />
                         </div>
                     </div>
 
                     {loading ? (
                         <div style={{ textAlign: 'center', padding: '5rem', color: 'var(--primary)' }}>Đang tải danh sách...</div>
                     ) : paginatedAccounts.length > 0 ? (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '2rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem' }}>
                             {paginatedAccounts.map(acc => (
                                 <div key={acc.id} className="glass-card img-optimize" style={{ overflow: 'hidden', padding: 0, cursor: 'pointer' }} onClick={() => router.push(`/acc/${acc.gameId}`)}>
-                                    <div style={{ height: '180px', backgroundColor: '#000', position: 'relative' }}>
+                                    <div style={{ height: '200px', backgroundColor: '#000', position: 'relative' }}>
                                         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                                             <Image src={acc.image || '/posts/dolia.png'} alt="Acc Preview" fill style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" unoptimized />
                                         </div>
-                                        <div style={{ position: 'absolute', bottom: '10px', right: '10px', backgroundColor: 'var(--primary)', color: '#000', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 800 }}>LIÊN QUÂN</div>
+                                        <div style={{ position: 'absolute', bottom: '15px', right: '15px', backgroundColor: 'var(--primary)', color: '#000', padding: '5px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 900 }}>LIÊN QUÂN</div>
                                     </div>
-                                    <div style={{ padding: '1.5rem' }}>
-                                        <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--primary)' }}>Liên Quân Hàng Tuyển</h3>
-                                        <div style={{ color: '#aaa', fontSize: '0.85rem', marginBottom: '1rem', fontFamily: 'monospace' }}>ID: #{acc.gameId}</div>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '1.5rem' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}><span style={{ color: '#666' }}>Mức Rank:</span><span style={{ color: '#fff', fontWeight: 600 }}>{acc.rank}</span></div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}><span style={{ color: '#666' }}>Số Tướng:</span><span style={{ color: '#fff', fontWeight: 600 }}>{acc.heroesCount}</span></div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}><span style={{ color: '#666' }}>Số Skin:</span><span style={{ color: '#fff', fontWeight: 600 }}>{acc.skinsCount}</span></div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}><span style={{ color: '#666' }}>Đăng ký:</span><span style={{ color: '#fff', fontWeight: 600 }}>{acc.loginType}</span></div>
-                                        </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                <span style={{ color: 'var(--primary)', fontSize: '1.3rem', fontWeight: 800 }}>{new Intl.NumberFormat('vi-VN').format(acc.price)}đ</span>
-                                                {acc.originalPrice && <span style={{ color: '#555', fontSize: '0.85rem', textDecoration: 'line-through' }}>{new Intl.NumberFormat('vi-VN').format(acc.originalPrice)}đ</span>}
+                                    <div style={{ padding: '1.8rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                                            <div>
+                                                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '4px' }}>Liên Quân Tuyển</h3>
+                                                <div style={{ color: '#666', fontSize: '0.85rem', fontFamily: 'monospace' }}>ID: #{acc.gameId}</div>
                                             </div>
-                                            {acc.originalPrice && <div style={{ backgroundColor: '#ff4d4f', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700 }}>-{Math.round((1 - acc.price / acc.originalPrice) * 100)}%</div>}
+                                            {acc.originalPrice && <div style={{ backgroundColor: '#ff4d4f', color: '#fff', padding: '4px 10px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800 }}>-{Math.round((1 - acc.price / acc.originalPrice) * 100)}%</div>}
                                         </div>
-                                        <button onClick={(e) => { e.stopPropagation(); router.push(`/acc/${acc.gameId}`); }} className="btn-primary" style={{ width: '100%', padding: '12px', fontSize: '0.9rem', borderRadius: '6px' }}>MUA NGAY</button>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '1.8rem', background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '12px' }}>
+                                            <div style={{ fontSize: '0.85rem' }}><span style={{ color: '#555', display: 'block' }}>Rank:</span><span style={{ color: '#fff', fontWeight: 700 }}>{acc.rank}</span></div>
+                                            <div style={{ fontSize: '0.85rem' }}><span style={{ color: '#555', display: 'block' }}>Tướng:</span><span style={{ color: '#fff', fontWeight: 700 }}>{acc.heroesCount}</span></div>
+                                            <div style={{ fontSize: '0.85rem' }}><span style={{ color: '#555', display: 'block' }}>Skin:</span><span style={{ color: '#fff', fontWeight: 700 }}>{acc.skinsCount}</span></div>
+                                            <div style={{ fontSize: '0.85rem' }}><span style={{ color: '#555', display: 'block' }}>Đăng ký:</span><span style={{ color: '#fff', fontWeight: 700 }}>{acc.loginType}</span></div>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                <span style={{ color: '#fff', fontSize: '1.5rem', fontWeight: 900 }}>{new Intl.NumberFormat('vi-VN').format(acc.price)}<span style={{ fontSize: '1rem', marginLeft: '2px' }}>đ</span></span>
+                                                {acc.originalPrice && <span style={{ color: '#444', fontSize: '0.9rem', textDecoration: 'line-through' }}>{new Intl.NumberFormat('vi-VN').format(acc.originalPrice)}đ</span>}
+                                            </div>
+                                            <button onClick={(e) => { e.stopPropagation(); router.push(`/acc/${acc.gameId}`); }} className="btn-primary" style={{ padding: '12px 25px', borderRadius: '12px', fontSize: '0.95rem', fontWeight: 800 }}>MUA NGAY</button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -422,10 +472,10 @@ export default function CollectionPage() {
                     )}
 
                     {totalPages > 1 && (
-                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', marginTop: '4rem' }}>
-                            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} style={{ padding: '10px', backgroundColor: currentPage === 1 ? '#222' : 'var(--primary)', border: 'none', borderRadius: '50%', cursor: currentPage === 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', color: '#000' }}><ChevronLeft size={20} /></button>
-                            <div style={{ color: '#fff', fontSize: '1.1rem', fontWeight: 700 }}>Trang {currentPage} / {totalPages}</div>
-                            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} style={{ padding: '10px', backgroundColor: currentPage === totalPages ? '#222' : 'var(--primary)', border: 'none', borderRadius: '50%', cursor: currentPage === totalPages ? 'default' : 'pointer', display: 'flex', alignItems: 'center', color: '#000' }}><ChevronRight size={20} /></button>
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px', marginTop: '4rem' }}>
+                            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} style={{ padding: '12px', backgroundColor: currentPage === 1 ? '#111' : 'var(--primary)', border: 'none', borderRadius: '50%', cursor: currentPage === 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', color: '#000' }}><ChevronLeft size={24} /></button>
+                            <div style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 800 }}>{currentPage} / {totalPages}</div>
+                            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} style={{ padding: '12px', backgroundColor: currentPage === totalPages ? '#111' : 'var(--primary)', border: 'none', borderRadius: '50%', cursor: currentPage === totalPages ? 'default' : 'pointer', display: 'flex', alignItems: 'center', color: '#000' }}><ChevronRight size={24} /></button>
                         </div>
                     )}
                 </div>
@@ -446,86 +496,89 @@ export default function CollectionPage() {
             {isGachaPlaying && !videoEnded && (
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#000', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <video src={gachaVideoSrc} autoPlay style={{ width: '100%', height: '100%', objectFit: 'contain' }} onEnded={() => setVideoEnded(true)} onClick={() => setVideoEnded(true)} />
-                    <button onClick={() => setVideoEnded(true)} style={{ position: 'absolute', top: '20px', right: '30px', padding: '10px 20px', background: 'rgba(0,0,0,0.5)', color: '#fff', border: '1px solid #fff', borderRadius: '8px', cursor: 'pointer' }}>Bỏ qua</button>
+                    <button onClick={() => setVideoEnded(true)} style={{ position: 'absolute', top: '30px', right: '30px', padding: '12px 25px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', cursor: 'pointer', backdropFilter: 'blur(10px)', fontWeight: 700 }}>SKiP VIDEO ➔</button>
                 </div>
             )}
 
             {isGachaPlaying && videoEnded && gachaResult && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', backdropFilter: 'blur(10px)' }}>
-                    <div className="glass" style={{ width: '90%', maxWidth: '450px', padding: '2.5rem', borderRadius: '20px', border: '2px solid #e9c46a', backgroundColor: '#0a0a0a', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.2rem', boxShadow: '0 0 50px rgba(233,196,106,0.2)' }}>
-                        <h2 style={{ color: '#e9c46a', fontSize: '2.2rem', margin: '0 0 1rem 0', fontWeight: 800 }}>Kết Quả Gacha</h2>
-                        <div style={{ width: '100%', borderRadius: '12px', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.1)', position: 'relative' }}>
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.95)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', backdropFilter: 'blur(20px)' }}>
+                    <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass" style={{ width: '95%', maxWidth: '500px', padding: '2.5rem', borderRadius: '32px', border: '2px solid var(--primary)', backgroundColor: '#050505', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', boxShadow: '0 0 100px rgba(68,214,44,0.2)' }}>
+                        <h2 style={{ color: 'var(--primary)', fontSize: '2.5rem', margin: 0, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px' }}>KẾT QUẢ</h2>
+                        <div style={{ width: '100%', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', position: 'relative', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
                             <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9' }}>
                                 <Image src={gachaResult.image || '/posts/dolia.png'} fill style={{ objectFit: 'cover' }} alt="Gacha Result" unoptimized />
+                                <div style={{ position: 'absolute', top: 15, left: 15, background: 'var(--primary)', color: '#000', fontWeight: 900, padding: '5px 12px', borderRadius: '8px', fontSize: '0.8rem' }}>LIMITED</div>
                             </div>
-                            <div style={{ position: 'absolute', bottom: 10, right: 10, background: 'var(--primary)', color: '#000', fontWeight: 800, padding: '4px 10px', borderRadius: '4px', fontSize: '0.8rem' }}>Liên Quân Hàng Tuyển</div>
                         </div>
-                        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.8rem' }}>
-                            <span style={{ color: '#888', fontSize: '0.9rem' }}>Mã Acc</span>
-                            <span style={{ color: '#fff', fontWeight: 700, fontFamily: 'monospace', fontSize: '0.9rem' }}>#{gachaResult.gameId}</span>
+                        <div style={{ width: '100%', background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ color: '#666', fontWeight: 700 }}>MÃ ACC</span>
+                                <span style={{ color: '#fff', fontWeight: 800, fontFamily: 'monospace' }}>#{gachaResult.gameId}</span>
+                            </div>
+                            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ color: '#666', fontWeight: 700 }}>HẠNG</span>
+                                <span style={{ color: 'var(--primary)', fontWeight: 900 }}>{gachaResult.rank}</span>
+                            </div>
+                            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ color: '#666', fontWeight: 700 }}>TƯỚNG / SKIN</span>
+                                <span style={{ color: '#fff', fontWeight: 800 }}>{gachaResult.heroesCount} / {gachaResult.skinsCount}</span>
+                            </div>
+                            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '0.8rem' }}>
+                                <span style={{ color: '#666', fontWeight: 700 }}>GIÁ TRỊ THỰC</span>
+                                <span style={{ color: '#fff', fontWeight: 900 }}>{new Intl.NumberFormat('vi-VN').format(gachaResult.price)}đ</span>
+                            </div>
                         </div>
-                        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.8rem' }}>
-                            <span style={{ color: '#888', fontSize: '0.9rem' }}>Rank</span>
-                            <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '0.9rem' }}>{gachaResult.rank}</span>
-                        </div>
-                        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.8rem' }}>
-                            <span style={{ color: '#888', fontSize: '0.9rem' }}>Tướng / Skin</span>
-                            <span style={{ color: '#fff', fontWeight: 700, fontSize: '0.9rem' }}>{gachaResult.heroesCount} / {gachaResult.skinsCount}</span>
-                        </div>
-                        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem' }}>
-                            <span style={{ color: '#888', fontSize: '0.9rem' }}>Trị giá</span>
-                            <span style={{ color: '#fff', fontWeight: 700, fontSize: '0.9rem' }}>{new Intl.NumberFormat('vi-VN').format(gachaResult.price)}đ</span>
-                        </div>
-                        <div style={{ width: '100%', display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                        <div style={{ width: '100%', display: 'flex', gap: '1rem' }}>
                             {gachaType === 'FREE' ? (
                                 <>
-                                    <button style={{ flex: 1, padding: '12px', background: '#e9c46a', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }} onClick={() => { setIsGachaPlaying(false); handleGacha('FREE'); }}>Thử lại nữa</button>
-                                    <button style={{ flex: 1, padding: '12px', background: '#1a1a1a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }} onClick={() => { setIsGachaPlaying(false); setVideoEnded(false); }}>Thoát ra</button>
+                                    <button style={{ flex: 1.5, padding: '1.2rem', background: 'var(--primary)', color: '#000', border: 'none', borderRadius: '16px', fontWeight: 900, fontSize: '1rem', cursor: 'pointer', textTransform: 'uppercase' }} onClick={() => { setIsGachaPlaying(false); handleGacha('FREE'); }}>THỬ LẠI</button>
+                                    <button style={{ flex: 1, padding: '1.2rem', background: '#1a1a1a', color: '#fff', border: '1px solid #333', borderRadius: '16px', fontWeight: 700, fontSize: '1rem', cursor: 'pointer' }} onClick={() => { setIsGachaPlaying(false); setVideoEnded(false); }}>ĐÓNG</button>
                                 </>
                             ) : (
                                 <>
-                                    <button style={{ flex: 1, padding: '15px', background: '#e9c46a', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }} onClick={() => handleGachaAction('CLAIM')}>Nhận</button>
-                                    <button style={{ flex: 1, padding: '15px', background: 'rgba(255,80,80,0.2)', color: '#ff4444', border: '1px solid #ff4444', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }} onClick={() => handleGachaAction('SELL')}>Bán (Hoàn 4 WCash)</button>
+                                    <button style={{ flex: 1.5, padding: '1.3rem', background: 'var(--primary)', color: '#000', border: 'none', borderRadius: '16px', fontWeight: 900, fontSize: '1.1rem', cursor: 'pointer', textTransform: 'uppercase' }} onClick={() => handleGachaAction('CLAIM')}>NHẬN ACC</button>
+                                    <button style={{ flex: 1, padding: '1.3rem', background: 'rgba(255,80,80,0.1)', color: '#ff4d4f', border: '1px solid rgba(255,77,79,0.2)', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }} onClick={() => handleGachaAction('SELL')}>BÁN (Hoàn 4 WC)</button>
                                 </>
                             )}
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             )}
 
             {showBannerInfo && (
-                <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }} onClick={() => setShowBannerInfo(false)}>
-                    <div className="glass" style={{ padding: '2rem', borderRadius: '16px', maxWidth: '600px', width: '90%', position: 'relative', border: '1px solid rgba(255,255,255,0.2)', cursor: 'default' }} onClick={e => e.stopPropagation()}>
-                        <button onClick={() => setShowBannerInfo(false)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
-                        <h2 style={{ color: 'var(--primary)', marginBottom: '0.5rem', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '1px' }}>Thông tin chi tiết banner</h2>
-                        <h3 style={{ color: '#fff', marginBottom: '1.5rem', textAlign: 'center', fontSize: '1.4rem' }}>{bannerNames[currentBanner]}</h3>
-                        <div style={{ marginBottom: '1.5rem', background: 'rgba(0,0,0,0.4)', padding: '1.5rem', borderRadius: '12px' }}>
-                            <h4 style={{ color: '#00ff88', marginBottom: '10px' }}>Thể lệ:</h4>
-                            <ul style={{ color: '#ccc', lineHeight: '1.8', marginLeft: '20px' }}>
-                                <li><strong>Test Nhân Phẩm (FREE):</strong> Không tốn phí đồng thời KHÔNG nhận được bất kỳ vật phẩm gì.</li>
-                                <li><strong>1x (9 WCash):</strong> Tốn 9 WCash. Nhận acc ngẫu nhiên theo tỷ lệ. Có thể nhận lên đến acc Full Skin.</li>
-                                <li><strong>Ước đủ 150 lần:</strong> Chắc chắn nhận 1 acc REG có sẵn Skin SSS trong banner.</li>
+                <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, backdropFilter: 'blur(10px)' }} onClick={() => setShowBannerInfo(false)}>
+                    <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="glass" style={{ padding: '2.5rem', borderRadius: '32px', maxWidth: '650px', width: '94%', position: 'relative', border: '1px solid rgba(255,255,255,0.1)', cursor: 'default', backgroundColor: '#0a0a0a' }} onClick={e => e.stopPropagation()}>
+                        <button onClick={() => setShowBannerInfo(false)} style={{ position: 'absolute', top: '25px', right: '25px', background: 'rgba(255,255,255,0.05)', border: 'none', color: '#fff', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>✕</button>
+                        <h2 style={{ color: 'var(--primary)', marginBottom: '0.8rem', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 900, fontSize: '1.8rem' }}>THÔNG TIN BANNER</h2>
+                        <h3 style={{ color: '#fff', marginBottom: '2rem', textAlign: 'center', fontSize: '1.4rem', background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '12px' }}>{bannerNames[currentBanner]}</h3>
+                        <div style={{ marginBottom: '1.5rem', background: 'rgba(255,255,255,0.02)', padding: '1.8rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <h4 style={{ color: 'var(--primary)', marginBottom: '15px', textTransform: 'uppercase', fontSize: '1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}><div style={{ width: '4px', height: '18px', background: 'var(--primary)' }}></div> Thể lệ:</h4>
+                            <ul style={{ color: '#ccc', lineHeight: '2', marginLeft: '10px', listStyle: 'none' }}>
+                                <li style={{ marginBottom: '10px' }}><strong style={{ color: '#fff' }}>• Test Nhân Phẩm:</strong> Miễn phí vui vẻ, không nhận vật phẩm.</li>
+                                <li style={{ marginBottom: '10px' }}><strong style={{ color: '#fff' }}>• Lượt Quay (9 WC):</strong> Tỉ lệ ra Acc Full Skin cực cao.</li>
+                                <li><strong style={{ color: '#fff' }}>• Hệ thống Pity:</strong> Quay đủ 150 lần chắc chắn nổ <span style={{ color: 'var(--primary)' }}>REG SSS</span>.</li>
                             </ul>
                         </div>
-                        <div style={{ background: 'rgba(0,0,0,0.4)', padding: '1.5rem', borderRadius: '12px' }}>
-                            <h4 style={{ color: '#ffb800', marginBottom: '10px' }}>Tỷ lệ:</h4>
-                            <ul style={{ color: '#ccc', lineHeight: '1.8', marginLeft: '20px' }}>
-                                <li>Acc Full Skin <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>(2%)</span></li>
-                                <li>Acc REG có sẵn skin SSS trong Banner <span style={{ color: '#ffb800', fontWeight: 'bold' }}>(9%)</span></li>
-                                <li>Acc REG ngẫu nhiên <span style={{ color: 'var(--primary)' }}>(89%)</span></li>
-                            </ul>
+                        <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.8rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <h4 style={{ color: 'var(--primary)', marginBottom: '15px', textTransform: 'uppercase', fontSize: '1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}><div style={{ width: '4px', height: '18px', background: 'var(--primary)' }}></div> Tỷ lệ nổ:</h4>
+                            <div style={{ display: 'grid', gap: '12px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', background: 'rgba(255,77,79,0.05)', borderRadius: '12px', border: '1px solid rgba(255,77,79,0.1)' }}>
+                                    <span style={{ color: '#fff', fontWeight: 600 }}>Acc Full Skin</span>
+                                    <span style={{ color: '#ff4d4f', fontWeight: 900 }}>2%</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', background: 'rgba(233,196,106,0.05)', borderRadius: '12px', border: '1px solid rgba(233,196,106,0.1)' }}>
+                                    <span style={{ color: '#fff', fontWeight: 600 }}>Acc REG SSS</span>
+                                    <span style={{ color: '#e9c46a', fontWeight: 900 }}>9%</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', background: 'rgba(68,214,44,0.05)', borderRadius: '12px', border: '1px solid rgba(68,214,44,0.1)' }}>
+                                    <span style={{ color: '#fff', fontWeight: 600 }}>Acc REG Thường</span>
+                                    <span style={{ color: 'var(--primary)', fontWeight: 900 }}>89%</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             )}
-
-            <style jsx global>{`
-                @media (max-width: 768px) {
-                    .hidden-mobile {
-                        display: none !important;
-                    }
-                }
-            `}</style>
         </div>
     );
 }
