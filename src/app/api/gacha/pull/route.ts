@@ -44,8 +44,8 @@ export async function POST(request: Request) {
             });
             let baseRoll = currentRollRecord?.count || 0;
 
-            const results = [];
-            const accountUpdates = [];
+            const results: any[] = [];
+            const accountUpdates: any[] = [];
 
             for (let i = 1; i <= pullCount; i++) {
                 const currentRollNum = baseRoll + i;
@@ -65,12 +65,15 @@ export async function POST(request: Request) {
                     }
                 }
 
+                // Explicitly get IDs already picked to avoid duplication in same 10x
+                const pickedIds = accountUpdates.map(a => a.id);
+
                 // Find an available account with this tag
-                let availableAccounts = await prisma.gameAccount.findMany({
+                let availableAccounts: any[] = await prisma.gameAccount.findMany({
                     where: {
                         status: 'AVAILABLE',
                         bannerTag: targetTag,
-                        id: { notIn: accountUpdates.map(a => a.id) } // Avoid picking the same one in 10x
+                        id: { notIn: pickedIds }
                     }
                 });
 
@@ -80,7 +83,7 @@ export async function POST(request: Request) {
                         where: {
                             status: 'AVAILABLE',
                             bannerTag: 'REG',
-                            id: { notIn: accountUpdates.map(a => a.id) }
+                            id: { notIn: pickedIds }
                         }
                     });
                 }
@@ -129,12 +132,11 @@ export async function POST(request: Request) {
 
             return NextResponse.json({
                 accounts: results,
-                account: results[0], // backward compatibility for frontend
+                account: results[0],
                 rollCount: baseRoll + pullCount
             });
 
         } else if (type === 'FREE') {
-            // Just return random accounts for preview
             const accounts = await prisma.gameAccount.findMany({
                 where: { status: 'AVAILABLE' },
                 take: pullCount
@@ -144,7 +146,6 @@ export async function POST(request: Request) {
                 return NextResponse.json({ error: 'Kho tài khoản trống' }, { status: 400 });
             }
 
-            // Shuffle if we want random but we just took top N
             const shuffled = accounts.sort(() => 0.5 - Math.random());
 
             return NextResponse.json({
