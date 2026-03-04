@@ -201,14 +201,13 @@ export default function AccountDetailPage({ params }: { params: { id: string } }
                         padding: '1.5rem',
                         textAlign: 'center',
                         marginBottom: '1.5rem',
-                        border: '1px solid rgba(255,255,255,0.05)'
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '0.4rem'
                     }}>
-                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
-                            {acc.originalPrice && (
-                                <span style={{ color: '#666', textDecoration: 'line-through', fontSize: '1.2rem' }}>
-                                    {new Intl.NumberFormat('vi-VN').format(acc.originalPrice)}đ
-                                </span>
-                            )}
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
                             <span style={{ color: 'var(--primary)', fontSize: '2.2rem', fontWeight: 800 }}>
                                 {new Intl.NumberFormat('vi-VN').format(acc.price)}đ
                             </span>
@@ -218,14 +217,19 @@ export default function AccountDetailPage({ params }: { params: { id: string } }
                                     color: 'var(--primary)',
                                     padding: '4px 10px',
                                     borderRadius: '8px',
-                                    fontSize: '0.9rem',
+                                    fontSize: '1rem',
                                     fontWeight: 700
                                 }}>
                                     -{discountPercent}%
                                 </span>
                             )}
                         </div>
-                        <div style={{ color: '#00ff88', fontSize: '0.95rem', fontWeight: 500, opacity: 0.8 }}>
+                        {acc.originalPrice && (
+                            <div style={{ color: '#666', textDecoration: 'line-through', fontSize: '1.2rem' }}>
+                                {new Intl.NumberFormat('vi-VN').format(acc.originalPrice)}đ
+                            </div>
+                        )}
+                        <div style={{ color: '#00ff88', fontSize: '0.95rem', fontWeight: 500, opacity: 0.8, marginTop: '0.5rem' }}>
                             Sản phẩm chất lượng cao, ưu đãi tuyệt đối
                         </div>
                     </div>
