@@ -51,6 +51,52 @@ export default function AdminDashboard() {
         loginType: 'Garena', notes: '', price: 0, originalPrice: '', image: '', bannerTag: 'Auto'
     });
     const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
+    const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setIsUploadingImage(true);
+        try {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = async () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    if (ctx) {
+                        ctx.drawImage(img, 0, 0);
+                        const webpDataUrl = canvas.toDataURL('image/webp', 0.85);
+                        const base64Data = webpDataUrl.split(',')[1];
+                        const formData = new FormData();
+                        formData.append('image', base64Data);
+                        try {
+                            const res = await fetch('https://api.imgur.com/3/image', {
+                                method: 'POST',
+                                headers: { Authorization: 'Client-ID 8a514d4e0e56306' },
+                                body: formData
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                                setNewAccountData(prev => ({ ...prev, image: data.data.link }));
+                            } else {
+                                alert('Upload ảnh thất bại!');
+                            }
+                        } catch (err) {
+                            alert('Lỗi kết nối API upload ảnh.');
+                        }
+                    }
+                    setIsUploadingImage(false);
+                };
+                img.src = event.target?.result as string;
+            };
+            reader.readAsDataURL(file);
+        } catch (error) {
+            setIsUploadingImage(false);
+        }
+    };
 
     const [membershipDiscounts] = useState([
         { code: 'TGG 1% (Gói Cá Con)', percent: 1 },
@@ -1179,8 +1225,14 @@ export default function AdminDashboard() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Link ảnh Gallery</label>
-                                        <input className="glass-input" value={newAccountData.image} onChange={e => setNewAccountData({ ...newAccountData, image: e.target.value })} placeholder="https://..." />
+                                        <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#888', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                            <span>Link ảnh Gallery</span>
+                                            <label style={{ cursor: 'pointer', color: 'var(--primary)', fontWeight: 'bold', textTransform: 'none' }}>
+                                                {isUploadingImage ? 'Đang convert & upload...' : 'Hoặc tải ảnh lên (Auto convert WEBP)'}
+                                                <input type="file" accept="image/png, image/jpeg, image/jpg, image/webp" onChange={handleImageUpload} style={{ display: 'none' }} disabled={isUploadingImage} />
+                                            </label>
+                                        </label>
+                                        <input className="glass-input" value={newAccountData.image} onChange={e => setNewAccountData({ ...newAccountData, image: e.target.value })} placeholder="https://..." disabled={isUploadingImage} />
                                     </div>
                                     <div>
                                         <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Banner Tag</label>
