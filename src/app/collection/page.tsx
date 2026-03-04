@@ -36,17 +36,8 @@ export default function CollectionPage() {
     const [gachaType, setGachaType] = useState<'FREE' | 'PAID'>('FREE');
     const [gachaLoading, setGachaLoading] = useState(false);
 
-    const banners = ['/banner1.png', '/banner2.png', '/banner3.png'];
+    const banners = ['/banner1.jpg', '/banner2.jpg', '/banner3.jpg'];
     const [currentBanner, setCurrentBanner] = useState(0);
-
-    useEffect(() => {
-        if (activeTab === 'gacha') {
-            const timer = setInterval(() => {
-                setCurrentBanner((prev) => (prev + 1) % banners.length);
-            }, 3000);
-            return () => clearInterval(timer);
-        }
-    }, [activeTab, banners.length]);
 
     useEffect(() => {
         fetch('/api/accounts')
