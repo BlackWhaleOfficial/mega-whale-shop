@@ -59,7 +59,7 @@ const GachaTab = ({ activeTab, banners, currentBanner, setCurrentBanner, setShow
                         return (
                             <div key={src} style={style} onClick={() => isActive ? setShowBannerInfo(true) : setCurrentBanner(index)}>
                                 <div style={{ position: 'relative', width: '100%', height: '100%', aspectRatio: '21/9' }}>
-                                    <Image src={src} fill style={{ objectFit: 'cover' }} alt="Gacha Banner" priority={isActive} />
+                                    <Image src={src} fill style={{ objectFit: 'cover' }} alt="Gacha Banner" priority={isActive} unoptimized />
                                 </div>
                             </div>
                         );
@@ -145,7 +145,11 @@ export default function CollectionPage() {
     const [gachaType, setGachaType] = useState<'FREE' | 'PAID'>('FREE');
     const [gachaLoading, setGachaLoading] = useState(false);
 
-    const banners = ['/banner1.jpg', '/banner2.jpg', '/banner3.jpg'];
+    const banners = [
+        'https://drive.google.com/uc?export=view&id=12JVrwNpcT8MEDdw3ftuKdxt9kp3YYVMf',
+        'https://drive.google.com/uc?export=view&id=1rEqbvpHmzDehkK0o2PRHvDYUWda7IM-2',
+        'https://drive.google.com/uc?export=view&id=1dFsjMj38r1X5H5HKEFXRutUj0uNPVxAg'
+    ];
     const bannerNames = ['Nhật Nguyệt Thánh Linh', 'Hỗn Độn Thần Ma', 'Mộng Giới Thần Chủ'];
     const [currentBanner, setCurrentBanner] = useState(0);
     const [showBannerInfo, setShowBannerInfo] = useState(false);
@@ -283,7 +287,7 @@ export default function CollectionPage() {
                                 <div key={acc.id} className="glass-card img-optimize" style={{ overflow: 'hidden', padding: 0, cursor: 'pointer' }} onClick={() => router.push(`/acc/${acc.gameId}`)}>
                                     <div style={{ height: '180px', backgroundColor: '#000', position: 'relative' }}>
                                         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                                            <Image src={acc.image || '/posts/dolia.png'} alt="Acc Preview" fill style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+                                            <Image src={acc.image || '/posts/dolia.png'} alt="Acc Preview" fill style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" unoptimized />
                                         </div>
                                         <div style={{ position: 'absolute', bottom: '10px', right: '10px', backgroundColor: 'var(--primary)', color: '#000', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 800 }}>LIÊN QUÂN</div>
                                     </div>
@@ -340,7 +344,7 @@ export default function CollectionPage() {
                         <h2 style={{ color: '#e9c46a', fontSize: '2.2rem', margin: '0 0 1rem 0', fontWeight: 800 }}>Kết Quả Gacha</h2>
                         <div style={{ width: '100%', borderRadius: '12px', overflow: 'hidden', border: '2px solid rgba(255,255,255,0.1)', position: 'relative' }}>
                             <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9' }}>
-                                <Image src={gachaResult.image || '/posts/dolia.png'} fill style={{ objectFit: 'cover' }} alt="Gacha Result" />
+                                <Image src={gachaResult.image || '/posts/dolia.png'} fill style={{ objectFit: 'cover' }} alt="Gacha Result" unoptimized />
                             </div>
                             <div style={{ position: 'absolute', bottom: 10, right: 10, background: 'var(--primary)', color: '#000', fontWeight: 800, padding: '4px 10px', borderRadius: '4px', fontSize: '0.8rem' }}>Liên Quân Hàng Tuyển</div>
                         </div>
