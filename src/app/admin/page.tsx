@@ -439,9 +439,12 @@ export default function AdminDashboard() {
         );
     });
     const filteredGalleryAccounts = gameAccounts.filter(acc => {
+        const isReg = acc.bannerTag === 'REG' || acc.bannerTag === 'REG có sẵn skin SSS';
         if (galleryTab === 'REG') {
-            const isReg = acc.bannerTag === 'REG' || acc.bannerTag === 'REG có sẵn skin SSS';
             if (!isReg) return false;
+        } else {
+            // Tab is ALL: exclude REG accounts
+            if (isReg) return false;
         }
         const term = gallerySearchTerm.toLowerCase();
         if (!term) return true;
