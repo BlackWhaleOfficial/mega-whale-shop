@@ -119,6 +119,7 @@ model GameAccount {
   notes        String   @default("")
   price        Int
   originalPrice Int?
+  bannerTag    String?
   status       String   @default("AVAILABLE") // AVAILABLE, SOLD
   image        String   @default("") // Link tới ảnh gallery của acc
   createdAt    DateTime @default(now())

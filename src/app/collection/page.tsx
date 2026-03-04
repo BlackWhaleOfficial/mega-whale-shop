@@ -37,7 +37,9 @@ export default function CollectionPage() {
     const [gachaLoading, setGachaLoading] = useState(false);
 
     const banners = ['/banner1.jpg', '/banner2.jpg', '/banner3.jpg'];
+    const bannerNames = ['Nhật Nguyệt Thánh Linh', 'Hỗn Độn Thần Ma', 'Mộng Giới Thần Chủ'];
     const [currentBanner, setCurrentBanner] = useState(0);
+    const [showBannerInfo, setShowBannerInfo] = useState(false);
 
     useEffect(() => {
         fetch('/api/accounts')
@@ -375,12 +377,12 @@ export default function CollectionPage() {
                                     transform: isActive
                                         ? 'translateX(0) scale(1)'
                                         : (isNext ? 'translateX(90%) scale(0.85)' : 'translateX(-90%) scale(0.85)'),
-                                    cursor: isActive ? 'default' : 'pointer',
+                                    cursor: 'pointer',
                                     boxShadow: isActive ? '0 10px 40px rgba(0,0,0,0.8)' : 'none'
                                 };
 
                                 return (
-                                    <div key={src} style={style} onClick={() => !isActive && setCurrentBanner(index)}>
+                                    <div key={src} style={style} onClick={() => isActive ? setShowBannerInfo(true) : setCurrentBanner(index)}>
                                         <img src={src} style={{ width: '100%', display: 'block', aspectRatio: '21/9', objectFit: 'cover' }} alt="Gacha Banner" />
                                     </div>
                                 );
@@ -560,6 +562,44 @@ export default function CollectionPage() {
                 </div>
             )}
 
+            {/* Pop-up Thông tin Banner */}
+            {showBannerInfo && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+                    backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+                }} onClick={() => setShowBannerInfo(false)}>
+                    <div className="glass" style={{
+                        padding: '2rem', borderRadius: '16px', maxWidth: '600px', width: '90%',
+                        position: 'relative', border: '1px solid rgba(255,255,255,0.2)', cursor: 'default'
+                    }} onClick={e => e.stopPropagation()}>
+                        <button onClick={() => setShowBannerInfo(false)} style={{
+                            position: 'absolute', top: '15px', right: '15px', background: 'transparent',
+                            border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer'
+                        }}>✕</button>
+
+                        <h2 style={{ color: 'var(--primary)', marginBottom: '0.5rem', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '1px' }}>Thông tin chi tiết banner</h2>
+                        <h3 style={{ color: '#fff', marginBottom: '1.5rem', textAlign: 'center', fontSize: '1.4rem' }}>{bannerNames[currentBanner]}</h3>
+
+                        <div style={{ marginBottom: '1.5rem', background: 'rgba(0,0,0,0.4)', padding: '1.5rem', borderRadius: '12px' }}>
+                            <h4 style={{ color: '#00ff88', marginBottom: '10px' }}>Thể lệ:</h4>
+                            <ul style={{ color: '#ccc', lineHeight: '1.8', marginLeft: '20px' }}>
+                                <li><strong>Test Nhân Phẩm (FREE):</strong> Không tốn phí đồng thời KHÔNG nhận được bất kỳ vật phẩm gì.</li>
+                                <li><strong>1x (9 WCash):</strong> Tốn 9 WCash. Nhận acc ngẫu nhiên theo tỷ lệ. Có thể nhận lên đến acc Full Skin.</li>
+                                <li><strong>Ước đủ 150 lần:</strong> Chắc chắn nhận 1 acc REG có sẵn Skin SSS trong banner.</li>
+                            </ul>
+                        </div>
+
+                        <div style={{ background: 'rgba(0,0,0,0.4)', padding: '1.5rem', borderRadius: '12px' }}>
+                            <h4 style={{ color: '#ffb800', marginBottom: '10px' }}>Tỷ lệ:</h4>
+                            <ul style={{ color: '#ccc', lineHeight: '1.8', marginLeft: '20px' }}>
+                                <li>Acc Full Skin <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>(0.0001%)</span></li>
+                                <li>Acc REG có sẵn skin SSS trong Banner <span style={{ color: '#ffb800', fontWeight: 'bold' }}>(0.9%)</span></li>
+                                <li>Acc REG ngẫu nhiên <span style={{ color: 'var(--primary)' }}>(99%)</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

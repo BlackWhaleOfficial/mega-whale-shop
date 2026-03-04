@@ -45,7 +45,7 @@ export default function AdminDashboard() {
     const [showAddAccountForm, setShowAddAccountForm] = useState(false);
     const [newAccountData, setNewAccountData] = useState({
         gameId: '', email: '', password: '', rank: 'Đồng', heroesCount: 0, skinsCount: 0,
-        loginType: 'Garena', notes: '', price: 0, originalPrice: '', image: ''
+        loginType: 'Garena', notes: '', price: 0, originalPrice: '', image: '', bannerTag: 'Auto'
     });
     const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
 
@@ -355,7 +355,8 @@ export default function AdminDashboard() {
         setNewAccountData({
             ...acc,
             originalPrice: acc.originalPrice ? String(acc.originalPrice) : '',
-            notes: acc.notes || ''
+            notes: acc.notes || '',
+            bannerTag: acc.bannerTag || 'Auto'
         });
         setShowAddAccountForm(true);
     };
@@ -364,7 +365,7 @@ export default function AdminDashboard() {
         setEditingAccountId(null);
         setNewAccountData({
             gameId: '', email: '', password: '', rank: 'Đồng', heroesCount: 0, skinsCount: 0,
-            loginType: 'Garena', notes: '', price: 0, originalPrice: '', image: ''
+            loginType: 'Garena', notes: '', price: 0, originalPrice: '', image: '', bannerTag: 'Auto'
         });
         setShowAddAccountForm(false);
     };
@@ -1110,6 +1111,17 @@ export default function AdminDashboard() {
                                     <div>
                                         <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Link ảnh Gallery</label>
                                         <input className="glass-input" value={newAccountData.image} onChange={e => setNewAccountData({ ...newAccountData, image: e.target.value })} placeholder="https://..." />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Banner Tag</label>
+                                        <select className="glass-input" value={newAccountData.bannerTag} onChange={e => setNewAccountData({ ...newAccountData, bannerTag: e.target.value })}>
+                                            <option value="Auto">Auto (Dựa trên giá)</option>
+                                            <option value="Full Skin">Full Skin</option>
+                                            <option value="REG có sẵn skin SSS">REG có sẵn skin SSS</option>
+                                            <option value="VIP">VIP</option>
+                                            <option value="Nor">Nor</option>
+                                            <option value="REG">REG</option>
+                                        </select>
                                     </div>
                                 </div>
 

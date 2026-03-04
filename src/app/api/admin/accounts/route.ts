@@ -24,7 +24,7 @@ export async function POST(request: Request) {
         if (!session || !session.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await request.json();
-        const { gameId, email, password, rank, heroesCount, skinsCount, loginType, notes, price, originalPrice, image } = body;
+        const { gameId, email, password, rank, heroesCount, skinsCount, loginType, notes, price, originalPrice, image, bannerTag } = body;
 
         // Strict numeric parsing
         const parsedPrice = parseInt(price?.toString().replace(/\D/g, '') || "0") || 0;
@@ -35,6 +35,17 @@ export async function POST(request: Request) {
         if (originalPrice !== undefined && originalPrice !== null && originalPrice !== '') {
             const val = parseInt(originalPrice.toString().replace(/\D/g, '') || "0");
             if (!isNaN(val)) parsedOriginalPrice = val;
+        }
+
+        let calculatedBannerTag = bannerTag;
+        if (!calculatedBannerTag || calculatedBannerTag === 'Auto') {
+            if (parsedPrice > 10000000) {
+                calculatedBannerTag = 'VIP';
+            } else if (parsedPrice > 25000) {
+                calculatedBannerTag = 'Nor';
+            } else {
+                calculatedBannerTag = 'REG';
+            }
         }
 
         const dataToSave = {
@@ -49,6 +60,7 @@ export async function POST(request: Request) {
             price: parsedPrice,
             originalPrice: parsedOriginalPrice,
             image: String(image || ""),
+            bannerTag: calculatedBannerTag,
             status: 'AVAILABLE'
         };
 

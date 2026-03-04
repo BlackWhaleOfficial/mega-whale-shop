@@ -9,7 +9,19 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
         const body = await request.json();
         const { id } = params;
-        const { gameId, email, password, rank, heroesCount, skinsCount, loginType, notes, price, originalPrice, status, image } = body;
+        const { gameId, email, password, rank, heroesCount, skinsCount, loginType, notes, price, originalPrice, status, image, bannerTag } = body;
+
+        const parsedPrice = parseInt(price) || 0;
+        let calculatedBannerTag = bannerTag;
+        if (!calculatedBannerTag || calculatedBannerTag === 'Auto') {
+            if (parsedPrice > 10000000) {
+                calculatedBannerTag = 'VIP';
+            } else if (parsedPrice > 25000) {
+                calculatedBannerTag = 'Nor';
+            } else {
+                calculatedBannerTag = 'REG';
+            }
+        }
 
         const updated = await prisma.gameAccount.update({
             where: { id },
@@ -22,10 +34,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
                 skinsCount: parseInt(skinsCount) || 0,
                 loginType,
                 notes,
-                price: parseInt(price) || 0,
+                price: parsedPrice,
                 originalPrice: originalPrice ? parseInt(originalPrice) : null,
                 status,
-                image
+                image,
+                bannerTag: calculatedBannerTag
             }
         });
         return NextResponse.json(updated);
