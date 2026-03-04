@@ -142,7 +142,11 @@ export default function HistoryPage() {
                                                     {itemCount > 1 && <span style={{ color: '#aaa', fontWeight: 'normal', fontSize: '0.9rem', marginLeft: '5px' }}>({itemCount} thẻ)</span>}
                                                 </div>
                                                 <div style={{ color: 'var(--primary)', fontSize: '1.2rem', fontWeight: 700 }}>
-                                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalAmount)}
+                                                    {order.productName.toLowerCase().includes('gacha') || order.totalAmount < 5000 ? (
+                                                        `${order.totalAmount} WCash`
+                                                    ) : (
+                                                        new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalAmount)
+                                                    )}
                                                 </div>
                                             </div>
 

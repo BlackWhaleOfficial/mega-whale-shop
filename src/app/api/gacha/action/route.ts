@@ -40,7 +40,7 @@ export async function POST(request: Request) {
                             userId,
                             productName: `Tài khoản Gacha (Nguyện Ước Biển Cả) x${accounts.length}`,
                             quantity: accounts.length,
-                            totalAmount: 0,
+                            totalAmount: accounts.length === 10 ? 90 : accounts.length * 10,
                             status: 'DONE',
                             items: {
                                 create: accounts.map(acc => ({
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
                         userId,
                         productName: `Tài khoản Gacha (Nguyện Ước Biển Cả)`,
                         quantity: 1,
-                        totalAmount: 0,
+                        totalAmount: 10,
                         status: 'DONE',
                         items: {
                             create: [{
