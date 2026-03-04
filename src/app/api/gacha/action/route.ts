@@ -34,6 +34,23 @@ export async function POST(request: Request) {
                             type: `NHẬN_GACHA - Nhận ${accounts.length} Acc`,
                             status: 'DONE'
                         }
+                    }),
+                    prisma.order.create({
+                        data: {
+                            userId,
+                            productName: `Tài khoản Gacha (Nguyện Ước Biển Cả) x${accounts.length}`,
+                            quantity: accounts.length,
+                            totalAmount: 0,
+                            status: 'DONE',
+                            items: {
+                                create: accounts.map(acc => ({
+                                    game: `Liên Quân - ${acc.rank}`,
+                                    serial: `Mã: #${acc.gameId} | Đăng nhập: ${acc.loginType} (${acc.email})`,
+                                    pin: `Mật khẩu: ${acc.password}`,
+                                    status: 'DONE'
+                                }))
+                            }
+                        }
                     })
                 ]);
                 return NextResponse.json({ success: true });
@@ -79,6 +96,23 @@ export async function POST(request: Request) {
                         amount: 0,
                         type: `NHẬN_GACHA - Nhận Acc #${account.gameId}`,
                         status: 'DONE'
+                    }
+                }),
+                prisma.order.create({
+                    data: {
+                        userId,
+                        productName: `Tài khoản Gacha (Nguyện Ước Biển Cả)`,
+                        quantity: 1,
+                        totalAmount: 0,
+                        status: 'DONE',
+                        items: {
+                            create: [{
+                                game: `Liên Quân - ${account.rank}`,
+                                serial: `Mã: #${account.gameId} | Đăng nhập: ${account.loginType} (${account.email})`,
+                                pin: `Mật khẩu: ${account.password}`,
+                                status: 'DONE'
+                            }]
+                        }
                     }
                 })
             ]);
