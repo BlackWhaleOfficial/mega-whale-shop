@@ -657,15 +657,10 @@ export default function CollectionPage() {
                                     <button style={{ flex: 1, padding: '1.3rem', background: 'rgba(255,80,80,0.1)', color: '#ff4d4f', border: '1px solid rgba(255,77,79,0.2)', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }} onClick={() => handleGachaAction('SELL')}>BÁN (Hoàn 6 WC)</button>
                                 </>
                             )}
-                            {gachaResults.length > 1 && (
+                            {gachaResults.length > 1 && gachaType !== 'FREE' && (
                                 <>
-                                    {gachaType !== 'FREE' && (
-                                        <>
-                                            <button style={{ flex: 1.5, padding: '1.3rem', background: '#e9c46a', color: '#000', border: 'none', borderRadius: '16px', fontWeight: 900, fontSize: '1.1rem', cursor: 'pointer', textTransform: 'uppercase' }} onClick={() => handleBulkAction('CLAIM_ALL')}>NHẬN TẤT CẢ</button>
-                                            <button style={{ flex: 1, padding: '1.3rem', background: 'rgba(255,80,80,0.1)', color: '#ff4d4f', border: '1px solid rgba(255,77,79,0.2)', borderRadius: '16px', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase' }} onClick={() => handleBulkAction('SELL_ALL')}>BÁN TẤT CẢ (+{gachaResults.length === 10 ? 54 : gachaResults.length * 6} WC)</button>
-                                        </>
-                                    )}
-                                    <button style={{ flex: 1, padding: '1.3rem', background: '#1a1a1a', color: '#fff', border: '1px solid #333', borderRadius: '16px', fontWeight: 700, fontSize: '1rem', cursor: 'pointer' }} onClick={() => { setIsGachaPlaying(false); setVideoEnded(false); window.location.reload(); }}>ĐÓNG TẤT CẢ</button>
+                                    <button style={{ flex: 1.5, padding: '1.3rem', background: '#e9c46a', color: '#000', border: 'none', borderRadius: '16px', fontWeight: 900, fontSize: '1.1rem', cursor: 'pointer', textTransform: 'uppercase' }} onClick={() => handleBulkAction('CLAIM_ALL')}>NHẬN TẤT CẢ</button>
+                                    <button style={{ flex: 1, padding: '1.3rem', background: 'rgba(255,80,80,0.1)', color: '#ff4d4f', border: '1px solid rgba(255,77,79,0.2)', borderRadius: '16px', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase' }} onClick={() => handleBulkAction('SELL_ALL')}>BÁN TẤT CẢ (+{gachaResults.length === 10 ? 54 : gachaResults.length * 6} WC)</button>
                                 </>
                             )}
                         </div>
