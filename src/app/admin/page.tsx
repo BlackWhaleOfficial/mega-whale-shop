@@ -70,24 +70,21 @@ export default function AdminDashboard() {
                         ctx.drawImage(img, 0, 0);
                         const webpDataUrl = canvas.toDataURL('image/webp', 0.85);
                         const base64Data = webpDataUrl.split(',')[1];
-                        const formData = new FormData();
-                        formData.append('image', base64Data);
-                        formData.append('type', 'base64');
                         try {
-                            const res = await fetch('https://api.imgur.com/3/image', {
+                            const res = await fetch('/api/admin/upload', {
                                 method: 'POST',
-                                headers: { Authorization: 'Client-ID 8a514d4e0e56306' },
-                                body: formData
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ image: base64Data })
                             });
                             const data = await res.json();
-                            if (data.success) {
-                                setNewAccountData(prev => ({ ...prev, image: data.data.link }));
+                            if (res.ok && data.url) {
+                                setNewAccountData(prev => ({ ...prev, image: data.url }));
                             } else {
-                                console.error('Imgur API Error:', data);
-                                alert(`Upload ảnh thất bại! ${data.data?.error?.message || data.data?.error || ''}`);
+                                console.error('Upload Error:', data);
+                                alert(`Upload ảnh thất bại! ${data.error || ''}`);
                             }
                         } catch (err) {
-                            console.error('Imgur Network Error:', err);
+                            console.error('Network Error:', err);
                             alert('Lỗi kết nối API upload ảnh.');
                         }
                     }
