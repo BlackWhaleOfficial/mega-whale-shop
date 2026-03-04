@@ -8,7 +8,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { type, bannerIndex } = body;
+        const { type, bannerIndex, count = 1 } = body;
+        const pullCount = parseInt(count);
         const bannerNames = ['Nhật Nguyệt Thánh Linh', 'Hỗn Độn Thần Ma', 'Mộng Giới Thần Chủ'];
         const bannerName = bannerNames[bannerIndex] || 'Unknown';
 
@@ -30,93 +31,126 @@ export async function POST(request: Request) {
                 return NextResponse.json({ error: 'Vui lòng đăng nhập để tiếp tục' }, { status: 401 });
             }
 
+            const cost = pullCount === 10 ? 90 : (pullCount * 10);
+
             const user = await prisma.user.findUnique({ where: { id: userId } });
-            if (!user || user.whaleCash < 9) {
+            if (!user || user.whaleCash < cost) {
                 return NextResponse.json({ error: 'Không đủ WCash' }, { status: 400 });
             }
 
-            // Get or initialize roll count
-            const rollRecord = await prisma.bannerRollCount.upsert({
-                where: { userId_bannerName: { userId, bannerName } },
-                update: { count: { increment: 1 } },
-                create: { userId, bannerName, count: 1 }
+            // Get current roll count to calculate pity accurately for multiple pulls
+            const currentRollRecord = await prisma.bannerRollCount.findUnique({
+                where: { userId_bannerName: { userId, bannerName } }
             });
+            let baseRoll = currentRollRecord?.count || 0;
 
-            let targetTag = 'REG';
-            const currentRoll = rollRecord.count;
+            const results = [];
+            const accountUpdates = [];
 
-            // Pity check: 150 rolls
-            if (currentRoll % 150 === 0) {
-                targetTag = 'REG có sẵn skin SSS';
-            } else {
-                const r = Math.random() * 100;
-                if (r < 0.0000001) {
-                    targetTag = 'Full Skin';
-                } else if (r < 0.0000001 + 0.0001) {
+            for (let i = 1; i <= pullCount; i++) {
+                const currentRollNum = baseRoll + i;
+                let targetTag = 'REG';
+
+                // Pity check: 150 rolls (Sao Hộ Mệnh)
+                if (currentRollNum % 150 === 0) {
                     targetTag = 'REG có sẵn skin SSS';
                 } else {
-                    targetTag = 'REG';
+                    const r = Math.random() * 100;
+                    if (r < 0.0000001) {
+                        targetTag = 'Full Skin';
+                    } else if (r < 0.0000001 + 0.0001) {
+                        targetTag = 'REG có sẵn skin SSS';
+                    } else {
+                        targetTag = 'REG';
+                    }
                 }
-            }
 
-            // Find an available account with this tag
-            let accounts = await prisma.gameAccount.findMany({
-                where: {
-                    status: 'AVAILABLE',
-                    bannerTag: targetTag
-                }
-            });
-
-            // Fallback if no account with specific tag is found (except REG which should exist)
-            if (accounts.length === 0 && targetTag !== 'REG') {
-                accounts = await prisma.gameAccount.findMany({
+                // Find an available account with this tag
+                let availableAccounts = await prisma.gameAccount.findMany({
                     where: {
                         status: 'AVAILABLE',
-                        bannerTag: 'REG'
+                        bannerTag: targetTag,
+                        id: { notIn: accountUpdates.map(a => a.id) } // Avoid picking the same one in 10x
                     }
                 });
+
+                // Fallback if no account with specific tag is found
+                if (availableAccounts.length === 0 && targetTag !== 'REG') {
+                    availableAccounts = await prisma.gameAccount.findMany({
+                        where: {
+                            status: 'AVAILABLE',
+                            bannerTag: 'REG',
+                            id: { notIn: accountUpdates.map(a => a.id) }
+                        }
+                    });
+                }
+
+                if (availableAccounts.length === 0) {
+                    // Critical failure: No accounts left even in REG
+                    return NextResponse.json({ error: 'Kho tài khoản hiện đang tạm hết, vui lòng quay lại sau' }, { status: 400 });
+                }
+
+                const pulledAcc = availableAccounts[Math.floor(Math.random() * availableAccounts.length)];
+                results.push(pulledAcc);
+                accountUpdates.push(pulledAcc);
             }
 
-            if (accounts.length === 0) {
-                return NextResponse.json({ error: 'Kho tài khoản hiện đang tạm hết, vui lòng quay lại sau' }, { status: 400 });
-            }
-
-            const randomAcc = accounts[Math.floor(Math.random() * accounts.length)];
-
+            // Perform transaction
             await prisma.$transaction([
+                // Update User Balance
                 prisma.user.update({
                     where: { id: userId },
-                    data: { whaleCash: { decrement: 9 } }
+                    data: { whaleCash: { decrement: cost } }
                 }),
+                // Update Roll Count
+                prisma.bannerRollCount.upsert({
+                    where: { userId_bannerName: { userId, bannerName } },
+                    update: { count: { increment: pullCount } },
+                    create: { userId, bannerName, count: pullCount }
+                }),
+                // Create Transaction record
                 prisma.transaction.create({
                     data: {
                         userId,
-                        amount: 9,
+                        amount: cost,
                         type: 'GACHA_PULL',
-                        status: 'DONE'
+                        status: 'DONE',
+                        notes: `Gacha ${pullCount}x pull on ${bannerName}`
                     }
                 }),
-                prisma.gameAccount.update({
-                    where: { id: randomAcc.id },
-                    data: { status: 'GACHA_PENDING' }
-                })
+                // Set accounts to pending
+                ...accountUpdates.map(acc =>
+                    prisma.gameAccount.update({
+                        where: { id: acc.id },
+                        data: { status: 'GACHA_PENDING' }
+                    })
+                )
             ]);
 
-            return NextResponse.json({ account: randomAcc, rollCount: currentRoll });
+            return NextResponse.json({
+                accounts: results,
+                account: results[0], // backward compatibility for frontend
+                rollCount: baseRoll + pullCount
+            });
 
         } else if (type === 'FREE') {
-            // Just return a random account for preview, but don't save anything
+            // Just return random accounts for preview
             const accounts = await prisma.gameAccount.findMany({
                 where: { status: 'AVAILABLE' },
-                take: 50 // Just pick from a small batch for speed
+                take: pullCount
             });
 
             if (accounts.length === 0) {
                 return NextResponse.json({ error: 'Kho tài khoản trống' }, { status: 400 });
             }
 
-            const randomAcc = accounts[Math.floor(Math.random() * accounts.length)];
-            return NextResponse.json({ account: randomAcc });
+            // Shuffle if we want random but we just took top N
+            const shuffled = accounts.sort(() => 0.5 - Math.random());
+
+            return NextResponse.json({
+                accounts: shuffled,
+                account: shuffled[0]
+            });
         } else {
             return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
         }

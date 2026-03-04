@@ -160,17 +160,18 @@ const GachaTab = ({ activeTab, banners, bannerNames, currentBanner, setCurrentBa
 
             <div style={{ textAlign: 'center', backgroundColor: 'rgba(255,255,255,0.03)', padding: '1.2rem', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', alignSelf: 'center', width: '100%', maxWidth: '600px', backdropFilter: 'blur(10px)' }}>
                 <div style={{ color: '#fff', fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontWeight: 700 }}>Tích lũy: <span style={{ color: '#e9c46a', textShadow: '0 0 10px rgba(233,196,106,0.5)' }}>{currentRolls}</span> lượt quay</div>
-                <div style={{ color: '#888', fontSize: '0.85rem', marginTop: '6px', letterSpacing: '0.5px' }}>Còn <span style={{ color: '#fff' }}>{rollsLeft}</span> lượt nữa chắc chắn nhận <span style={{ color: '#e9c46a', fontWeight: 700 }}>REG Skin SSS</span></div>
+                <div style={{ color: '#888', fontSize: '0.85rem', marginTop: '6px', letterSpacing: '0.5px' }}>Còn <span style={{ color: '#fff' }}>{rollsLeft}</span> lượt nữa chắc chắn nhận <span style={{ color: '#e9c46a', fontWeight: 700 }}>REG Skin SSS</span> (Sao Hộ Mệnh)</div>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', width: '100%', maxWidth: '900px', margin: '0 auto' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', width: '100%', maxWidth: '1000px', margin: '0 auto' }}>
                 <button
-                    onClick={() => handleGacha('FREE')}
+                    onClick={() => handleGacha('FREE', 1)}
                     disabled={gachaLoading}
                     style={{
                         flex: 1,
+                        minWidth: '200px',
                         padding: '1.3rem 1rem',
-                        fontSize: 'clamp(0.85rem, 3.5vw, 1.2rem)',
+                        fontSize: 'clamp(0.85rem, 3.5vw, 1.1rem)',
                         fontWeight: 900,
                         backgroundColor: '#fff',
                         color: '#000',
@@ -186,12 +187,13 @@ const GachaTab = ({ activeTab, banners, bannerNames, currentBanner, setCurrentBa
                     Test nhân phẩm (FREE)
                 </button>
                 <button
-                    onClick={() => handleGacha('PAID')}
+                    onClick={() => handleGacha('PAID', 1)}
                     disabled={gachaLoading}
                     style={{
                         flex: 1,
+                        minWidth: '200px',
                         padding: '1.3rem 1rem',
-                        fontSize: 'clamp(0.85rem, 3.5vw, 1.2rem)',
+                        fontSize: 'clamp(0.85rem, 3.5vw, 1.1rem)',
                         fontWeight: 900,
                         backgroundColor: '#e9c46a',
                         color: '#000',
@@ -204,7 +206,29 @@ const GachaTab = ({ activeTab, banners, bannerNames, currentBanner, setCurrentBa
                         textTransform: 'uppercase'
                     }}
                 >
-                    1x ( 9 WCash )
+                    1x ( 10 WCash )
+                </button>
+                <button
+                    onClick={() => handleGacha('PAID', 10)}
+                    disabled={gachaLoading}
+                    style={{
+                        flex: 1,
+                        minWidth: '200px',
+                        padding: '1.3rem 1rem',
+                        fontSize: 'clamp(0.85rem, 3.5vw, 1.1rem)',
+                        fontWeight: 900,
+                        backgroundColor: '#000',
+                        color: '#e9c46a',
+                        border: '2px solid #e9c46a',
+                        borderRadius: '16px',
+                        cursor: gachaLoading ? 'not-allowed' : 'pointer',
+                        boxShadow: '0 10px 30px rgba(233,196,106,0.1)',
+                        opacity: gachaLoading ? 0.7 : 1,
+                        transition: 'all 0.3s',
+                        textTransform: 'uppercase'
+                    }}
+                >
+                    10x ( 90 WCash )
                 </button>
             </div>
         </div>
@@ -225,11 +249,12 @@ export default function CollectionPage() {
     const [isGachaPlaying, setIsGachaPlaying] = useState(false);
     const [videoEnded, setVideoEnded] = useState(false);
     const [gachaResult, setGachaResult] = useState<GameAccount | null>(null);
+    const [gachaResults, setGachaResults] = useState<GameAccount[]>([]);
     const [gachaVideoSrc, setGachaVideoSrc] = useState('');
     const [gachaType, setGachaType] = useState<'FREE' | 'PAID'>('FREE');
     const [gachaLoading, setGachaLoading] = useState(false);
 
-    const banners = ['/banner1.png', '/banner2.png', '/banner3.png'];
+    const banners = ['/banner1.png', '/banner2.png', '/banner3.png?v=2026'];
     const bannerNames = ['Nhật Nguyệt Thánh Linh', 'Hỗn Độn Thần Ma', 'Mộng Giới Thần Chủ'];
     const [currentBanner, setCurrentBanner] = useState(0);
     const [showBannerInfo, setShowBannerInfo] = useState(false);
@@ -256,18 +281,19 @@ export default function CollectionPage() {
             .catch(() => { });
     }, []);
 
-    const handleGacha = async (type: 'FREE' | 'PAID') => {
+    const handleGacha = async (type: 'FREE' | 'PAID', count: number = 1) => {
         if (gachaLoading) return;
         setGachaLoading(true);
         setGachaType(type);
         setGachaResult(null);
+        setGachaResults([]);
         setVideoEnded(false);
 
         try {
             const res = await fetch('/api/gacha/pull', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type, bannerIndex: currentBanner })
+                body: JSON.stringify({ type, bannerIndex: currentBanner, count })
             });
             const data = await res.json();
 
@@ -299,20 +325,28 @@ export default function CollectionPage() {
             const video = Math.random() > 0.5 ? '/gacha1.mp4' : '/gacha2.mp4';
             setGachaVideoSrc(video);
             setIsGachaPlaying(true);
-            setGachaResult(data.account);
+
+            if (data.accounts) {
+                setGachaResults(data.accounts);
+                setGachaResult(data.accounts[0]); // Best/First for primary display
+            } else {
+                setGachaResult(data.account);
+            }
         } catch (e) {
             alert('Lỗi kết nối gacha!');
         }
         setGachaLoading(false);
     };
 
-    const handleGachaAction = async (action: 'CLAIM' | 'SELL') => {
-        if (!gachaResult) return;
+    const handleGachaAction = async (action: 'CLAIM' | 'SELL', accId?: string) => {
+        const idToProcess = accId || gachaResult?.id;
+        if (!idToProcess) return;
+
         try {
             const res = await fetch('/api/gacha/action', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action, accountId: gachaResult.id })
+                body: JSON.stringify({ action, accountId: idToProcess })
             });
             const data = await res.json();
 
@@ -320,15 +354,32 @@ export default function CollectionPage() {
                 alert(data.error || 'Có lỗi xảy ra!');
                 return;
             }
-            if (action === 'SELL') {
-                alert(`Đã bán thành công. Bạn được hoàn ${data.refund} WCash!`);
+
+            if (gachaResults.length > 1) {
+                // If multi pull, just mark as processed and alert
+                if (action === 'SELL') {
+                    alert(`Đã bán thành công. Bạn được hoàn ${data.refund} WCash!`);
+                } else {
+                    alert('Đã nhận tài khoản thành công!');
+                }
+                // Optionally remove from list
+                setGachaResults(prev => prev.filter(a => a.id !== idToProcess));
+                if (gachaResults.length <= 1) {
+                    setIsGachaPlaying(false);
+                    setVideoEnded(false);
+                    window.location.reload();
+                }
             } else {
-                alert('Tài khoản Gacha đã được cập nhật vào trạng thái giao dịch của bạn thành công!');
+                if (action === 'SELL') {
+                    alert(`Đã bán thành công. Bạn được hoàn ${data.refund} WCash!`);
+                } else {
+                    alert('Tài khoản Gacha đã được cập nhật vào trạng thái giao dịch của bạn thành công!');
+                }
+                setIsGachaPlaying(false);
+                setVideoEnded(false);
+                setGachaResult(null);
+                window.location.reload();
             }
-            setIsGachaPlaying(false);
-            setVideoEnded(false);
-            setGachaResult(null);
-            window.location.reload();
         } catch (e) {
             alert('Lỗi kết nối!');
         }
@@ -500,45 +551,72 @@ export default function CollectionPage() {
                 </div>
             )}
 
-            {isGachaPlaying && videoEnded && gachaResult && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.95)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', backdropFilter: 'blur(20px)' }}>
-                    <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass" style={{ width: '95%', maxWidth: '500px', padding: '2.5rem', borderRadius: '32px', border: '2px solid #e9c46a', backgroundColor: '#050505', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', boxShadow: '0 0 100px rgba(233,196,106,0.2)' }}>
+            {isGachaPlaying && videoEnded && (gachaResult || gachaResults.length > 0) && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.95)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', backdropFilter: 'blur(20px)', overflowY: 'auto', padding: '20px' }}>
+                    <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass" style={{ width: '95%', maxWidth: gachaResults.length > 1 ? '1000px' : '500px', padding: '2.5rem', borderRadius: '32px', border: '2px solid #e9c46a', backgroundColor: '#050505', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', boxShadow: '0 0 100px rgba(233,196,106,0.2)' }}>
                         <h2 style={{ color: '#e9c46a', fontSize: '2.5rem', margin: 0, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px' }}>KẾT QUẢ</h2>
-                        <div style={{ width: '100%', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', position: 'relative', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
-                            <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9' }}>
-                                <Image src={gachaResult.image || '/posts/dolia.png'} fill style={{ objectFit: 'cover' }} alt="Gacha Result" unoptimized />
-                                <div style={{ position: 'absolute', top: 15, left: 15, background: '#e9c46a', color: '#000', fontWeight: 900, padding: '5px 12px', borderRadius: '8px', fontSize: '0.8rem' }}>LIMITED</div>
+
+                        {gachaResults.length > 1 ? (
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem', width: '100%', maxHeight: '60vh', overflowY: 'auto', padding: '10px' }}>
+                                {gachaResults.map((acc, idx) => (
+                                    <div key={acc.id} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                                        <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9' }}>
+                                            <Image src={acc.image || '/posts/dolia.png'} fill style={{ objectFit: 'cover' }} alt="Result" unoptimized />
+                                        </div>
+                                        <div style={{ padding: '10px', fontSize: '0.8rem', textAlign: 'left' }}>
+                                            <div style={{ color: '#e9c46a', fontWeight: 900 }}>#{acc.gameId}</div>
+                                            <div style={{ color: '#fff', fontWeight: 600 }}>{acc.rank}</div>
+                                            <div style={{ display: 'flex', gap: '5px', marginTop: '10px' }}>
+                                                <button onClick={() => handleGachaAction('CLAIM', acc.id)} style={{ flex: 1, background: '#e9c46a', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer', fontWeight: 800, fontSize: '0.7rem' }}>NHẬN</button>
+                                                <button onClick={() => handleGachaAction('SELL', acc.id)} style={{ flex: 1, background: 'rgba(255,80,80,0.1)', border: '1px solid rgba(255,80,80,0.2)', color: '#ff4d4f', borderRadius: '4px', padding: '4px', cursor: 'pointer', fontWeight: 800, fontSize: '0.7rem' }}>BÁN</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                        </div>
-                        <div style={{ width: '100%', background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ color: '#666', fontWeight: 700 }}>MÃ ACC</span>
-                                <span style={{ color: '#fff', fontWeight: 800, fontFamily: 'monospace' }}>#{gachaResult.gameId}</span>
-                            </div>
-                            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ color: '#666', fontWeight: 700 }}>HẠNG</span>
-                                <span style={{ color: '#e9c46a', fontWeight: 900 }}>{gachaResult.rank}</span>
-                            </div>
-                            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ color: '#666', fontWeight: 700 }}>TƯỚNG / SKIN</span>
-                                <span style={{ color: '#fff', fontWeight: 800 }}>{gachaResult.heroesCount} / {gachaResult.skinsCount}</span>
-                            </div>
-                            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '0.8rem' }}>
-                                <span style={{ color: '#666', fontWeight: 700 }}>GIÁ TRỊ THỰC</span>
-                                <span style={{ color: '#fff', fontWeight: 900 }}>{new Intl.NumberFormat('vi-VN').format(gachaResult.price)}đ</span>
-                            </div>
-                        </div>
-                        <div style={{ width: '100%', display: 'flex', gap: '1rem' }}>
+                        ) : gachaResult && (
+                            <>
+                                <div style={{ width: '100%', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', position: 'relative', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
+                                    <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9' }}>
+                                        <Image src={gachaResult.image || '/posts/dolia.png'} fill style={{ objectFit: 'cover' }} alt="Gacha Result" unoptimized />
+                                        <div style={{ position: 'absolute', top: 15, left: 15, background: '#e9c46a', color: '#000', fontWeight: 900, padding: '5px 12px', borderRadius: '8px', fontSize: '0.8rem' }}>LIMITED</div>
+                                    </div>
+                                </div>
+                                <div style={{ width: '100%', background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
+                                        <span style={{ color: '#666', fontWeight: 700 }}>MÃ ACC</span>
+                                        <span style={{ color: '#fff', fontWeight: 800, fontFamily: 'monospace' }}>#{gachaResult.gameId}</span>
+                                    </div>
+                                    <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
+                                        <span style={{ color: '#666', fontWeight: 700 }}>HẠNG</span>
+                                        <span style={{ color: '#e9c46a', fontWeight: 900 }}>{gachaResult.rank}</span>
+                                    </div>
+                                    <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
+                                        <span style={{ color: '#666', fontWeight: 700 }}>TƯỚNG / SKIN</span>
+                                        <span style={{ color: '#fff', fontWeight: 800 }}>{gachaResult.heroesCount} / {gachaResult.skinsCount}</span>
+                                    </div>
+                                    <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '0.8rem' }}>
+                                        <span style={{ color: '#666', fontWeight: 700 }}>GIÁ TRỊ THỰC</span>
+                                        <span style={{ color: '#fff', fontWeight: 900 }}>{new Intl.NumberFormat('vi-VN').format(gachaResult.price)}đ</span>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        <div style={{ width: '100%', display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                             {gachaType === 'FREE' ? (
                                 <>
-                                    <button style={{ flex: 1.5, padding: '1.2rem', background: '#e9c46a', color: '#000', border: 'none', borderRadius: '16px', fontWeight: 900, fontSize: '1rem', cursor: 'pointer', textTransform: 'uppercase' }} onClick={() => { setIsGachaPlaying(false); handleGacha('FREE'); }}>THỬ LẠI</button>
+                                    <button style={{ flex: 1.5, padding: '1.2rem', background: '#e9c46a', color: '#000', border: 'none', borderRadius: '16px', fontWeight: 900, fontSize: '1rem', cursor: 'pointer', textTransform: 'uppercase' }} onClick={() => { setIsGachaPlaying(false); handleGacha('FREE', gachaResults.length > 1 ? 10 : 1); }}>THỬ LẠI</button>
                                     <button style={{ flex: 1, padding: '1.2rem', background: '#1a1a1a', color: '#fff', border: '1px solid #333', borderRadius: '16px', fontWeight: 700, fontSize: '1rem', cursor: 'pointer' }} onClick={() => { setIsGachaPlaying(false); setVideoEnded(false); }}>ĐÓNG</button>
                                 </>
-                            ) : (
+                            ) : gachaResults.length <= 1 && (
                                 <>
                                     <button style={{ flex: 1.5, padding: '1.3rem', background: '#e9c46a', color: '#000', border: 'none', borderRadius: '16px', fontWeight: 900, fontSize: '1.1rem', cursor: 'pointer', textTransform: 'uppercase' }} onClick={() => handleGachaAction('CLAIM')}>NHẬN ACC</button>
                                     <button style={{ flex: 1, padding: '1.3rem', background: 'rgba(255,80,80,0.1)', color: '#ff4d4f', border: '1px solid rgba(255,77,79,0.2)', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }} onClick={() => handleGachaAction('SELL')}>BÁN (Hoàn 4 WC)</button>
                                 </>
+                            )}
+                            {gachaResults.length > 1 && (
+                                <button style={{ flex: 1, padding: '1.3rem', background: '#1a1a1a', color: '#fff', border: '1px solid #333', borderRadius: '16px', fontWeight: 700, fontSize: '1rem', cursor: 'pointer' }} onClick={() => { setIsGachaPlaying(false); setVideoEnded(false); window.location.reload(); }}>ĐÓNG TẤT CẢ</button>
                             )}
                         </div>
                     </motion.div>
@@ -555,8 +633,9 @@ export default function CollectionPage() {
                             <h4 style={{ color: '#e9c46a', marginBottom: '15px', textTransform: 'uppercase', fontSize: '1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}><div style={{ width: '4px', height: '18px', background: '#e9c46a' }}></div> Thể lệ:</h4>
                             <ul style={{ color: '#ccc', lineHeight: '2', marginLeft: '10px', listStyle: 'none' }}>
                                 <li style={{ marginBottom: '10px' }}><strong style={{ color: '#fff' }}>• Test Nhân Phẩm:</strong> Miễn phí vui vẻ, không nhận vật phẩm.</li>
-                                <li style={{ marginBottom: '10px' }}><strong style={{ color: '#fff' }}>• Lượt Quay (9 WC):</strong> Tỉ lệ ra Acc Full Skin cực cao.</li>
-                                <li><strong style={{ color: '#fff' }}>• Hệ thống Pity:</strong> Quay đủ 150 lần chắc chắn nổ <span style={{ color: '#e9c46a' }}>REG SSS</span>.</li>
+                                <li style={{ marginBottom: '10px' }}><strong style={{ color: '#fff' }}>• Lượt Quay (10 WC):</strong> Tỉ lệ ra Acc Full Skin cực cao.</li>
+                                <li style={{ marginBottom: '10px' }}><strong style={{ color: '#fff' }}>• Gói 10 Lượt (90 WC):</strong> Tiết kiệm hơn.</li>
+                                <li><strong style={{ color: '#fff' }}>• Sao Hộ Mệnh:</strong> Quay đủ 150 lần chắc chắn nổ <span style={{ color: '#e9c46a' }}>REG SSS</span>.</li>
                             </ul>
                         </div>
                         <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.8rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
