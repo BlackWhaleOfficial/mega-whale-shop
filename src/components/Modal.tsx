@@ -9,6 +9,7 @@ type ModalProps = {
     cancelText?: string;
     onClose: () => void;
     onConfirm?: (inputValue?: string) => void;
+    alertColor?: 'red' | 'green';
 };
 
 export default function Modal({
@@ -19,7 +20,8 @@ export default function Modal({
     confirmText = 'OK',
     cancelText = 'Hủy',
     onClose,
-    onConfirm
+    onConfirm,
+    alertColor
 }: ModalProps) {
     const [inputValue, setInputValue] = useState('');
 
@@ -28,6 +30,10 @@ export default function Modal({
     const isAlert = type === 'alert';
     const isConfirm = type === 'confirm';
     const isPrompt = type === 'prompt';
+
+    const modalColor = alertColor || (type === 'alert' ? 'red' : 'green');
+    const colorHex = modalColor === 'red' ? '#ff4d4f' : 'var(--primary)';
+    const colorRgba = modalColor === 'red' ? 'rgba(255, 77, 79, 0.1)' : 'rgba(68, 214, 44, 0.1)';
 
     const handleConfirm = () => {
         if (onConfirm) {
@@ -54,9 +60,9 @@ export default function Modal({
                     100% { opacity: 1; transform: scale(1) translateY(0); }
                 }
                 @keyframes pulseGlowModal {
-                    0% { box-shadow: 0 0 10px rgba(255, 77, 79, 0.4); }
-                    50% { box-shadow: 0 0 25px rgba(255, 77, 79, 0.8); }
-                    100% { box-shadow: 0 0 10px rgba(255, 77, 79, 0.4); }
+                    0% { box-shadow: 0 0 10px ${modalColor === 'red' ? 'rgba(255, 77, 79, 0.4)' : 'rgba(68, 214, 44, 0.4)'}; }
+                    50% { box-shadow: 0 0 25px ${modalColor === 'red' ? 'rgba(255, 77, 79, 0.8)' : 'rgba(68, 214, 44, 0.8)'}; }
+                    100% { box-shadow: 0 0 10px ${modalColor === 'red' ? 'rgba(255, 77, 79, 0.4)' : 'rgba(68, 214, 44, 0.4)'}; }
                 }
                 `
             }} />
@@ -76,15 +82,15 @@ export default function Modal({
                     width: '60px',
                     height: '60px',
                     borderRadius: '50%',
-                    backgroundColor: isAlert ? 'rgba(255, 77, 79, 0.1)' : 'rgba(68, 214, 44, 0.1)',
+                    backgroundColor: colorRgba,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     margin: '0 auto 1.5rem auto',
-                    animation: isAlert ? 'pulseGlowModal 2s infinite' : 'none',
-                    color: isAlert ? '#ff4d4f' : 'var(--primary)',
+                    animation: 'pulseGlowModal 2s infinite',
+                    color: colorHex,
                     fontSize: '2rem',
-                    border: `2px solid ${isAlert ? '#ff4d4f' : 'var(--primary)'}`
+                    border: `2px solid ${colorHex}`
                 }}>
                     {isAlert ? '!' : '?'}
                 </div>
@@ -145,9 +151,9 @@ export default function Modal({
                         style={{
                             flex: 1,
                             padding: '12px',
-                            backgroundColor: isAlert ? '#ff4d4f' : 'var(--primary)',
+                            backgroundColor: colorHex,
                             border: 'none',
-                            color: isAlert ? '#fff' : '#000',
+                            color: modalColor === 'red' ? '#fff' : '#000',
                             borderRadius: '6px',
                             fontSize: '0.9rem',
                             cursor: 'pointer',
@@ -160,7 +166,7 @@ export default function Modal({
                     </button>
                 </div>
 
-                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '4px', backgroundColor: isAlert ? '#ff4d4f' : 'var(--primary)' }}></div>
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '4px', backgroundColor: colorHex }}></div>
             </div>
         </div >
     );

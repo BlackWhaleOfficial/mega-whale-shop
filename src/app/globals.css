@@ -172,16 +172,22 @@ select:focus {
 }
 
 .glass-card {
-  background: rgba(10, 10, 10, 0.45);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(10, 10, 10, 0.85);
+  /* Increased opacity as fallback */
+  /* Remove backdrop-filter for standard cards to boost performance */
+  /* backdrop-filter: blur(8px); */
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
   padding: 2rem;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
   position: relative;
   overflow: hidden;
+  will-change: transform;
+  /* Hint to browser for smoother animation */
 }
 
 .glass-card:hover {
@@ -271,4 +277,28 @@ select:focus {
 
 .nav-hover:hover::after {
   width: 70%;
+}
+
+/* Image Optimization Utilities */
+.img-optimize {
+  image-rendering: -webkit-optimize-contrast;
+  content-visibility: auto;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  /* GPU Acceleration */
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Lazy Load Transition */
+.lazy-load {
+  opacity: 0;
+  transition: opacity 0.5s ease-in;
+}
+
+.lazy-load.loaded {
+  opacity: 1;
 }

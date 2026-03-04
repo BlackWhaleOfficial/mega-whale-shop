@@ -22,6 +22,7 @@ export default function AdminDashboard() {
         isOpen: boolean;
         type: 'alert' | 'confirm' | 'prompt';
         message: string;
+        alertColor?: 'red' | 'green';
         onConfirm?: (val?: string) => void;
         onClose?: () => void;
     }>({ isOpen: false, type: 'alert', message: '' });
@@ -129,6 +130,7 @@ export default function AdminDashboard() {
         const res = await fetch(`/api/admin/orders/${orderId}/approve`, { method: 'POST' });
         if (res.ok) {
             setOrders(orders.filter(o => o.id !== orderId));
+            setModalConfig({ isOpen: true, type: 'alert', message: 'Duyệt đơn thành công!', alertColor: 'green' });
         } else {
             setModalConfig({ isOpen: true, type: 'alert', message: 'Đã có lỗi xảy ra khi xác nhận!' });
         }
@@ -138,6 +140,7 @@ export default function AdminDashboard() {
         const res = await fetch(`/api/admin/orders/${orderId}/reject`, { method: 'POST' });
         if (res.ok) {
             setOrders(orders.filter(o => o.id !== orderId));
+            setModalConfig({ isOpen: true, type: 'alert', message: 'Đã từ chối đơn hàng!', alertColor: 'green' });
         } else {
             setModalConfig({ isOpen: true, type: 'alert', message: 'Đã có lỗi xảy ra khi từ chối!' });
         }
@@ -156,6 +159,7 @@ export default function AdminDashboard() {
         const res = await fetch(`/api/admin/inventory/${id}`, { method: 'DELETE' });
         if (res.ok) {
             setInventoryCards(inventoryCards.filter(c => c.id !== id));
+            setModalConfig({ isOpen: true, type: 'alert', message: 'Xóa thẻ thành công!', alertColor: 'green' });
         } else {
             setModalConfig({ isOpen: true, type: 'alert', message: 'Có lỗi xảy ra khi xóa thẻ.' });
         }
@@ -203,7 +207,7 @@ export default function AdminDashboard() {
             setInventoryCards([newItem, ...inventoryCards]);
             setShowAddInventoryForm(false);
             setNewInventoryData({ game: 'Liên Quân', serial: '', pin: '', cardValue: 100000 });
-            setModalConfig({ isOpen: true, type: 'alert', message: 'Nhập thẻ thành công!' });
+            setModalConfig({ isOpen: true, type: 'alert', message: 'Nhập thẻ thành công!', alertColor: 'green' });
         } else {
             setModalConfig({ isOpen: true, type: 'alert', message: 'Có lỗi xảy ra khi nhập thẻ.' });
         }
@@ -246,6 +250,7 @@ export default function AdminDashboard() {
             setInventoryCards(inventoryCards.map(c => c.id === editingInventoryId ? updated : c));
             setEditingInventoryId(null);
             setEditFormData({});
+            setModalConfig({ isOpen: true, type: 'alert', message: 'Cập nhật thẻ thành công!', alertColor: 'green' });
         } else {
             setModalConfig({ isOpen: true, type: 'alert', message: 'Có lỗi khi lưu thông tin.' });
         }
@@ -266,7 +271,7 @@ export default function AdminDashboard() {
             setUsers(users.map(u => u.id === updatedUser.id ? { ...u, whaleCash: updatedUser.whaleCash } : u));
             setSelectedUserDetail({ ...selectedUserDetail, whaleCash: updatedUser.whaleCash });
             setManualWCash('');
-            setModalConfig({ isOpen: true, type: 'alert', message: 'Cập nhật số dư thành công!' });
+            setModalConfig({ isOpen: true, type: 'alert', message: 'Cập nhật số dư thành công!', alertColor: 'green' });
         } else {
             setModalConfig({ isOpen: true, type: 'alert', message: 'Đã có lỗi xảy ra khi cập nhật số dư.' });
         }
@@ -287,7 +292,7 @@ export default function AdminDashboard() {
             });
             const data = await res.json();
             if (res.ok) {
-                setModalConfig({ isOpen: true, type: 'alert', message: `Gửi thành công ${quantity} mã ${discount.code} tới người dùng!` });
+                setModalConfig({ isOpen: true, type: 'alert', message: `Gửi thành công ${quantity} mã ${discount.code} tới người dùng!`, alertColor: 'green' });
             } else {
                 setModalConfig({ isOpen: true, type: 'alert', message: `Lỗi: ${data.error}` });
             }
@@ -337,7 +342,12 @@ export default function AdminDashboard() {
                     setGameAccounts([data, ...gameAccounts]);
                 }
                 handleCancelAccountForm();
-                setModalConfig({ isOpen: true, type: 'alert', message: editingAccountId ? 'Cập nhật tài khoản thành công!' : 'Thêm tài khoản thành công!' });
+                setModalConfig({
+                    isOpen: true,
+                    type: 'alert',
+                    message: editingAccountId ? 'Cập nhật tài khoản thành công!' : 'Thêm tài khoản thành công!',
+                    alertColor: 'green'
+                });
             } else {
                 setModalConfig({
                     isOpen: true,
@@ -379,6 +389,12 @@ export default function AdminDashboard() {
                 const res = await fetch(`/api/admin/accounts/${id}`, { method: 'DELETE' });
                 if (res.ok) {
                     setGameAccounts(gameAccounts.filter(a => a.id !== id));
+                    setModalConfig({
+                        isOpen: true,
+                        type: 'alert',
+                        message: 'Xóa tài khoản thành công!',
+                        alertColor: 'green'
+                    });
                 }
             }
         });
@@ -1258,6 +1274,7 @@ export default function AdminDashboard() {
                 isOpen={modalConfig.isOpen}
                 type={modalConfig.type}
                 message={modalConfig.message}
+                alertColor={modalConfig.alertColor}
                 onConfirm={modalConfig.onConfirm}
                 onClose={() => {
                     setModalConfig(prev => ({ ...prev, isOpen: false }));
