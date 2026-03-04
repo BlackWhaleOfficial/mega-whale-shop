@@ -7,7 +7,7 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { type, bannerIndex, count = 1 } = body;
         const pullCount = parseInt(count);
-        const bannerNames = ['Nhật Nguyệt Thánh Linh', 'Hỗn Độn Thần Ma', 'Mộng Giới Thần Chủ'];
+        const bannerNames = ['Mộng Giới Thần Chủ', 'Nhật Nguyệt Thánh Linh', 'Hỗn Độn Thần Ma'];
         const bannerName = bannerNames[bannerIndex] || 'Unknown';
 
         const session = await getSession();

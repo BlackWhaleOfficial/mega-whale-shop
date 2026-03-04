@@ -255,7 +255,7 @@ export default function CollectionPage() {
     const [gachaLoading, setGachaLoading] = useState(false);
 
     const banners = ['/banner1.png', '/banner2.png', '/banner3.png?v=2026'];
-    const bannerNames = ['Nhật Nguyệt Thánh Linh', 'Hỗn Độn Thần Ma', 'Mộng Giới Thần Chủ'];
+    const bannerNames = ['Mộng Giới Thần Chủ', 'Nhật Nguyệt Thánh Linh', 'Hỗn Độn Thần Ma'];
     const [currentBanner, setCurrentBanner] = useState(0);
     const [showBannerInfo, setShowBannerInfo] = useState(false);
     const [popupInfo, setPopupInfo] = useState<{ message: string, onOk?: () => void } | null>(null);
