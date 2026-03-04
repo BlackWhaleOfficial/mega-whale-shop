@@ -44,6 +44,8 @@ export default function AdminDashboard() {
 
     const [gameAccounts, setGameAccounts] = useState<any[]>([]);
     const [showAddAccountForm, setShowAddAccountForm] = useState(false);
+    const [gallerySearchTerm, setGallerySearchTerm] = useState('');
+    const [galleryTab, setGalleryTab] = useState<'ALL' | 'REG'>('ALL');
     const [newAccountData, setNewAccountData] = useState({
         gameId: '', email: '', password: '', rank: 'Đồng', heroesCount: 0, skinsCount: 0,
         loginType: 'Garena', notes: '', price: 0, originalPrice: '', image: '', bannerTag: 'Auto'
@@ -436,6 +438,21 @@ export default function AdminDashboard() {
             (u.openid && u.openid.toLowerCase().includes(term))
         );
     });
+    const filteredGalleryAccounts = gameAccounts.filter(acc => {
+        if (galleryTab === 'REG') {
+            const isReg = acc.bannerTag === 'REG' || acc.bannerTag === 'REG có sẵn skin SSS';
+            if (!isReg) return false;
+        }
+        const term = gallerySearchTerm.toLowerCase();
+        if (!term) return true;
+        return (
+            acc.gameId.toLowerCase().includes(term) ||
+            (acc.bannerTag && acc.bannerTag.toLowerCase().includes(term)) ||
+            (acc.email && acc.email.toLowerCase().includes(term)) ||
+            (acc.notes && acc.notes.toLowerCase().includes(term))
+        );
+    });
+
 
     return (
         <div style={{ padding: '8rem 5%', minHeight: '100vh', display: 'flex', gap: '2rem', flexWrap: 'wrap', backgroundColor: '#000' }}>
@@ -1076,9 +1093,34 @@ export default function AdminDashboard() {
                 {activeTab === 'gallery' && (
                     <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-                            <h3 style={{ fontSize: '1.5rem', textTransform: 'uppercase' }}>Quản lý Tài Khoản Game (Gallery)</h3>
-                            <button onClick={editingAccountId ? handleCancelAccountForm : () => setShowAddAccountForm(!showAddAccountForm)} className="btn-primary" style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                {showAddAccountForm ? (editingAccountId ? <><X size={18} /> Hủy Sửa</> : <><X size={18} /> Thoát</>) : <><Plus size={18} /> Đăng Acc Mới</>}
+                            <h3 style={{ fontSize: '1.5rem', textTransform: 'uppercase' }}>Gallery</h3>
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                <input
+                                    type="text"
+                                    placeholder="Tìm kiếm ID, Tag, Mail..."
+                                    value={gallerySearchTerm}
+                                    onChange={(e) => setGallerySearchTerm(e.target.value)}
+                                    style={{ padding: '8px 15px', borderRadius: '4px', border: '1px solid #444', backgroundColor: '#222', color: '#fff', width: '250px' }}
+                                />
+                                <button onClick={editingAccountId ? handleCancelAccountForm : () => setShowAddAccountForm(!showAddAccountForm)} className="btn-primary" style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    {showAddAccountForm ? (editingAccountId ? <><X size={18} /> Hủy Sửa</> : <><X size={18} /> Thoát</>) : <><Plus size={18} /> ADD</>}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Sub Tabs */}
+                        <div style={{ display: 'flex', gap: '10px', marginBottom: '2rem' }}>
+                            <button
+                                onClick={() => setGalleryTab('ALL')}
+                                style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', backgroundColor: galleryTab === 'ALL' ? 'var(--primary)' : '#222', color: galleryTab === 'ALL' ? '#000' : '#fff', fontWeight: 700, cursor: 'pointer' }}
+                            >
+                                ALL
+                            </button>
+                            <button
+                                onClick={() => setGalleryTab('REG')}
+                                style={{ padding: '8px 20px', borderRadius: '8px', border: 'none', backgroundColor: galleryTab === 'REG' ? 'var(--primary)' : '#222', color: galleryTab === 'REG' ? '#000' : '#fff', fontWeight: 700, cursor: 'pointer' }}
+                            >
+                                REG
                             </button>
                         </div>
 
@@ -1186,7 +1228,7 @@ export default function AdminDashboard() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {gameAccounts.map((acc) => (
+                                    {filteredGalleryAccounts.map((acc) => (
                                         <tr key={acc.id} style={{ borderBottom: '1px solid #222' }}>
                                             <td style={{ padding: '15px 0' }}>
                                                 <img src={acc.image || '/posts/dolia.png'} style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px', marginBottom: '5px' }} />
@@ -1195,6 +1237,7 @@ export default function AdminDashboard() {
                                             <td>
                                                 <div style={{ color: 'var(--primary)', fontWeight: 600 }}>{acc.rank}</div>
                                                 <div style={{ fontSize: '0.75rem', color: '#888' }}>{acc.heroesCount} Tướng | {acc.skinsCount} Skin</div>
+                                                {acc.bannerTag && <div style={{ fontSize: '0.7rem', color: '#e9c46a', textTransform: 'uppercase', marginTop: '2px', fontWeight: 700 }}>[{acc.bannerTag}]</div>}
                                             </td>
                                             <td style={{ fontSize: '0.9rem' }}>{acc.loginType}</td>
                                             <td style={{ fontSize: '0.8rem', color: '#aaa', fontFamily: 'monospace' }}>

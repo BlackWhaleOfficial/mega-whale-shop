@@ -197,7 +197,7 @@ export default function CollectionPage() {
             });
             const data = await res.json();
 
-            if (res.status === 401) {
+            if (res.status === 401 && type === 'PAID') {
                 router.push('/login');
                 return;
             }
@@ -212,7 +212,7 @@ export default function CollectionPage() {
             if (type === 'PAID') {
                 const updatedRolls = [...rollCounts];
                 const bannerName = bannerNames[currentBanner];
-                const idx = updatedRolls.findIndex(r => r.bannerName === bannerName);
+                const idx = updatedRolls.findIndex((r: any) => r.bannerName === bannerName);
                 if (idx > -1) {
                     updatedRolls[idx].count = data.rollCount;
                 } else {
@@ -220,6 +220,7 @@ export default function CollectionPage() {
                 }
                 setRollCounts(updatedRolls);
             }
+
 
             const video = Math.random() > 0.5 ? '/gacha1.mp4' : '/gacha2.mp4';
             setGachaVideoSrc(video);
@@ -445,9 +446,9 @@ export default function CollectionPage() {
                         <div style={{ background: 'rgba(0,0,0,0.4)', padding: '1.5rem', borderRadius: '12px' }}>
                             <h4 style={{ color: '#ffb800', marginBottom: '10px' }}>Tỷ lệ:</h4>
                             <ul style={{ color: '#ccc', lineHeight: '1.8', marginLeft: '20px' }}>
-                                <li>Acc Full Skin <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>(0.0000001%)</span></li>
-                                <li>Acc REG có sẵn skin SSS trong Banner <span style={{ color: '#ffb800', fontWeight: 'bold' }}>(0.0001%)</span></li>
-                                <li>Acc REG ngẫu nhiên <span style={{ color: 'var(--primary)' }}>(99%)</span></li>
+                                <li>Acc Full Skin <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>(1%)</span></li>
+                                <li>Acc REG có sẵn skin SSS trong Banner <span style={{ color: '#ffb800', fontWeight: 'bold' }}>(9%)</span></li>
+                                <li>Acc REG ngẫu nhiên <span style={{ color: 'var(--primary)' }}>(89%)</span></li>
                             </ul>
                         </div>
                     </div>

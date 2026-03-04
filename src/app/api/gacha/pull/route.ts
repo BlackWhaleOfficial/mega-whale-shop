@@ -25,11 +25,11 @@ export async function POST(request: Request) {
             }
         }
 
-        if (!userId) {
-            return NextResponse.json({ error: 'Vui lòng đăng nhập để tiếp tục' }, { status: 401 });
-        }
-
         if (type === 'PAID') {
+            if (!userId) {
+                return NextResponse.json({ error: 'Vui lòng đăng nhập để tiếp tục' }, { status: 401 });
+            }
+
             const user = await prisma.user.findUnique({ where: { id: userId } });
             if (!user || user.whaleCash < 9) {
                 return NextResponse.json({ error: 'Không đủ WCash' }, { status: 400 });
