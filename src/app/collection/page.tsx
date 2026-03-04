@@ -393,6 +393,40 @@ export default function CollectionPage() {
         }
     };
 
+    const handleBulkAction = async (action: 'CLAIM_ALL' | 'SELL_ALL') => {
+        if (gachaResults.length === 0) return;
+        const accountIds = gachaResults.map(a => a.id);
+
+        try {
+            const res = await fetch('/api/gacha/action', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, accountIds })
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                setPopupInfo({ message: data.error || 'Có lỗi xảy ra!' });
+                return;
+            }
+
+            const onOkCallback = () => {
+                setIsGachaPlaying(false);
+                setVideoEnded(false);
+                setGachaResults([]);
+                window.location.reload();
+            };
+
+            if (action === 'SELL_ALL') {
+                setPopupInfo({ message: `Đã bán tất cả thành công. Bạn được hoàn ${data.refund} WCash!`, onOk: onOkCallback });
+            } else {
+                setPopupInfo({ message: 'Đã nhận tất cả tài khoản thành công!', onOk: onOkCallback });
+            }
+        } catch (e) {
+            setPopupInfo({ message: 'Lỗi kết nối!' });
+        }
+    };
+
     const allFilteredAccounts = accounts
         .filter(acc => {
             // Hide REG and REG SSS from collection list
@@ -624,7 +658,15 @@ export default function CollectionPage() {
                                 </>
                             )}
                             {gachaResults.length > 1 && (
-                                <button style={{ flex: 1, padding: '1.3rem', background: '#1a1a1a', color: '#fff', border: '1px solid #333', borderRadius: '16px', fontWeight: 700, fontSize: '1rem', cursor: 'pointer' }} onClick={() => { setIsGachaPlaying(false); setVideoEnded(false); window.location.reload(); }}>ĐÓNG TẤT CẢ</button>
+                                <>
+                                    {gachaType !== 'FREE' && (
+                                        <>
+                                            <button style={{ flex: 1.5, padding: '1.3rem', background: '#e9c46a', color: '#000', border: 'none', borderRadius: '16px', fontWeight: 900, fontSize: '1.1rem', cursor: 'pointer', textTransform: 'uppercase' }} onClick={() => handleBulkAction('CLAIM_ALL')}>NHẬN TẤT CẢ</button>
+                                            <button style={{ flex: 1, padding: '1.3rem', background: 'rgba(255,80,80,0.1)', color: '#ff4d4f', border: '1px solid rgba(255,77,79,0.2)', borderRadius: '16px', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase' }} onClick={() => handleBulkAction('SELL_ALL')}>BÁN TẤT CẢ (+{gachaResults.length === 10 ? 54 : gachaResults.length * 6} WC)</button>
+                                        </>
+                                    )}
+                                    <button style={{ flex: 1, padding: '1.3rem', background: '#1a1a1a', color: '#fff', border: '1px solid #333', borderRadius: '16px', fontWeight: 700, fontSize: '1rem', cursor: 'pointer' }} onClick={() => { setIsGachaPlaying(false); setVideoEnded(false); window.location.reload(); }}>ĐÓNG TẤT CẢ</button>
+                                </>
                             )}
                         </div>
                     </motion.div>

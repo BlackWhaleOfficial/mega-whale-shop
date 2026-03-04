@@ -5,13 +5,61 @@ import { getSession } from '../../../../../lib/auth';
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { action, accountId, isTenPull } = body;
+        const { action, accountId, isTenPull, accountIds } = body;
 
         const session = await getSession();
         const userId = session?.id || null;
 
         if (!userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        if (accountIds && Array.isArray(accountIds)) {
+            // BULK ACTION
+            const accounts = await prisma.gameAccount.findMany({
+                where: { id: { in: accountIds } }
+            });
+            if (accounts.length === 0) return NextResponse.json({ error: 'Không tìm thấy tài khoản' }, { status: 404 });
+
+            if (action === 'CLAIM_ALL') {
+                await prisma.$transaction([
+                    prisma.gameAccount.updateMany({
+                        where: { id: { in: accountIds } },
+                        data: { status: 'SOLD' }
+                    }),
+                    prisma.transaction.create({
+                        data: {
+                            userId,
+                            amount: 0,
+                            type: `NHẬN_GACHA - Nhận ${accounts.length} Acc`,
+                            status: 'DONE'
+                        }
+                    })
+                ]);
+                return NextResponse.json({ success: true });
+            } else if (action === 'SELL_ALL') {
+                const refundAmount = accounts.length === 10 ? 54 : accounts.length * 6;
+
+                await prisma.$transaction([
+                    prisma.gameAccount.updateMany({
+                        where: { id: { in: accountIds } },
+                        data: { status: 'AVAILABLE' }
+                    }),
+                    prisma.user.update({
+                        where: { id: userId },
+                        data: { whaleCash: { increment: refundAmount } }
+                    }),
+                    prisma.transaction.create({
+                        data: {
+                            userId,
+                            amount: refundAmount,
+                            type: `BÁN_GACHA - Bán ${accounts.length} Acc (Hoàn ${refundAmount} WCash)`,
+                            status: 'DONE'
+                        }
+                    })
+                ]);
+                return NextResponse.json({ success: true, refund: refundAmount });
+            }
         }
 
         const account = await prisma.gameAccount.findUnique({ where: { id: accountId } });
@@ -37,7 +85,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: true });
 
         } else if (action === 'SELL') {
-            const refundAmount = isTenPull ? Math.floor(90 * 0.6) : Math.floor(10 * 0.6);
+            const refundAmount = 6;
 
             await prisma.$transaction([
                 prisma.gameAccount.update({
