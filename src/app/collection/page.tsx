@@ -73,8 +73,8 @@ const GachaTab = ({ activeTab, banners, bannerNames, currentBanner, setCurrentBa
                                         borderRadius: '32px',
                                         overflow: 'hidden',
                                         cursor: isActive ? 'pointer' : 'pointer',
-                                        boxShadow: isActive ? '0 20px 80px rgba(0,255,136,0.3)' : '0 10px 30px rgba(0,0,0,0.5)',
-                                        border: isActive ? '2px solid rgba(0,255,136,0.5)' : '1px solid rgba(255,255,255,0.1)'
+                                        boxShadow: isActive ? '0 20px 80px rgba(233,196,106,0.3)' : '0 10px 30px rgba(0,0,0,0.5)',
+                                        border: isActive ? '2px solid rgba(233,196,106,0.5)' : '1px solid rgba(255,255,255,0.1)'
                                     }}
                                     initial={false}
                                     animate={{
@@ -113,7 +113,7 @@ const GachaTab = ({ activeTab, banners, bannerNames, currentBanner, setCurrentBa
                                                 alignItems: 'flex-end'
                                             }}>
                                                 <div style={{ color: '#fff' }}>
-                                                    <div style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '4px' }}>BANNER HIỆN TẠI</div>
+                                                    <div style={{ fontSize: '0.9rem', color: '#e9c46a', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '4px' }}>BANNER HIỆN TẠI</div>
                                                     <div style={{ fontSize: 'clamp(1rem, 4vw, 1.8rem)', fontWeight: 900, textTransform: 'uppercase' }}>{bannerNames[currentBanner]}</div>
                                                 </div>
                                                 <div style={{ background: 'rgba(255,255,255,0.1)', padding: '8px 15px', borderRadius: '12px', backdropFilter: 'blur(10px)', color: '#fff', fontSize: '0.8rem', fontWeight: 600 }}>Chi tiết ⓘ</div>
@@ -149,7 +149,7 @@ const GachaTab = ({ activeTab, banners, bannerNames, currentBanner, setCurrentBa
                                 width: index === currentBanner ? '40px' : '12px',
                                 height: '6px',
                                 borderRadius: '3px',
-                                backgroundColor: index === currentBanner ? 'var(--primary)' : 'rgba(255, 255, 255, 0.2)',
+                                backgroundColor: index === currentBanner ? '#e9c46a' : 'rgba(255, 255, 255, 0.2)',
                                 cursor: 'pointer',
                                 transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                             }}
@@ -159,8 +159,8 @@ const GachaTab = ({ activeTab, banners, bannerNames, currentBanner, setCurrentBa
             </div>
 
             <div style={{ textAlign: 'center', backgroundColor: 'rgba(255,255,255,0.03)', padding: '1.2rem', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', alignSelf: 'center', width: '100%', maxWidth: '600px', backdropFilter: 'blur(10px)' }}>
-                <div style={{ color: '#fff', fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontWeight: 700 }}>Tích lũy: <span style={{ color: 'var(--primary)', textShadow: '0 0 10px rgba(68,214,44,0.5)' }}>{currentRolls}</span> lượt quay</div>
-                <div style={{ color: '#888', fontSize: '0.85rem', marginTop: '6px', letterSpacing: '0.5px' }}>Còn <span style={{ color: '#fff' }}>{rollsLeft}</span> lượt nữa chắc chắn nhận <span style={{ color: 'var(--primary)', fontWeight: 700 }}>REG Skin SSS</span></div>
+                <div style={{ color: '#fff', fontSize: 'clamp(1rem, 3vw, 1.25rem)', fontWeight: 700 }}>Tích lũy: <span style={{ color: '#e9c46a', textShadow: '0 0 10px rgba(233,196,106,0.5)' }}>{currentRolls}</span> lượt quay</div>
+                <div style={{ color: '#888', fontSize: '0.85rem', marginTop: '6px', letterSpacing: '0.5px' }}>Còn <span style={{ color: '#fff' }}>{rollsLeft}</span> lượt nữa chắc chắn nhận <span style={{ color: '#e9c46a', fontWeight: 700 }}>REG Skin SSS</span></div>
             </div>
 
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', width: '100%', maxWidth: '900px', margin: '0 auto' }}>
@@ -193,12 +193,12 @@ const GachaTab = ({ activeTab, banners, bannerNames, currentBanner, setCurrentBa
                         padding: '1.3rem 1rem',
                         fontSize: 'clamp(0.85rem, 3.5vw, 1.2rem)',
                         fontWeight: 900,
-                        backgroundColor: 'var(--primary)',
+                        backgroundColor: '#e9c46a',
                         color: '#000',
                         border: 'none',
                         borderRadius: '16px',
                         cursor: gachaLoading ? 'not-allowed' : 'pointer',
-                        boxShadow: '0 10px 30px rgba(68,214,44,0.3)',
+                        boxShadow: '0 10px 30px rgba(233,196,106,0.3)',
                         opacity: gachaLoading ? 0.7 : 1,
                         transition: 'all 0.3s',
                         textTransform: 'uppercase'
@@ -375,7 +375,7 @@ export default function CollectionPage() {
                         padding: '1.2rem',
                         fontSize: 'clamp(0.8rem, 3vw, 1.1rem)',
                         fontWeight: 900,
-                        backgroundColor: activeTab === 'gacha' ? 'var(--primary)' : 'rgba(255,255,255,0.02)',
+                        backgroundColor: activeTab === 'gacha' ? '#e9c46a' : 'rgba(255,255,255,0.02)',
                         color: activeTab === 'gacha' ? '#000' : '#888',
                         border: activeTab === 'gacha' ? 'none' : '1px solid rgba(255,255,255,0.1)',
                         borderRadius: '16px',
@@ -383,7 +383,7 @@ export default function CollectionPage() {
                         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                         textTransform: 'uppercase',
                         letterSpacing: '1px',
-                        boxShadow: activeTab === 'gacha' ? '0 10px 40px rgba(68,214,44,0.3)' : 'none'
+                        boxShadow: activeTab === 'gacha' ? '0 10px 40px rgba(233,196,106,0.3)' : 'none'
                     }}
                 >
                     NGUYỆN ƯỚC BIỂN CẢ
@@ -394,7 +394,7 @@ export default function CollectionPage() {
                         padding: '1.2rem',
                         fontSize: 'clamp(0.8rem, 3vw, 1.1rem)',
                         fontWeight: 900,
-                        backgroundColor: activeTab === 'collection' ? 'var(--primary)' : 'rgba(255,255,255,0.02)',
+                        backgroundColor: activeTab === 'collection' ? '#e9c46a' : 'rgba(255,255,255,0.02)',
                         color: activeTab === 'collection' ? '#000' : '#888',
                         border: activeTab === 'collection' ? 'none' : '1px solid rgba(255,255,255,0.1)',
                         borderRadius: '16px',
@@ -402,7 +402,7 @@ export default function CollectionPage() {
                         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                         textTransform: 'uppercase',
                         letterSpacing: '1px',
-                        boxShadow: activeTab === 'collection' ? '0 10px 40px rgba(68,214,44,0.3)' : 'none'
+                        boxShadow: activeTab === 'collection' ? '0 10px 40px rgba(233,196,106,0.3)' : 'none'
                     }}
                 >
                     BỘ SƯU TẬP
@@ -428,7 +428,7 @@ export default function CollectionPage() {
                     </div>
 
                     {loading ? (
-                        <div style={{ textAlign: 'center', padding: '5rem', color: 'var(--primary)' }}>Đang tải danh sách...</div>
+                        <div style={{ textAlign: 'center', padding: '5rem', color: '#e9c46a' }}>Đang tải danh sách...</div>
                     ) : paginatedAccounts.length > 0 ? (
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2rem' }}>
                             {paginatedAccounts.map(acc => (
@@ -437,12 +437,12 @@ export default function CollectionPage() {
                                         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                                             <Image src={acc.image || '/posts/dolia.png'} alt="Acc Preview" fill style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" unoptimized />
                                         </div>
-                                        <div style={{ position: 'absolute', bottom: '15px', right: '15px', backgroundColor: 'var(--primary)', color: '#000', padding: '5px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 900 }}>LIÊN QUÂN</div>
+                                        <div style={{ position: 'absolute', bottom: '15px', right: '15px', backgroundColor: '#e9c46a', color: '#000', padding: '5px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 900 }}>LIÊN QUÂN</div>
                                     </div>
                                     <div style={{ padding: '1.8rem' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
                                             <div>
-                                                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '4px' }}>Liên Quân Tuyển</h3>
+                                                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#e9c46a', marginBottom: '4px' }}>Liên Quân Tuyển</h3>
                                                 <div style={{ color: '#666', fontSize: '0.85rem', fontFamily: 'monospace' }}>ID: #{acc.gameId}</div>
                                             </div>
                                             {acc.originalPrice && <div style={{ backgroundColor: '#ff4d4f', color: '#fff', padding: '4px 10px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 800 }}>-{Math.round((1 - acc.price / acc.originalPrice) * 100)}%</div>}
@@ -465,17 +465,17 @@ export default function CollectionPage() {
                             ))}
                         </div>
                     ) : (
-                        <div className="glass" style={{ maxWidth: '800px', margin: '5rem auto', textAlign: 'center', padding: '4rem 2rem', border: '1px solid var(--primary)', borderRadius: '24px' }}>
-                            <h2 style={{ color: 'var(--primary)', marginBottom: '1.5rem', fontSize: '1.8rem' }}>Khách đã săn hết Tài Khoản.</h2>
-                            <p style={{ color: '#ccc', fontSize: '1.1rem', lineHeight: 1.6 }}>Whale còn nhiều tài khoản lắm mà không đăng hết. <br />Nhấn <a href="https://www.facebook.com/MegaWhaleAOV" target="_blank" style={{ color: 'var(--primary)', textDecoration: 'underline', fontWeight: 700 }}>Hỗ Trợ</a> để tìm acc theo yêu cầu.</p>
+                        <div className="glass" style={{ maxWidth: '800px', margin: '5rem auto', textAlign: 'center', padding: '4rem 2rem', border: '1px solid #e9c46a', borderRadius: '24px' }}>
+                            <h2 style={{ color: '#e9c46a', marginBottom: '1.5rem', fontSize: '1.8rem' }}>Khách đã săn hết Tài Khoản.</h2>
+                            <p style={{ color: '#ccc', fontSize: '1.1rem', lineHeight: 1.6 }}>Whale còn nhiều tài khoản lắm mà không đăng hết. <br />Nhấn <a href="https://www.facebook.com/MegaWhaleAOV" target="_blank" style={{ color: '#e9c46a', textDecoration: 'underline', fontWeight: 700 }}>Hỗ Trợ</a> để tìm acc theo yêu cầu.</p>
                         </div>
                     )}
 
                     {totalPages > 1 && (
                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px', marginTop: '4rem' }}>
-                            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} style={{ padding: '12px', backgroundColor: currentPage === 1 ? '#111' : 'var(--primary)', border: 'none', borderRadius: '50%', cursor: currentPage === 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', color: '#000' }}><ChevronLeft size={24} /></button>
+                            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} style={{ padding: '12px', backgroundColor: currentPage === 1 ? '#111' : '#e9c46a', border: 'none', borderRadius: '50%', cursor: currentPage === 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', color: '#000' }}><ChevronLeft size={24} /></button>
                             <div style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 800 }}>{currentPage} / {totalPages}</div>
-                            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} style={{ padding: '12px', backgroundColor: currentPage === totalPages ? '#111' : 'var(--primary)', border: 'none', borderRadius: '50%', cursor: currentPage === totalPages ? 'default' : 'pointer', display: 'flex', alignItems: 'center', color: '#000' }}><ChevronRight size={24} /></button>
+                            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} style={{ padding: '12px', backgroundColor: currentPage === totalPages ? '#111' : '#e9c46a', border: 'none', borderRadius: '50%', cursor: currentPage === totalPages ? 'default' : 'pointer', display: 'flex', alignItems: 'center', color: '#000' }}><ChevronRight size={24} /></button>
                         </div>
                     )}
                 </div>
@@ -502,12 +502,12 @@ export default function CollectionPage() {
 
             {isGachaPlaying && videoEnded && gachaResult && (
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.95)', zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center', backdropFilter: 'blur(20px)' }}>
-                    <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass" style={{ width: '95%', maxWidth: '500px', padding: '2.5rem', borderRadius: '32px', border: '2px solid var(--primary)', backgroundColor: '#050505', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', boxShadow: '0 0 100px rgba(68,214,44,0.2)' }}>
-                        <h2 style={{ color: 'var(--primary)', fontSize: '2.5rem', margin: 0, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px' }}>KẾT QUẢ</h2>
+                    <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="glass" style={{ width: '95%', maxWidth: '500px', padding: '2.5rem', borderRadius: '32px', border: '2px solid #e9c46a', backgroundColor: '#050505', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', boxShadow: '0 0 100px rgba(233,196,106,0.2)' }}>
+                        <h2 style={{ color: '#e9c46a', fontSize: '2.5rem', margin: 0, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px' }}>KẾT QUẢ</h2>
                         <div style={{ width: '100%', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', position: 'relative', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
                             <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9' }}>
                                 <Image src={gachaResult.image || '/posts/dolia.png'} fill style={{ objectFit: 'cover' }} alt="Gacha Result" unoptimized />
-                                <div style={{ position: 'absolute', top: 15, left: 15, background: 'var(--primary)', color: '#000', fontWeight: 900, padding: '5px 12px', borderRadius: '8px', fontSize: '0.8rem' }}>LIMITED</div>
+                                <div style={{ position: 'absolute', top: 15, left: 15, background: '#e9c46a', color: '#000', fontWeight: 900, padding: '5px 12px', borderRadius: '8px', fontSize: '0.8rem' }}>LIMITED</div>
                             </div>
                         </div>
                         <div style={{ width: '100%', background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -517,7 +517,7 @@ export default function CollectionPage() {
                             </div>
                             <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
                                 <span style={{ color: '#666', fontWeight: 700 }}>HẠNG</span>
-                                <span style={{ color: 'var(--primary)', fontWeight: 900 }}>{gachaResult.rank}</span>
+                                <span style={{ color: '#e9c46a', fontWeight: 900 }}>{gachaResult.rank}</span>
                             </div>
                             <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
                                 <span style={{ color: '#666', fontWeight: 700 }}>TƯỚNG / SKIN</span>
@@ -531,12 +531,12 @@ export default function CollectionPage() {
                         <div style={{ width: '100%', display: 'flex', gap: '1rem' }}>
                             {gachaType === 'FREE' ? (
                                 <>
-                                    <button style={{ flex: 1.5, padding: '1.2rem', background: 'var(--primary)', color: '#000', border: 'none', borderRadius: '16px', fontWeight: 900, fontSize: '1rem', cursor: 'pointer', textTransform: 'uppercase' }} onClick={() => { setIsGachaPlaying(false); handleGacha('FREE'); }}>THỬ LẠI</button>
+                                    <button style={{ flex: 1.5, padding: '1.2rem', background: '#e9c46a', color: '#000', border: 'none', borderRadius: '16px', fontWeight: 900, fontSize: '1rem', cursor: 'pointer', textTransform: 'uppercase' }} onClick={() => { setIsGachaPlaying(false); handleGacha('FREE'); }}>THỬ LẠI</button>
                                     <button style={{ flex: 1, padding: '1.2rem', background: '#1a1a1a', color: '#fff', border: '1px solid #333', borderRadius: '16px', fontWeight: 700, fontSize: '1rem', cursor: 'pointer' }} onClick={() => { setIsGachaPlaying(false); setVideoEnded(false); }}>ĐÓNG</button>
                                 </>
                             ) : (
                                 <>
-                                    <button style={{ flex: 1.5, padding: '1.3rem', background: 'var(--primary)', color: '#000', border: 'none', borderRadius: '16px', fontWeight: 900, fontSize: '1.1rem', cursor: 'pointer', textTransform: 'uppercase' }} onClick={() => handleGachaAction('CLAIM')}>NHẬN ACC</button>
+                                    <button style={{ flex: 1.5, padding: '1.3rem', background: '#e9c46a', color: '#000', border: 'none', borderRadius: '16px', fontWeight: 900, fontSize: '1.1rem', cursor: 'pointer', textTransform: 'uppercase' }} onClick={() => handleGachaAction('CLAIM')}>NHẬN ACC</button>
                                     <button style={{ flex: 1, padding: '1.3rem', background: 'rgba(255,80,80,0.1)', color: '#ff4d4f', border: '1px solid rgba(255,77,79,0.2)', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }} onClick={() => handleGachaAction('SELL')}>BÁN (Hoàn 4 WC)</button>
                                 </>
                             )}
@@ -549,18 +549,18 @@ export default function CollectionPage() {
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, backdropFilter: 'blur(10px)' }} onClick={() => setShowBannerInfo(false)}>
                     <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="glass" style={{ padding: '2.5rem', borderRadius: '32px', maxWidth: '650px', width: '94%', position: 'relative', border: '1px solid rgba(255,255,255,0.1)', cursor: 'default', backgroundColor: '#0a0a0a' }} onClick={e => e.stopPropagation()}>
                         <button onClick={() => setShowBannerInfo(false)} style={{ position: 'absolute', top: '25px', right: '25px', background: 'rgba(255,255,255,0.05)', border: 'none', color: '#fff', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>✕</button>
-                        <h2 style={{ color: 'var(--primary)', marginBottom: '0.8rem', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 900, fontSize: '1.8rem' }}>THÔNG TIN BANNER</h2>
+                        <h2 style={{ color: '#e9c46a', marginBottom: '0.8rem', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 900, fontSize: '1.8rem' }}>THÔNG TIN BANNER</h2>
                         <h3 style={{ color: '#fff', marginBottom: '2rem', textAlign: 'center', fontSize: '1.4rem', background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '12px' }}>{bannerNames[currentBanner]}</h3>
                         <div style={{ marginBottom: '1.5rem', background: 'rgba(255,255,255,0.02)', padding: '1.8rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                            <h4 style={{ color: 'var(--primary)', marginBottom: '15px', textTransform: 'uppercase', fontSize: '1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}><div style={{ width: '4px', height: '18px', background: 'var(--primary)' }}></div> Thể lệ:</h4>
+                            <h4 style={{ color: '#e9c46a', marginBottom: '15px', textTransform: 'uppercase', fontSize: '1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}><div style={{ width: '4px', height: '18px', background: '#e9c46a' }}></div> Thể lệ:</h4>
                             <ul style={{ color: '#ccc', lineHeight: '2', marginLeft: '10px', listStyle: 'none' }}>
                                 <li style={{ marginBottom: '10px' }}><strong style={{ color: '#fff' }}>• Test Nhân Phẩm:</strong> Miễn phí vui vẻ, không nhận vật phẩm.</li>
                                 <li style={{ marginBottom: '10px' }}><strong style={{ color: '#fff' }}>• Lượt Quay (9 WC):</strong> Tỉ lệ ra Acc Full Skin cực cao.</li>
-                                <li><strong style={{ color: '#fff' }}>• Hệ thống Pity:</strong> Quay đủ 150 lần chắc chắn nổ <span style={{ color: 'var(--primary)' }}>REG SSS</span>.</li>
+                                <li><strong style={{ color: '#fff' }}>• Hệ thống Pity:</strong> Quay đủ 150 lần chắc chắn nổ <span style={{ color: '#e9c46a' }}>REG SSS</span>.</li>
                             </ul>
                         </div>
                         <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1.8rem', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                            <h4 style={{ color: 'var(--primary)', marginBottom: '15px', textTransform: 'uppercase', fontSize: '1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}><div style={{ width: '4px', height: '18px', background: 'var(--primary)' }}></div> Tỷ lệ nổ:</h4>
+                            <h4 style={{ color: '#e9c46a', marginBottom: '15px', textTransform: 'uppercase', fontSize: '1rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '10px' }}><div style={{ width: '4px', height: '18px', background: '#e9c46a' }}></div> Tỷ lệ nổ:</h4>
                             <div style={{ display: 'grid', gap: '12px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', background: 'rgba(255,77,79,0.05)', borderRadius: '12px', border: '1px solid rgba(255,77,79,0.1)' }}>
                                     <span style={{ color: '#fff', fontWeight: 600 }}>Acc Full Skin</span>
@@ -570,9 +570,9 @@ export default function CollectionPage() {
                                     <span style={{ color: '#fff', fontWeight: 600 }}>Acc REG SSS</span>
                                     <span style={{ color: '#e9c46a', fontWeight: 900 }}>9%</span>
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', background: 'rgba(68,214,44,0.05)', borderRadius: '12px', border: '1px solid rgba(68,214,44,0.1)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', background: 'rgba(233,196,106,0.05)', borderRadius: '12px', border: '1px solid rgba(233,196,106,0.1)' }}>
                                     <span style={{ color: '#fff', fontWeight: 600 }}>Acc REG Thường</span>
-                                    <span style={{ color: 'var(--primary)', fontWeight: 900 }}>89%</span>
+                                    <span style={{ color: '#e9c46a', fontWeight: 900 }}>89%</span>
                                 </div>
                             </div>
                         </div>
