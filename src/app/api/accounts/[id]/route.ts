@@ -3,9 +3,15 @@ import { prisma } from '../../../../../lib/prisma';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
     try {
-        const account = await prisma.gameAccount.findUnique({
+        let account = await prisma.gameAccount.findUnique({
             where: { id: params.id }
         });
+
+        if (!account) {
+            account = await prisma.gameAccount.findFirst({
+                where: { gameId: params.id }
+            });
+        }
 
         if (!account) {
             return NextResponse.json({ error: 'Account not found' }, { status: 404 });

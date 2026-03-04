@@ -155,7 +155,7 @@ export default function CollectionPage() {
                         <div key={acc.id} className="glass-card" style={{
                             overflow: 'hidden',
                             cursor: 'pointer'
-                        }} onClick={() => router.push(`/acc/${acc.id}`)}>
+                        }} onClick={() => router.push(`/acc/${acc.gameId}`)}>
                             <div style={{ height: '180px', backgroundColor: '#000', position: 'relative' }}>
                                 <img src={acc.image || '/posts/dolia.png'} alt="Acc Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 <div style={{
@@ -222,7 +222,7 @@ export default function CollectionPage() {
                                 </div>
 
                                 <button
-                                    onClick={(e) => { e.stopPropagation(); router.push(`/acc/${acc.id}`); }}
+                                    onClick={(e) => { e.stopPropagation(); router.push(`/acc/${acc.gameId}`); }}
                                     className="btn-primary"
                                     style={{ width: '100%', padding: '12px', fontSize: '0.9rem', borderRadius: '6px' }}
                                 >
