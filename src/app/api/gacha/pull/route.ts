@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../lib/prisma';
-import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
+import { getSession } from '../../../../../lib/auth';
 
 export async function POST(request: Request) {
     try {
@@ -13,18 +10,8 @@ export async function POST(request: Request) {
         const bannerNames = ['Nhật Nguyệt Thánh Linh', 'Hỗn Độn Thần Ma', 'Mộng Giới Thần Chủ'];
         const bannerName = bannerNames[bannerIndex] || 'Unknown';
 
-        const cookieStore = cookies();
-        const token = cookieStore.get('token')?.value;
-        let userId: string | null = null;
-
-        if (token) {
-            try {
-                const decoded: any = jwt.verify(token, JWT_SECRET);
-                userId = decoded.userId;
-            } catch (e) {
-                // ignore
-            }
-        }
+        const session = await getSession();
+        const userId = session?.id || null;
 
         if (type === 'PAID') {
             if (!userId) {
