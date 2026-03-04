@@ -510,7 +510,7 @@ export default function CollectionPage() {
                         <div style={{ background: 'rgba(0,0,0,0.4)', padding: '1.5rem', borderRadius: '12px' }}>
                             <h4 style={{ color: '#ffb800', marginBottom: '10px' }}>Tỷ lệ:</h4>
                             <ul style={{ color: '#ccc', lineHeight: '1.8', marginLeft: '20px' }}>
-                                <li>Acc Full Skin <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>(1%)</span></li>
+                                <li>Acc Full Skin <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>(2%)</span></li>
                                 <li>Acc REG có sẵn skin SSS trong Banner <span style={{ color: '#ffb800', fontWeight: 'bold' }}>(9%)</span></li>
                                 <li>Acc REG ngẫu nhiên <span style={{ color: 'var(--primary)' }}>(89%)</span></li>
                             </ul>
