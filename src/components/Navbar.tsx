@@ -45,106 +45,112 @@ export default function Navbar() {
     };
 
     return (
-        <nav style={{
+        <nav className="glass" style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            padding: '1rem clamp(2%, 5%, 5%)',
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            padding: '0.8rem 2rem',
             position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
+            top: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '90%',
+            maxWidth: '1200px',
             zIndex: 100,
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(10px)',
+            borderRadius: '100px',
             fontFamily: "'Inter', sans-serif"
         }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                 <Link href="/">
                     <div style={{
-                        fontSize: 'clamp(1rem, 3vw, 1.2rem)',
-                        fontWeight: 800,
-                        letterSpacing: '1px',
-                        color: '#fff',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px'
+                        justifyContent: 'center',
+                        width: '45px',
+                        height: '45px',
+                        borderRadius: '50%',
+                        border: '2px solid var(--primary)',
+                        overflow: 'hidden',
+                        backgroundColor: '#000'
                     }}>
-                        <span style={{ color: '#fff' }}>MEGA</span> WHALE <span style={{ color: 'var(--primary)' }}>SHOP</span>
+                        <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     </div>
                 </Link>
 
-                <div className="desktop-only" style={{ alignItems: 'center', gap: '1rem', fontWeight: 600, fontSize: '0.85rem', textTransform: 'uppercase', marginLeft: '1rem' }}>
+                <div className="desktop-only" style={{ alignItems: 'center', gap: '0.5rem', fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>
                     <Link href="/nap-game" style={
-                        pathname === '/nap-game' ? { backgroundColor: 'var(--primary)', color: '#000', padding: '8px 16px', borderRadius: '20px', textDecoration: 'none' }
-                            : { color: '#aaa', textDecoration: 'none', padding: '8px 16px' }
+                        pathname === '/nap-game' ? { backgroundColor: 'var(--primary)', color: '#000', padding: '10px 20px', borderRadius: '40px', textDecoration: 'none' }
+                            : { color: '#fff', textDecoration: 'none', padding: '10px 20px' }
                     } className={pathname === '/nap-game' ? '' : 'nav-hover'}>Nạp Quân Huy</Link>
 
+                    <Link href="/collection" style={
+                        pathname === '/collection' ? { backgroundColor: 'var(--primary)', color: '#000', padding: '10px 20px', borderRadius: '40px', textDecoration: 'none' }
+                            : { color: '#fff', textDecoration: 'none', padding: '10px 20px' }
+                    } className={pathname === '/collection' ? '' : 'nav-hover'}>Bộ Sưu Tập</Link>
+
                     <Link href="/membership" style={
-                        pathname === '/membership' ? { backgroundColor: 'var(--primary)', color: '#000', padding: '8px 16px', borderRadius: '20px', textDecoration: 'none' }
-                            : { color: '#aaa', textDecoration: 'none', padding: '8px 16px' }
+                        pathname === '/membership' ? { backgroundColor: 'var(--primary)', color: '#000', padding: '10px 20px', borderRadius: '40px', textDecoration: 'none' }
+                            : { color: '#fff', textDecoration: 'none', padding: '10px 20px' }
                     } className={pathname === '/membership' ? '' : 'nav-hover'}>Membership</Link>
 
                     <Link href="/history" style={
-                        pathname === '/history' ? { backgroundColor: 'var(--primary)', color: '#000', padding: '8px 16px', borderRadius: '20px', textDecoration: 'none' }
-                            : { color: '#aaa', textDecoration: 'none', padding: '8px 16px' }
+                        pathname === '/history' ? { backgroundColor: 'var(--primary)', color: '#000', padding: '10px 20px', borderRadius: '40px', textDecoration: 'none' }
+                            : { color: '#fff', textDecoration: 'none', padding: '10px 20px' }
                     } className={pathname === '/history' ? '' : 'nav-hover'}>Lịch Sử Mua</Link>
 
-                    <a href="https://www.facebook.com/MegaWhaleAOV" target="_blank" rel="noopener noreferrer" style={{ color: '#aaa', textDecoration: 'none', padding: '8px 16px' }} className="nav-hover">Hỗ Trợ</a>
+                    <a href="https://www.facebook.com/MegaWhaleAOV" target="_blank" rel="noopener noreferrer" style={{ color: '#fff', textDecoration: 'none', padding: '10px 20px' }} className="nav-hover">Hỗ Trợ</a>
                 </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                 <Link href="/top-up" style={{
-                    border: '1px solid #333',
-                    padding: '6px 12px',
-                    borderRadius: '4px',
-                    fontSize: '0.9rem',
-                    color: 'var(--primary)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    padding: '8px 16px',
+                    borderRadius: '40px',
+                    fontSize: '0.85rem',
+                    color: '#fff',
                     fontWeight: 600,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px',
+                    gap: '8px',
                     textDecoration: 'none',
-                    cursor: 'pointer',
-                    backgroundColor: '#111'
+                    border: '1px solid rgba(255, 255, 255, 0.1)'
                 }}>
-                    <Wallet size={16} color="#888" />
-                    <span className="desktop-only">{user ? user.whaleCash : 0} WCash</span>
+                    <Wallet size={16} color="var(--primary)" />
+                    <span className="desktop-only" style={{ color: 'var(--primary)' }}>{user ? user.whaleCash : 0} WCash</span>
                     <span className="mobile-only">{user ? user.whaleCash : 0}</span>
                 </Link>
 
                 <Link href="/cart" style={{
                     position: 'relative',
-                    width: '38px',
-                    height: '38px',
+                    width: '40px',
+                    height: '40px',
                     borderRadius: '50%',
-                    backgroundColor: '#222',
-                    border: '1px solid #444',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
                     color: pathname === '/cart' ? 'var(--primary)' : '#fff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    textDecoration: 'none',
-                    cursor: 'pointer'
+                    textDecoration: 'none'
                 }}>
                     <ShoppingCart size={18} />
                     {cartCount > 0 && (
                         <span style={{
                             position: 'absolute',
-                            top: '-6px',
-                            right: '-6px',
+                            top: '-2px',
+                            right: '-2px',
                             backgroundColor: '#ff4d4f',
                             color: '#fff',
-                            fontSize: '0.7rem',
+                            fontSize: '0.65rem',
                             fontWeight: 'bold',
                             width: '18px',
                             height: '18px',
                             borderRadius: '50%',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center'
+                            justifyContent: 'center',
+                            border: '2px solid #000'
                         }}>
                             {cartCount}
                         </span>
@@ -155,13 +161,12 @@ export default function Navbar() {
                     <button
                         onClick={() => setMenuOpen(!menuOpen)}
                         style={{
-                            width: '38px',
-                            height: '38px',
+                            width: '40px',
+                            height: '40px',
                             borderRadius: '50%',
-                            backgroundColor: '#222',
-                            border: user?.activeMembership ? '2px solid #FFD700' : '1px solid #444',
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            border: user?.activeMembership ? '2px solid #FFD700' : '1px solid rgba(255, 255, 255, 0.1)',
                             color: user?.activeMembership ? '#FFD700' : '#fff',
-                            boxShadow: user?.activeMembership ? '0 0 10px rgba(255, 215, 0, 0.3)' : 'none',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -170,6 +175,7 @@ export default function Navbar() {
                     >
                         <User size={18} />
                     </button>
+
 
                     {menuOpen && (
                         <div style={{
@@ -220,16 +226,19 @@ export default function Navbar() {
                     <button
                         onClick={() => setMobileMenuOpen(true)}
                         style={{
-                            width: '38px',
-                            height: '38px',
+                            width: '40px',
+                            height: '40px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             color: '#fff',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            background: 'transparent',
+                            border: 'none',
+                            padding: 0
                         }}
                     >
-                        <Menu size={24} />
+                        <Menu size={28} />
                     </button>
                 </div>
             </div>
@@ -264,16 +273,19 @@ export default function Navbar() {
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', fontWeight: 600, fontSize: '1.1rem', textTransform: 'uppercase' }}>
-                            <Link href="/nap-game" onClick={() => setMobileMenuOpen(false)} style={{ color: pathname === '/nap-game' ? 'var(--primary)' : '#aaa', textDecoration: 'none' }}>
+                            <Link href="/nap-game" onClick={() => setMobileMenuOpen(false)} style={{ color: pathname === '/nap-game' ? 'var(--primary)' : '#fff', textDecoration: 'none' }}>
                                 Nạp Quân Huy
                             </Link>
-                            <Link href="/membership" onClick={() => setMobileMenuOpen(false)} style={{ color: pathname === '/membership' ? 'var(--primary)' : '#aaa', textDecoration: 'none' }}>
+                            <Link href="/collection" onClick={() => setMobileMenuOpen(false)} style={{ color: pathname === '/collection' ? 'var(--primary)' : '#fff', textDecoration: 'none' }}>
+                                Bộ Sưu Tập
+                            </Link>
+                            <Link href="/membership" onClick={() => setMobileMenuOpen(false)} style={{ color: pathname === '/membership' ? 'var(--primary)' : '#fff', textDecoration: 'none' }}>
                                 Membership
                             </Link>
-                            <Link href="/history" onClick={() => setMobileMenuOpen(false)} style={{ color: pathname === '/history' ? 'var(--primary)' : '#aaa', textDecoration: 'none' }}>
+                            <Link href="/history" onClick={() => setMobileMenuOpen(false)} style={{ color: pathname === '/history' ? 'var(--primary)' : '#fff', textDecoration: 'none' }}>
                                 Lịch Sử Mua
                             </Link>
-                            <a href="https://www.facebook.com/MegaWhaleAOV" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} style={{ color: '#aaa', textDecoration: 'none' }}>
+                            <a href="https://www.facebook.com/MegaWhaleAOV" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} style={{ color: '#fff', textDecoration: 'none' }}>
                                 Hỗ Trợ
                             </a>
                         </div>

@@ -39,7 +39,7 @@ export default function ForgotPasswordPage() {
             <div style={{ width: '100%', maxWidth: '420px' }}>
                 {status === 'sent' ? (
                     // Success state
-                    <div style={{ backgroundColor: '#111', padding: '3rem', border: '1px solid #333', textAlign: 'center' }}>
+                    <div className="glass" style={{ padding: '3rem', border: '1px solid #333', textAlign: 'center', borderRadius: '24px' }}>
                         <div style={{
                             width: '64px', height: '64px', borderRadius: '50%',
                             backgroundColor: 'rgba(68, 214, 44, 0.15)',
@@ -60,14 +60,14 @@ export default function ForgotPasswordPage() {
                         <p style={{ color: '#666', fontSize: '0.8rem', marginBottom: '2rem' }}>
                             Link sẽ hết hạn sau 1 giờ.
                         </p>
-                        <Link href="/login" style={{ color: 'var(--primary)', textDecoration: 'underline', fontSize: '0.9rem' }}>
+                        <Link href="/login" style={{ color: 'var(--primary)', textDecoration: 'underline', fontSize: '0.9rem' }} className="nav-hover">
                             ← Quay về đăng nhập
                         </Link>
                     </div>
                 ) : (
                     // Form state
-                    <form onSubmit={handleSubmit} style={{ backgroundColor: '#111', padding: '3rem', border: '1px solid #333', textAlign: 'center' }}>
-                        <h2 className="section-title" style={{ fontSize: '1.5rem', marginBottom: '0.75rem', border: 'none' }}>
+                    <form onSubmit={handleSubmit} className="glass" style={{ padding: '3rem', textAlign: 'center', borderRadius: '24px' }}>
+                        <h2 className="section-title" style={{ fontSize: '1.5rem', marginBottom: '0.75rem', border: 'none', justifyContent: 'center' }}>
                             Quên Mật Khẩu
                         </h2>
                         <p style={{ color: '#888', fontSize: '0.9rem', marginBottom: '2rem', lineHeight: 1.6 }}>
@@ -75,7 +75,7 @@ export default function ForgotPasswordPage() {
                         </p>
 
                         {status === 'error' && (
-                            <div style={{ color: '#ff4d4f', marginBottom: '1.5rem', fontSize: '0.9rem', padding: '12px 16px', backgroundColor: 'rgba(255,77,79,0.1)', border: '1px solid rgba(255,77,79,0.3)', borderRadius: '4px', textAlign: 'left' }}>
+                            <div style={{ color: '#ff4d4f', marginBottom: '1.5rem', fontSize: '0.9rem', padding: '12px 16px', backgroundColor: 'rgba(255,77,79,0.1)', border: '1px solid rgba(255,77,79,0.3)', borderRadius: '12px', textAlign: 'left' }}>
                                 ⚠️ {errorMsg}
                             </div>
                         )}
@@ -90,11 +90,7 @@ export default function ForgotPasswordPage() {
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 required
-                                style={{
-                                    padding: '14px 15px', backgroundColor: '#000',
-                                    border: '1px solid #444', color: '#fff',
-                                    width: '100%', fontSize: '1rem', boxSizing: 'border-box'
-                                }}
+                                className="glass-input"
                             />
                         </div>
 
@@ -108,11 +104,7 @@ export default function ForgotPasswordPage() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                style={{
-                                    padding: '14px 15px', backgroundColor: '#000',
-                                    border: '1px solid #444', color: '#fff',
-                                    width: '100%', fontSize: '1rem', boxSizing: 'border-box'
-                                }}
+                                className="glass-input"
                             />
                         </div>
 
@@ -120,12 +112,12 @@ export default function ForgotPasswordPage() {
                             type="submit"
                             className="btn-primary"
                             disabled={status === 'loading'}
-                            style={{ width: '100%', marginBottom: '1.5rem', opacity: status === 'loading' ? 0.7 : 1 }}
+                            style={{ width: '100%', marginBottom: '1.5rem', opacity: status === 'loading' ? 0.7 : 1, borderRadius: '12px' }}
                         >
                             {status === 'loading' ? 'Đang xác minh...' : 'Gửi Link Đặt Lại'}
                         </button>
 
-                        <Link href="/login" style={{ color: '#888', fontSize: '0.9rem', textDecoration: 'none' }}>
+                        <Link href="/login" style={{ color: '#888', fontSize: '0.9rem', textDecoration: 'none' }} className="nav-hover">
                             ← Quay về đăng nhập
                         </Link>
                     </form>

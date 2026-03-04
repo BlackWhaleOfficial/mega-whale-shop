@@ -160,7 +160,13 @@ function CartContent() {
         return () => clearInterval(pollInterval);
     }, [orderId, orderStatus, router]);
 
-    const getProductDetails = (id: string, quantity: number) => {
+    const getProductDetails = (item: any) => {
+        const { id, qty, type, name, price } = item;
+
+        if (type === 'ACCOUNT') {
+            return { id, name: name || 'Tài khoản game', price: price || 0, qty: qty, total: (price || 0) * qty };
+        }
+
         const getMembershipName = (pid: string) => {
             switch (pid) {
                 case 'goi_888k': return 'Gói Cá Voi';
@@ -190,10 +196,10 @@ function CartContent() {
                 ? parseInt(id.replace('goi_', '0').replace('k', '000') || '0')
                 : garenaDiscountedPrice[id.split('_')[1]] ?? parseInt(id.split('_')[1] || '50000');
 
-        return { id, name: itemName, price: itemPrice, qty: quantity, total: itemPrice * quantity };
+        return { id, name: itemName, price: itemPrice, qty: qty, total: itemPrice * qty };
     };
 
-    const detailedItems = cartItems.map(i => getProductDetails(i.id, i.qty));
+    const detailedItems = cartItems.map(i => getProductDetails(i));
     const total = detailedItems.reduce((sum, i) => sum + i.total, 0);
 
     // Nếu giỏ có sản phẩm WCash top-up → không cho mã giảm giá và không cho thanh toán WCash
@@ -363,9 +369,9 @@ function CartContent() {
         return (
             <div style={{ padding: '8rem 5%', backgroundColor: '#000', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <h1 className="section-title" style={{ textAlign: 'center', marginBottom: '4rem', border: 'none' }}>Giỏ Hàng Của Bạn</h1>
-                <div style={{ width: '100%', maxWidth: '800px', backgroundColor: '#111', padding: '3rem', border: '1px solid #333', textAlign: 'center' }}>
+                <div className="glass" style={{ width: '100%', maxWidth: '800px', padding: '3rem', textAlign: 'center', borderRadius: '24px' }}>
                     <p style={{ color: '#aaa', fontSize: '1.2rem', marginBottom: '2rem' }}>Giỏ hàng của bạn đang trống.</p>
-                    <Link href="/" className="btn-primary" style={{ padding: '15px 30px', fontSize: '1rem', display: 'inline-block' }}>
+                    <Link href="/" className="btn-primary" style={{ padding: '15px 30px', fontSize: '1rem', display: 'inline-block', borderRadius: '12px' }}>
                         tiếp tục mua sắm
                     </Link>
                 </div>
@@ -379,7 +385,7 @@ function CartContent() {
                 <h1 className="section-title" style={{ textAlign: 'center', marginBottom: '4rem', border: 'none' }}>Giỏ Hàng Của Bạn</h1>
 
                 {!isCheckout ? (
-                    <div style={{ width: '100%', maxWidth: '800px', backgroundColor: '#111', padding: '3rem', border: '1px solid #333' }}>
+                    <div className="glass" style={{ width: '100%', maxWidth: '800px', padding: '3rem', borderRadius: '24px' }}>
 
                         <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '3rem', color: '#fff' }}>
                             <thead>
@@ -450,11 +456,9 @@ function CartContent() {
                                     value={hasTopup ? '' : selectedDiscountId}
                                     onChange={e => !hasTopup && setSelectedDiscountId(e.target.value)}
                                     disabled={hasTopup}
+                                    className="glass-input"
                                     style={{
                                         flex: 1, padding: '15px',
-                                        backgroundColor: hasTopup ? '#1a1a1a' : '#000',
-                                        border: `1px solid ${hasTopup ? '#333' : '#444'}`,
-                                        color: hasTopup ? '#555' : '#fff',
                                         cursor: hasTopup ? 'not-allowed' : 'default',
                                         opacity: hasTopup ? 0.5 : 1
                                     }}
@@ -485,7 +489,7 @@ function CartContent() {
                         <div style={{ marginTop: '3rem' }}>
                             <p style={{ color: '#888', marginBottom: '1rem', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px' }}>Phương Thức Thanh Toán</p>
 
-                            <button onClick={handleCheckout} className="btn-primary" style={{ width: '100%', padding: '20px', fontSize: '1.2rem', marginBottom: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+                            <button onClick={handleCheckout} className="btn-primary" style={{ width: '100%', padding: '20px', fontSize: '1.2rem', marginBottom: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', borderRadius: '12px' }}>
                                 <CreditCard size={24} /> <span>Chuyển khoản ngân hàng</span>
                             </button>
 
@@ -497,7 +501,7 @@ function CartContent() {
                                     display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px',
                                     backgroundColor: hasTopup ? '#333' : (!walletLoaded ? '#999' : whaleCash < Math.round(finalTotal / 1000) ? '#555' : '#FFD700'),
                                     color: hasTopup ? '#888' : (!walletLoaded ? '#000' : whaleCash < Math.round(finalTotal / 1000) ? '#aaa' : '#000'),
-                                    border: 'none', borderRadius: '4px',
+                                    border: 'none', borderRadius: '12px',
                                     cursor: (hasTopup || !walletLoaded) ? 'not-allowed' : 'pointer',
                                     fontWeight: 600, transition: '0.3s',
                                     position: 'relative'
@@ -523,7 +527,7 @@ function CartContent() {
                     </div>
                 ) : (
                     <>
-                        <div style={{ width: '100%', maxWidth: '600px', backgroundColor: '#111', padding: '4rem', border: '1px solid var(--primary)', textAlign: 'center' }}>
+                        <div className="glass" style={{ width: '100%', maxWidth: '600px', padding: '4rem', border: '1px solid var(--primary)', textAlign: 'center', borderRadius: '30px' }}>
 
                             <h2 style={{ fontSize: '2rem', fontWeight: 600, marginBottom: '1rem', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '2px' }}>
                                 Thông tin chuyển khoản
@@ -553,7 +557,7 @@ function CartContent() {
 
                             {orderStatus === 'IDLE' && (
                                 <>
-                                    <button onClick={handlePaymentDone} className="btn-primary" style={{ display: 'flex', width: '100%', marginTop: '3rem', padding: '16px', justifyContent: 'center', fontSize: '1.2rem' }}>
+                                    <button onClick={handlePaymentDone} className="btn-primary" style={{ display: 'flex', width: '100%', marginTop: '3rem', padding: '16px', justifyContent: 'center', fontSize: '1.2rem', borderRadius: '12px' }}>
                                         Đã Thanh Toán
                                     </button>
                                     <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
@@ -572,7 +576,8 @@ function CartContent() {
                                                 letterSpacing: '2px',
                                                 fontWeight: 600,
                                                 cursor: 'pointer',
-                                                transition: '0.3s'
+                                                transition: '0.3s',
+                                                borderRadius: '12px'
                                             }}
                                             onMouseOver={(e: any) => { e.target.style.backgroundColor = '#ff4d4f'; e.target.style.color = '#fff'; }}
                                             onMouseOut={(e: any) => { e.target.style.backgroundColor = 'transparent'; e.target.style.color = '#ff4d4f'; }}

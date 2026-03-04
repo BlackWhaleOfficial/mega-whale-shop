@@ -3,6 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Modal from '../../components/Modal';
+import {
+    Edit3, Trash2, CheckCircle, XCircle, User as UserIcon, Settings,
+    BarChart3, Package, Layers, Ticket, Image as ImageIcon, FileText,
+    Plus, Save, X, ExternalLink
+} from 'lucide-react';
 
 export default function AdminDashboard() {
     const router = useRouter();
@@ -35,6 +40,14 @@ export default function AdminDashboard() {
     const [editFormData, setEditFormData] = useState<any>({});
     const [systemStats, setSystemStats] = useState<any>(null);
     const [systemStatsLoading, setSystemStatsLoading] = useState(false);
+
+    const [gameAccounts, setGameAccounts] = useState<any[]>([]);
+    const [showAddAccountForm, setShowAddAccountForm] = useState(false);
+    const [newAccountData, setNewAccountData] = useState({
+        gameId: '', email: '', password: '', rank: 'Đồng', heroesCount: 0, skinsCount: 0,
+        loginType: 'Garena', notes: '', price: 0, originalPrice: '', image: ''
+    });
+    const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
 
     const [membershipDiscounts] = useState([
         { code: 'TGG 1% (Gói Cá Con)', percent: 1 },
@@ -72,31 +85,31 @@ export default function AdminDashboard() {
         if (isAdmin && activeTab === 'orders') {
             fetch('/api/admin/orders')
                 .then(res => res.json())
-                .then(data => setOrders(data || []))
+                .then(data => setOrders(Array.isArray(data) ? data : []))
                 .catch(err => console.error(err));
         } else if (isAdmin && activeTab === 'all_orders') {
             fetch('/api/admin/all-orders')
                 .then(res => res.json())
-                .then(data => setAllOrders(data || []))
+                .then(data => setAllOrders(Array.isArray(data) ? data : []))
                 .catch(err => console.error(err));
         } else if (isAdmin && activeTab === 'inventory') {
             fetch('/api/admin/inventory')
                 .then(res => res.json())
-                .then(data => setInventoryCards(data || []))
+                .then(data => setInventoryCards(Array.isArray(data) ? data : []))
                 .catch(err => console.error(err));
         } else if (isAdmin && activeTab === 'users') {
             fetch('/api/admin/users')
                 .then(res => res.json())
-                .then(data => setUsers(data || []))
+                .then(data => setUsers(Array.isArray(data) ? data : []))
                 .catch(err => console.error(err));
         } else if (isAdmin && activeTab === 'overview') {
             fetch('/api/admin/all-orders')
                 .then(res => res.json())
-                .then(data => setAllOrders(data || []))
+                .then(data => setAllOrders(Array.isArray(data) ? data : []))
                 .catch(err => console.error(err));
             fetch('/api/admin/inventory')
                 .then(res => res.json())
-                .then(data => setInventoryCards(data || []))
+                .then(data => setInventoryCards(Array.isArray(data) ? data : []))
                 .catch(err => console.error(err));
             // Lấy live system stats
             setSystemStatsLoading(true);
@@ -104,6 +117,11 @@ export default function AdminDashboard() {
                 .then(res => res.json())
                 .then(data => { setSystemStats(data); setSystemStatsLoading(false); })
                 .catch(() => setSystemStatsLoading(false));
+        } else if (isAdmin && activeTab === 'gallery') {
+            fetch('/api/admin/accounts')
+                .then(res => res.json())
+                .then(data => setGameAccounts(Array.isArray(data) ? data : []))
+                .catch(err => console.error(err));
         }
     }, [isAdmin, activeTab]);
 
@@ -301,6 +319,70 @@ export default function AdminDashboard() {
         });
     };
 
+    const handleAddAccount = async () => {
+        try {
+            const url = editingAccountId ? `/api/admin/accounts/${editingAccountId}` : '/api/admin/accounts';
+            const method = editingAccountId ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newAccountData),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                if (editingAccountId) {
+                    setGameAccounts(gameAccounts.map(a => a.id === editingAccountId ? data : a));
+                } else {
+                    setGameAccounts([data, ...gameAccounts]);
+                }
+                handleCancelAccountForm();
+                setModalConfig({ isOpen: true, type: 'alert', message: editingAccountId ? 'Cập nhật tài khoản thành công!' : 'Thêm tài khoản thành công!' });
+            } else {
+                setModalConfig({
+                    isOpen: true,
+                    type: 'alert',
+                    message: `Lỗi: ${data.error || 'Cơ sở dữ liệu từ chối yêu cầu.'} - ${data.details || ''}`
+                });
+            }
+        } catch (error) {
+            setModalConfig({ isOpen: true, type: 'alert', message: 'Lỗi kết nối hoặc hệ thống (Network Error).' });
+        }
+    };
+
+    const handleEditAccount = (acc: any) => {
+        setEditingAccountId(acc.id);
+        setNewAccountData({
+            ...acc,
+            originalPrice: acc.originalPrice ? String(acc.originalPrice) : '',
+            notes: acc.notes || ''
+        });
+        setShowAddAccountForm(true);
+    };
+
+    const handleCancelAccountForm = () => {
+        setEditingAccountId(null);
+        setNewAccountData({
+            gameId: '', email: '', password: '', rank: 'Đồng', heroesCount: 0, skinsCount: 0,
+            loginType: 'Garena', notes: '', price: 0, originalPrice: '', image: ''
+        });
+        setShowAddAccountForm(false);
+    };
+
+    const handleDeleteAccount = (id: string, gameId: string) => {
+        setModalConfig({
+            isOpen: true,
+            type: 'confirm',
+            message: `Bạn có chắc muốn xóa tài khoản ID: ${gameId}?`,
+            onConfirm: async () => {
+                const res = await fetch(`/api/admin/accounts/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    setGameAccounts(gameAccounts.filter(a => a.id !== id));
+                }
+            }
+        });
+    };
+
     if (loading) {
         return <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Đang xác thực quyền Admin...</div>;
     }
@@ -334,54 +416,61 @@ export default function AdminDashboard() {
         <div style={{ padding: '8rem 5%', minHeight: '100vh', display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
 
             {/* Sidebar */}
-            <div style={{ width: '250px', flexGrow: 1, maxWidth: '300px', backgroundColor: '#111', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', height: 'fit-content' }}>
+            <div className="glass" style={{ width: '250px', flexGrow: 1, maxWidth: '300px', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem', height: 'fit-content', borderRadius: '24px' }}>
                 <h2 style={{ color: 'var(--primary)', marginBottom: '2rem', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '1.2rem' }}>Quản Trị</h2>
 
                 <button
                     onClick={() => setActiveTab('overview')}
-                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'overview' ? '#222' : 'transparent', color: activeTab === 'overview' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'overview' ? '2px solid var(--primary)' : '2px solid transparent' }}
+                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'overview' ? 'rgba(255,255,255,0.05)' : 'transparent', color: activeTab === 'overview' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'overview' ? '2px solid var(--primary)' : '2px solid transparent', border: 'none', cursor: 'pointer', transition: '0.3s' }}
                 >
                     Tổng Quan
                 </button>
 
                 <button
                     onClick={() => setActiveTab('orders')}
-                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'orders' ? '#222' : 'transparent', color: activeTab === 'orders' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'orders' ? '2px solid var(--primary)' : '2px solid transparent' }}
+                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'orders' ? 'rgba(255,255,255,0.05)' : 'transparent', color: activeTab === 'orders' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'orders' ? '2px solid var(--primary)' : '2px solid transparent', border: 'none', cursor: 'pointer', transition: '0.3s' }}
                 >
                     Yêu Cầu
                 </button>
 
                 <button
                     onClick={() => setActiveTab('all_orders')}
-                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'all_orders' ? '#222' : 'transparent', color: activeTab === 'all_orders' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'all_orders' ? '2px solid var(--primary)' : '2px solid transparent' }}
+                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'all_orders' ? 'rgba(255,255,255,0.05)' : 'transparent', color: activeTab === 'all_orders' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'all_orders' ? '2px solid var(--primary)' : '2px solid transparent', border: 'none', cursor: 'pointer', transition: '0.3s' }}
                 >
                     Đơn Hàng
                 </button>
 
                 <button
                     onClick={() => setActiveTab('inventory')}
-                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'inventory' ? '#222' : 'transparent', color: activeTab === 'inventory' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'inventory' ? '2px solid var(--primary)' : '2px solid transparent' }}
+                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'inventory' ? 'rgba(255,255,255,0.05)' : 'transparent', color: activeTab === 'inventory' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'inventory' ? '2px solid var(--primary)' : '2px solid transparent', border: 'none', cursor: 'pointer', transition: '0.3s' }}
                 >
                     Kho Thẻ Garena
                 </button>
 
                 <button
+                    onClick={() => setActiveTab('gallery')}
+                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'gallery' ? 'rgba(255,255,255,0.05)' : 'transparent', color: activeTab === 'gallery' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'gallery' ? '2px solid var(--primary)' : '2px solid transparent', border: 'none', cursor: 'pointer', transition: '0.3s' }}
+                >
+                    Gallery
+                </button>
+
+                <button
                     onClick={() => setActiveTab('users')}
-                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'users' ? '#222' : 'transparent', color: activeTab === 'users' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'users' ? '2px solid var(--primary)' : '2px solid transparent' }}
+                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'users' ? 'rgba(255,255,255,0.05)' : 'transparent', color: activeTab === 'users' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'users' ? '2px solid var(--primary)' : '2px solid transparent', border: 'none', cursor: 'pointer', transition: '0.3s' }}
                 >
                     Người Dùng
                 </button>
 
                 <button
                     onClick={() => setActiveTab('discounts')}
-                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'discounts' ? '#222' : 'transparent', color: activeTab === 'discounts' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'discounts' ? '2px solid var(--primary)' : '2px solid transparent' }}
+                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'discounts' ? 'rgba(255,255,255,0.05)' : 'transparent', color: activeTab === 'discounts' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'discounts' ? '2px solid var(--primary)' : '2px solid transparent', border: 'none', cursor: 'pointer', transition: '0.3s' }}
                 >
                     Mã Giảm Giá
                 </button>
 
                 <button
                     onClick={() => setActiveTab('posts')}
-                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'posts' ? '#222' : 'transparent', color: activeTab === 'posts' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'posts' ? '2px solid var(--primary)' : '2px solid transparent' }}
+                    style={{ textAlign: 'left', padding: '15px', backgroundColor: activeTab === 'posts' ? 'rgba(255,255,255,0.05)' : 'transparent', color: activeTab === 'posts' ? 'var(--primary)' : '#aaa', textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '1px', borderLeft: activeTab === 'posts' ? '2px solid var(--primary)' : '2px solid transparent', border: 'none', cursor: 'pointer', transition: '0.3s' }}
                 >
                     Post
                 </button>
@@ -389,7 +478,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Content */}
-            <div style={{ flex: '2 1 600px', backgroundColor: '#111', padding: '3rem', border: '1px solid #333', overflowX: 'auto' }}>
+            <div className="glass" style={{ flex: '1 1 600px', minWidth: 0, padding: 'clamp(1rem, 5vw, 3rem)', borderRadius: '24px', overflowX: 'auto' }}>
 
                 {activeTab === 'overview' && (
                     <div>
@@ -397,27 +486,31 @@ export default function AdminDashboard() {
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
 
                             {/* Tổng Doanh Thu */}
-                            <div style={{ backgroundColor: '#222', padding: '2rem', border: '1px solid #333', borderRadius: '8px' }}>
+                            <div className="glass-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                 <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Tổng Doanh Thu</p>
-                                <h4 style={{ fontSize: '2rem', color: '#fff' }}>{new Intl.NumberFormat('vi-VN').format(allOrders.filter(o => o.status === 'DONE').reduce((acc, o) => acc + o.totalAmount, 0))}₫</h4>
+                                <h4 style={{ fontSize: '1.75rem', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={new Intl.NumberFormat('vi-VN').format(allOrders.filter(o => o.status === 'DONE').reduce((acc, o) => acc + o.totalAmount, 0)) + '₫'}>
+                                    {new Intl.NumberFormat('vi-VN').format(allOrders.filter(o => o.status === 'DONE').reduce((acc, o) => acc + o.totalAmount, 0))}₫
+                                </h4>
                                 <p style={{ color: '#aaa', fontSize: '0.8rem', marginTop: '10px' }}>Đơn hàng thành công</p>
                             </div>
 
                             {/* Tổng Lợi Nhuận */}
-                            <div style={{ backgroundColor: '#222', padding: '2rem', border: '1px solid #333', borderRadius: '8px' }}>
+                            <div className="glass-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                 <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Tổng Lợi Nhuận</p>
-                                <h4 style={{ fontSize: '2rem', color: 'var(--primary)' }}>{new Intl.NumberFormat('vi-VN').format(inventoryCards.filter(c => c.status === 'DONE').reduce((acc, c) => acc + ((c.price || 0) - (c.cost || 0)), 0))}₫</h4>
+                                <h4 style={{ fontSize: '1.75rem', color: 'var(--primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={new Intl.NumberFormat('vi-VN').format(inventoryCards.filter(c => c.status === 'DONE').reduce((acc, c) => acc + ((c.price || 0) - (c.cost || 0)), 0)) + '₫'}>
+                                    {new Intl.NumberFormat('vi-VN').format(inventoryCards.filter(c => c.status === 'DONE').reduce((acc, c) => acc + ((c.price || 0) - (c.cost || 0)), 0))}₫
+                                </h4>
                                 <p style={{ color: 'rgba(68, 214, 44, 0.8)', fontSize: '0.8rem', marginTop: '10px' }}>Từ thẻ Garena đã bán</p>
                             </div>
 
                             {/* Supabase DB Size — LIVE */}
-                            <div style={{ backgroundColor: '#222', padding: '2rem', border: `1px solid ${systemStats?.supabase ? '#1c6b3a' : '#333'}`, borderRadius: '8px' }}>
+                            <div className="glass-card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', minWidth: 0, border: systemStats?.supabase ? '1px solid rgba(68, 214, 44, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)' }}>
                                 <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Database (Supabase)</p>
                                 {systemStatsLoading ? (
-                                    <h4 style={{ fontSize: '1.5rem', color: '#555' }}>Đang tải...</h4>
+                                    <h4 style={{ fontSize: '1.2rem', color: '#555' }}>Đang tải...</h4>
                                 ) : systemStats?.supabase ? (
                                     <>
-                                        <h4 style={{ fontSize: '2rem', color: '#fff' }}>{systemStats.supabase.label}</h4>
+                                        <h4 style={{ fontSize: '1.5rem', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{systemStats.supabase.label}</h4>
                                         {/* Progress bar */}
                                         <div style={{ width: '100%', height: '6px', backgroundColor: '#333', borderRadius: '3px', overflow: 'hidden', marginTop: '12px' }}>
                                             <div style={{
@@ -431,14 +524,14 @@ export default function AdminDashboard() {
                                     </>
                                 ) : (
                                     <>
-                                        <h4 style={{ fontSize: '2rem', color: '#fff' }}>-- / 0.5 GB</h4>
+                                        <h4 style={{ fontSize: '1.5rem', color: '#fff' }}>-- / 0.5 GB</h4>
                                         <p style={{ color: '#ff4d4f', fontSize: '0.8rem', marginTop: '10px' }}>Không lấy được dữ liệu</p>
                                     </>
                                 )}
                             </div>
 
                             {/* Vercel — Deployment & Usage */}
-                            <div style={{ backgroundColor: '#222', padding: '2rem', border: `1px solid ${systemStats?.vercel?.hasToken ? '#1c6b3a' : '#333'}`, borderRadius: '8px' }}>
+                            <div className="glass-card" style={{ padding: '2rem', border: systemStats?.vercel?.hasToken ? '1px solid rgba(68, 214, 44, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)' }}>
                                 <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Vercel Deploy</p>
                                 {systemStatsLoading ? (
                                     <h4 style={{ fontSize: '1.5rem', color: '#555' }}>Đang tải...</h4>
@@ -470,16 +563,16 @@ export default function AdminDashboard() {
                             </div>
 
                             {/* Kho Thẻ Còn */}
-                            <div style={{ backgroundColor: '#222', padding: '2rem', border: '1px solid #333', borderRadius: '8px' }}>
+                            <div className="glass-card" style={{ padding: '2rem', minWidth: 0 }}>
                                 <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Kho Thẻ Còn</p>
-                                <h4 style={{ fontSize: '2rem', color: '#fff' }}>{systemStats?.app?.inventoryCount ?? '...'}</h4>
+                                <h4 style={{ fontSize: '1.75rem', color: '#fff' }}>{systemStats?.app?.inventoryCount ?? '...'}</h4>
                                 <p style={{ color: '#aaa', fontSize: '0.8rem', marginTop: '10px' }}>Thẻ Garena chưa bán</p>
                             </div>
 
                             {/* Đơn Chờ Duyệt */}
-                            <div style={{ backgroundColor: '#222', padding: '2rem', border: `1px solid ${(systemStats?.app?.pendingCount ?? 0) > 0 ? '#ff4d4f44' : '#333'}`, borderRadius: '8px' }}>
+                            <div className="glass-card" style={{ padding: '2rem', minWidth: 0, border: (systemStats?.app?.pendingCount ?? 0) > 0 ? '1px solid rgba(255, 77, 79, 0.3)' : '1px solid rgba(255, 255, 255, 0.1)' }}>
                                 <p style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '1px', marginBottom: '10px' }}>Đơn Chờ Duyệt</p>
-                                <h4 style={{ fontSize: '2rem', color: (systemStats?.app?.pendingCount ?? 0) > 0 ? '#ff4d4f' : '#fff' }}>{systemStats?.app?.pendingCount ?? '...'}</h4>
+                                <h4 style={{ fontSize: '1.75rem', color: (systemStats?.app?.pendingCount ?? 0) > 0 ? '#ff4d4f' : '#fff' }}>{systemStats?.app?.pendingCount ?? '...'}</h4>
                                 <p style={{ color: '#aaa', fontSize: '0.8rem', marginTop: '10px' }}>Cần xử lý</p>
                             </div>
 
@@ -692,8 +785,10 @@ export default function AdminDashboard() {
                                         <td style={{ color: '#aaa', fontSize: '0.9rem' }}>{p.video}</td>
                                         <td style={{ color: '#aaa', fontSize: '0.9rem' }}>{p.link}</td>
                                         <td>
-                                            <button style={{ color: '#fff', border: '1px solid #444', padding: '8px 15px', marginRight: '5px' }}>Sửa</button>
-                                            <button style={{ color: '#ff4d4f', border: '1px solid #ff4d4f', background: 'transparent', padding: '8px 15px', cursor: 'pointer' }}>Xóa</button>
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                <button title="Sửa" style={{ color: '#fff', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', padding: '8px', cursor: 'pointer', borderRadius: '8px', display: 'flex' }}><Edit3 size={16} /></button>
+                                                <button title="Xóa" style={{ color: '#ff4d4f', border: '1px solid rgba(255,77,79,0.2)', background: 'rgba(255,77,79,0.05)', padding: '8px', cursor: 'pointer', borderRadius: '8px', display: 'flex' }}><Trash2 size={16} /></button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -740,8 +835,8 @@ export default function AdminDashboard() {
                     <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                             <h3 style={{ fontSize: '1.5rem', textTransform: 'uppercase' }}>Quản lý Kho thẻ Garena</h3>
-                            <button onClick={() => setShowAddInventoryForm(!showAddInventoryForm)} className="btn-primary" style={{ padding: '10px 20px' }}>
-                                {showAddInventoryForm ? 'Thoát' : '+ Nhập Thẻ Mới'}
+                            <button onClick={() => setShowAddInventoryForm(!showAddInventoryForm)} className="btn-primary" style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {showAddInventoryForm ? <><X size={18} /> Thoát</> : <><Plus size={18} /> Nhập Thẻ Mới</>}
                             </button>
                         </div>
 
@@ -851,8 +946,8 @@ export default function AdminDashboard() {
                                                         <td style={{ color: '#888' }}>{c.outTime ? new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short' }).format(new Date(c.outTime)) : '-'}</td>
                                                         <td>
                                                             <div style={{ display: 'flex', gap: '5px' }}>
-                                                                <button onClick={handleSaveEdit} style={{ color: '#fff', border: '1px solid var(--primary)', padding: '5px 10px', backgroundColor: 'var(--primary)', borderRadius: '4px' }}>Lưu</button>
-                                                                <button onClick={handleCancelEdit} style={{ color: '#fff', border: '1px solid #444', padding: '5px 10px', backgroundColor: 'transparent', borderRadius: '4px' }}>Hủy</button>
+                                                                <button onClick={handleSaveEdit} title="Lưu" style={{ color: '#fff', border: 'none', padding: '8px', backgroundColor: 'var(--primary)', borderRadius: '8px', display: 'flex' }}><Save size={16} /></button>
+                                                                <button onClick={handleCancelEdit} title="Hủy" style={{ color: '#fff', border: '1px solid rgba(255,255,255,0.1)', padding: '8px', backgroundColor: 'transparent', borderRadius: '8px', display: 'flex' }}><X size={16} /></button>
                                                             </div>
                                                         </td>
                                                     </>
@@ -883,19 +978,9 @@ export default function AdminDashboard() {
                                                         <td style={{ color: '#888' }}>{new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short' }).format(new Date(c.inTime))}</td>
                                                         <td style={{ color: '#888' }}>{c.outTime ? new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short' }).format(new Date(c.outTime)) : '-'}</td>
                                                         <td>
-                                                            <div style={{ display: 'flex', gap: '5px' }}>
-                                                                <button
-                                                                    onClick={() => handleEditClick(c)}
-                                                                    style={{ color: '#fff', border: '1px solid #444', padding: '6px 12px', backgroundColor: 'transparent', borderRadius: '4px' }}
-                                                                >
-                                                                    Sửa
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleDeleteInventory(c.id, c.serial)}
-                                                                    style={{ color: '#fff', border: '1px solid red', padding: '6px 12px', backgroundColor: 'rgba(255,0,0,0.1)', borderRadius: '4px' }}
-                                                                >
-                                                                    Xóa
-                                                                </button>
+                                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                                <button onClick={() => handleEditClick(c)} title="Sửa" style={{ color: '#fff', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', padding: '8px', cursor: 'pointer', borderRadius: '8px', display: 'flex' }}><Edit3 size={16} /></button>
+                                                                <button onClick={() => handleDeleteInventory(c.id, c.serial)} title="Xóa" style={{ color: '#ff4d4f', border: '1px solid rgba(255,77,79,0.2)', background: 'rgba(255,77,79,0.05)', padding: '8px', cursor: 'pointer', borderRadius: '8px', display: 'flex' }}><Trash2 size={16} /></button>
                                                             </div>
                                                         </td>
                                                     </>
@@ -949,9 +1034,10 @@ export default function AdminDashboard() {
                                             <td>
                                                 <button
                                                     onClick={() => setSelectedUserDetail(u)}
-                                                    style={{ color: '#fff', border: '1px solid #444', padding: '6px 12px', backgroundColor: 'transparent', borderRadius: '4px' }}
+                                                    title="Chi tiết"
+                                                    style={{ color: '#fff', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', padding: '8px', cursor: 'pointer', borderRadius: '8px', display: 'flex' }}
                                                 >
-                                                    Detail
+                                                    <FileText size={16} />
                                                 </button>
                                             </td>
                                         </tr>
@@ -959,6 +1045,153 @@ export default function AdminDashboard() {
                                 </tbody>
                             </table>
                         )}
+                    </div>
+                )}
+                {activeTab === 'gallery' && (
+                    <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+                            <h3 style={{ fontSize: '1.5rem', textTransform: 'uppercase' }}>Quản lý Tài Khoản Game (Gallery)</h3>
+                            <button onClick={editingAccountId ? handleCancelAccountForm : () => setShowAddAccountForm(!showAddAccountForm)} className="btn-primary" style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {showAddAccountForm ? (editingAccountId ? <><X size={18} /> Hủy Sửa</> : <><X size={18} /> Thoát</>) : <><Plus size={18} /> Đăng Acc Mới</>}
+                            </button>
+                        </div>
+
+                        {showAddAccountForm && (
+                            <div className="glass" style={{ padding: '2.5rem', borderRadius: '24px', marginBottom: '2.5rem', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                <h4 style={{ color: 'var(--primary)', fontSize: '1.5rem', marginBottom: '1rem', fontWeight: 700 }}>Thông Tin Tài Khoản</h4>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>ID (Hiển thị)</label>
+                                        <input className="glass-input" value={newAccountData.gameId} onChange={e => setNewAccountData({ ...newAccountData, gameId: e.target.value })} placeholder="#OYP..." />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Mail/Login</label>
+                                        <input className="glass-input" value={newAccountData.email} onChange={e => setNewAccountData({ ...newAccountData, email: e.target.value })} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Mật khẩu</label>
+                                        <input className="glass-input" value={newAccountData.password} onChange={e => setNewAccountData({ ...newAccountData, password: e.target.value })} />
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Rank</label>
+                                        <select className="glass-input" value={newAccountData.rank} onChange={e => setNewAccountData({ ...newAccountData, rank: e.target.value })}>
+                                            <option value="Đồng">Đồng</option>
+                                            <option value="Bạc">Bạc</option>
+                                            <option value="Vàng">Vàng</option>
+                                            <option value="Bạch Kim">Bạch Kim</option>
+                                            <option value="Kim Cương">Kim Cương</option>
+                                            <option value="Tinh Anh">Tinh Anh</option>
+                                            <option value="Cao Thủ">Cao Thủ</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Số Tướng</label>
+                                        <input type="number" className="glass-input" value={newAccountData.heroesCount} onChange={e => setNewAccountData({ ...newAccountData, heroesCount: parseInt(e.target.value) || 0 })} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Số Skin</label>
+                                        <input type="number" className="glass-input" value={newAccountData.skinsCount} onChange={e => setNewAccountData({ ...newAccountData, skinsCount: parseInt(e.target.value) || 0 })} />
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Loại đăng ký (Tình trạng)</label>
+                                        <select className="glass-input" value={newAccountData.loginType} onChange={e => setNewAccountData({ ...newAccountData, loginType: e.target.value })}>
+                                            <option value="Garena">Garena</option>
+                                            <option value="Facebook">Facebook</option>
+                                            <option value="Trắng thông tin">Trắng thông tin</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Link ảnh Gallery</label>
+                                        <input className="glass-input" value={newAccountData.image} onChange={e => setNewAccountData({ ...newAccountData, image: e.target.value })} placeholder="https://..." />
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Giá bán (đ)</label>
+                                        <input type="number" className="glass-input" value={newAccountData.price} onChange={e => setNewAccountData({ ...newAccountData, price: parseInt(e.target.value) || 0 })} style={{ color: 'var(--primary)', fontWeight: 'bold' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Giá gốc (Gạch bỏ)</label>
+                                        <input type="number" className="glass-input" value={newAccountData.originalPrice} onChange={e => setNewAccountData({ ...newAccountData, originalPrice: e.target.value })} />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label style={{ display: 'block', color: '#888', marginBottom: '8px', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Ghi chú / Mô tả</label>
+                                    <textarea className="glass-input" value={newAccountData.notes} onChange={e => setNewAccountData({ ...newAccountData, notes: e.target.value })} style={{ minHeight: '100px', resize: 'vertical' }} />
+                                </div>
+
+                                <button onClick={handleAddAccount} className="btn-primary" style={{ padding: '15px 35px', alignSelf: 'flex-start', borderRadius: '12px', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <Save size={20} /> {editingAccountId ? 'CẬP NHẬT TÀI KHOẢN' : 'LƯU TÀI KHOẢN'}
+                                </button>
+                            </div>
+                        )}
+
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', color: '#fff', minWidth: '900px' }}>
+                                <thead>
+                                    <tr style={{ borderBottom: '1px solid #333', color: '#888', textTransform: 'uppercase', fontSize: '0.8rem' }}>
+                                        <th style={{ padding: '15px 0' }}>Preview/ID</th>
+                                        <th>Rank/Stats</th>
+                                        <th>Đăng ký</th>
+                                        <th>Thông tin login (ID/Pass)</th>
+                                        <th>Giá bán</th>
+                                        <th>Ngày đăng</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {gameAccounts.map((acc) => (
+                                        <tr key={acc.id} style={{ borderBottom: '1px solid #222' }}>
+                                            <td style={{ padding: '15px 0' }}>
+                                                <img src={acc.image || '/posts/dolia.png'} style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px', marginBottom: '5px' }} />
+                                                <div style={{ fontSize: '0.8rem', color: '#888' }}>#{acc.gameId}</div>
+                                            </td>
+                                            <td>
+                                                <div style={{ color: 'var(--primary)', fontWeight: 600 }}>{acc.rank}</div>
+                                                <div style={{ fontSize: '0.75rem', color: '#888' }}>{acc.heroesCount} Tướng | {acc.skinsCount} Skin</div>
+                                            </td>
+                                            <td style={{ fontSize: '0.9rem' }}>{acc.loginType}</td>
+                                            <td style={{ fontSize: '0.8rem', color: '#aaa', fontFamily: 'monospace' }}>
+                                                <div>{acc.email}</div>
+                                                <div>{acc.password}</div>
+                                            </td>
+                                            <td>
+                                                <div style={{ color: '#fff', fontWeight: 700 }}>{new Intl.NumberFormat('vi-VN').format(acc.price || 0)}đ</div>
+                                                {acc.originalPrice && <div style={{ fontSize: '0.7rem', color: '#555', textDecoration: 'line-through' }}>{new Intl.NumberFormat('vi-VN').format(Number(acc.originalPrice))}đ</div>}
+                                            </td>
+                                            <td style={{ fontSize: '0.75rem', color: '#666' }}>{acc.createdAt ? new Date(acc.createdAt).toLocaleDateString('vi-VN') : '---'}</td>
+                                            <td>
+                                                <div style={{ display: 'flex', gap: '8px' }}>
+                                                    <button
+                                                        onClick={() => handleEditAccount(acc)}
+                                                        title="Sửa"
+                                                        style={{ color: '#fff', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', padding: '8px', cursor: 'pointer', borderRadius: '8px', display: 'flex' }}
+                                                    >
+                                                        <Edit3 size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteAccount(acc.id, acc.gameId)}
+                                                        title="Xóa"
+                                                        style={{ color: '#ff4d4f', border: '1px solid rgba(255,77,79,0.2)', background: 'rgba(255,77,79,0.05)', padding: '8px', cursor: 'pointer', borderRadius: '8px', display: 'flex' }}
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
 

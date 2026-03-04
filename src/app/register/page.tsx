@@ -54,14 +54,14 @@ function RegisterForm() {
 
     return (
         <div style={{ padding: '8rem 5%', display: 'flex', justifyContent: 'center', minHeight: '80vh' }}>
-            <form onSubmit={handleRegister} style={{ width: '100%', maxWidth: '400px', backgroundColor: '#111', padding: '3rem', textAlign: 'center', border: '1px solid #333' }}>
-                <h2 className="section-title" style={{ fontSize: '1.5rem', marginBottom: '2rem', border: 'none' }}>Đăng Ký Tài Khoản</h2>
+            <form onSubmit={handleRegister} className="glass" style={{ width: '100%', maxWidth: '420px', padding: '3rem', textAlign: 'center', borderRadius: '24px' }}>
+                <h2 className="section-title" style={{ fontSize: '1.5rem', marginBottom: '2rem', border: 'none', justifyContent: 'center' }}>Đăng Ký Tài Khoản</h2>
                 {redirectTo !== '/' && (
-                    <div style={{ color: '#aaa', fontSize: '0.85rem', marginBottom: '1.5rem', padding: '10px', backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '6px' }}>
+                    <div style={{ color: '#aaa', fontSize: '0.85rem', marginBottom: '1.5rem', padding: '12px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}>
                         Vui lòng đăng ký để tiếp tục
                     </div>
                 )}
-                {error && <div style={{ color: 'red', marginBottom: '1rem', fontSize: '0.9rem' }}>{error}</div>}
+                {error && <div style={{ color: '#ff4d4f', marginBottom: '1.5rem', fontSize: '0.9rem', padding: '10px', backgroundColor: 'rgba(255,77,79,0.1)', borderRadius: '8px' }}>{error}</div>}
 
                 <input
                     type="text"
@@ -69,7 +69,8 @@ function RegisterForm() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
-                    style={{ padding: '15px', backgroundColor: '#000', border: '1px solid #444', color: '#fff', width: '100%', marginBottom: '1rem' }}
+                    className="glass-input"
+                    style={{ marginBottom: '1rem' }}
                 />
 
                 <input
@@ -78,7 +79,8 @@ function RegisterForm() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    style={{ padding: '15px', backgroundColor: '#000', border: '1px solid #444', color: '#fff', width: '100%', marginBottom: '1rem' }}
+                    className="glass-input"
+                    style={{ marginBottom: '1rem' }}
                 />
 
                 <input
@@ -87,12 +89,13 @@ function RegisterForm() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    style={{ padding: '15px', backgroundColor: '#000', border: '1px solid #444', color: '#fff', width: '100%', marginBottom: '2rem' }}
+                    className="glass-input"
+                    style={{ marginBottom: '2rem' }}
                 />
 
-                <button type="submit" className="btn-primary" style={{ width: '100%', marginBottom: '1.5rem' }}>Đăng Ký</button>
+                <button type="submit" className="btn-primary" style={{ width: '100%', marginBottom: '2rem', borderRadius: '12px' }}>Đăng Ký</button>
                 <p style={{ color: '#888', fontSize: '0.9rem' }}>
-                    Đã có tài khoản? <Link href={redirectTo !== '/' ? `/login?redirect=${encodeURIComponent(redirectTo)}` : '/login'} style={{ color: 'var(--primary)', textDecoration: 'underline' }}>Trở về đăng nhập</Link>
+                    Đã có tài khoản? <Link href={redirectTo !== '/' ? `/login?redirect=${encodeURIComponent(redirectTo)}` : '/login'} style={{ color: 'var(--primary)', textDecoration: 'underline', fontWeight: 600 }}>Trở về đăng nhập</Link>
                 </p>
             </form>
 

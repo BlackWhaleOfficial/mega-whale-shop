@@ -1,6 +1,9 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import VideoPostCard from '../components/VideoPostCard';
+import { ChevronsDown } from 'lucide-react';
 
 const FEATURED_POSTS = [
     {
@@ -39,19 +42,33 @@ export default function Home() {
             <section style={{
                 position: 'relative',
                 width: '100%',
-                height: '90vh',
+                height: '100vh',
                 overflow: 'hidden',
                 display: 'flex',
-                alignItems: 'flex-end',
-                paddingBottom: '5rem',
-                paddingLeft: '5%'
+                flexDirection: 'column',
+                justifyContent: 'center',
+                paddingLeft: '8%',
+                backgroundColor: '#000'
             }}>
+                <div className="hero-static-bg" style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundImage: 'url("/hero-bg.jpg")',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    zIndex: 0
+                }} />
+
                 {/* Background Video */}
                 <video
                     autoPlay
                     loop
                     muted
                     playsInline
+                    poster="/hero-bg.jpg"
                     style={{
                         position: 'absolute',
                         top: 0,
@@ -59,7 +76,8 @@ export default function Home() {
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
-                        zIndex: 0
+                        zIndex: 1,
+                        opacity: 0.6
                     }}
                 >
                     <source src="/hero-bg.mp4" type="video/mp4" />
@@ -72,42 +90,88 @@ export default function Home() {
                     left: 0,
                     width: '100%',
                     height: '100%',
-                    background: 'linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.9))',
-                    zIndex: 1
+                    background: 'linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.9))',
+                    zIndex: 2
                 }} />
 
-                <div style={{ maxWidth: '800px', zIndex: 10, position: 'relative' }}>
-                    <h1 style={{
-                        fontSize: 'clamp(3rem, 10vw, 5rem)',
-                        fontWeight: 700,
-                        lineHeight: 1.1,
+                <div className="hero-content" style={{ maxWidth: '900px', zIndex: 10, position: 'relative' }}>
+                    <h1 className="hero-title" style={{
+                        fontSize: 'clamp(2.5rem, 10vw, 6rem)',
+                        fontWeight: 900,
+                        lineHeight: 1,
                         textTransform: 'uppercase',
                         marginBottom: '1rem',
                         color: '#fff',
-                        letterSpacing: 'clamp(2px, 3vw, 5px)'
+                        letterSpacing: '-2px'
                     }}>
-                        MEGA WHALE<br />SHOP
+                        MEGA WHALE<br />
+                        <span style={{ color: 'var(--primary)', display: 'inline-block' }}>SHOP</span>
                     </h1>
                     <p style={{
-                        fontSize: 'clamp(1rem, 3vw, 1.2rem)',
+                        fontSize: 'clamp(0.9rem, 3vw, 1.25rem)',
                         marginBottom: '3rem',
-                        color: '#ccc',
-                        maxWidth: '600px',
-                        lineHeight: 1.6
+                        color: '#bbb',
+                        maxWidth: '550px',
+                        lineHeight: 1.6,
+                        fontWeight: 500
                     }}>
-                        Thành viên của Đào Tạo Siêu Sao. Nơi mua thẻ Garena Chiết Khấu Uy tín.
+                        Thành viên của Đào Tạo Siêu Sao<br />
+                        Nơi mua Thẻ Garena Chiết Khấu Uy tín<br />
+                        Giao lưu FULL Skin FULL Tướng
                     </p>
                     <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-                        <Link href="/nap-game" className="btn-primary" style={{ padding: 'clamp(12px, 3vw, 16px) clamp(20px, 6vw, 40px)', fontSize: 'clamp(1rem, 3vw, 1.2rem)', textAlign: 'center' }}>
+                        <Link href="/nap-game" className="btn-primary" style={{ padding: 'clamp(14px, 4vw, 18px) clamp(30px, 8vw, 45px)', fontSize: '1.1rem', borderRadius: '4px' }}>
                             NẠP NGAY
                         </Link>
                     </div>
                 </div>
+
+                {/* Scroll Hint */}
+                <div style={{
+                    position: 'absolute',
+                    bottom: '40px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 10,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '10px',
+                    color: 'var(--primary)',
+                    animation: 'bounce 2s infinite'
+                }}>
+                    <ChevronsDown size={40} />
+                </div>
             </section>
 
+            <style jsx global>{`
+                @keyframes bounce {
+                    0%, 20%, 50%, 80%, 100% {transform: translateY(0) translateX(-50%);}
+                    40% {transform: translateY(-10px) translateX(-50%);}
+                    60% {transform: translateY(-5px) translateX(-50%);}
+                }
+                
+                @media (max-width: 480px) {
+                    .hero-content {
+                        padding-right: 8%;
+                    }
+                    .hero-title {
+                        font-size: 2.8rem !important;
+                        letter-spacing: -1px !important;
+                    }
+                }
+
+                @media (min-width: 1024px) {
+                    .hero-static-bg {
+                        display: none !important;
+                    }
+                }
+            `}</style>
+
             {/* Featured Section */}
-            <section style={{ padding: 'clamp(4rem, 10vw, 8rem) 5%', backgroundColor: '#000' }}>
-                <h2 className="section-title" style={{ fontSize: 'clamp(1.8rem, 5vw, 2.5rem)', paddingLeft: 'clamp(0.5rem, 2vw, 1rem)' }}>Skin Mới Nổi Bật</h2>
+            <section style={{ padding: '8rem 8%', backgroundColor: '#050505', borderRadius: '40px 40px 0 0', marginTop: '-40px', position: 'relative', zIndex: 20 }}>
+                <h2 className="section-title">SKIN MỚI NỔI BẬT</h2>
+
 
                 <div style={{
                     display: 'grid',

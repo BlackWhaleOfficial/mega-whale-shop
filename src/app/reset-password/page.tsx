@@ -62,13 +62,13 @@ function ResetPasswordForm() {
     if (tokenValid === false) {
         return (
             <div style={{ padding: '8rem 5%', display: 'flex', justifyContent: 'center', minHeight: '80vh' }}>
-                <div style={{ backgroundColor: '#111', padding: '3rem', border: '1px solid #333', textAlign: 'center', maxWidth: '420px', width: '100%' }}>
+                <div className="glass" style={{ padding: '3rem', border: '1px solid #333', textAlign: 'center', maxWidth: '420px', width: '100%', borderRadius: '24px' }}>
                     <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
                     <h2 style={{ color: '#ff4d4f', marginBottom: '1rem' }}>Link Không Hợp Lệ</h2>
                     <p style={{ color: '#aaa', marginBottom: '2rem', fontSize: '0.9rem' }}>
                         Link đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.
                     </p>
-                    <Link href="/forgot-password" className="btn-primary" style={{ display: 'inline-block', padding: '12px 24px' }}>
+                    <Link href="/forgot-password" className="btn-primary" style={{ display: 'inline-block', padding: '12px 24px', borderRadius: '12px' }}>
                         Yêu Cầu Link Mới
                     </Link>
                 </div>
@@ -79,7 +79,7 @@ function ResetPasswordForm() {
     if (status === 'done') {
         return (
             <div style={{ padding: '8rem 5%', display: 'flex', justifyContent: 'center', minHeight: '80vh' }}>
-                <div style={{ backgroundColor: '#111', padding: '3rem', border: '1px solid #333', textAlign: 'center', maxWidth: '420px', width: '100%' }}>
+                <div className="glass" style={{ padding: '3rem', border: '1px solid #333', textAlign: 'center', maxWidth: '420px', width: '100%', borderRadius: '24px' }}>
                     <div style={{
                         width: '64px', height: '64px', borderRadius: '50%',
                         backgroundColor: 'rgba(68, 214, 44, 0.15)',
@@ -104,8 +104,8 @@ function ResetPasswordForm() {
 
     return (
         <div style={{ padding: '8rem 5%', display: 'flex', justifyContent: 'center', minHeight: '80vh' }}>
-            <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '420px', backgroundColor: '#111', padding: '3rem', textAlign: 'center', border: '1px solid #333' }}>
-                <h2 className="section-title" style={{ fontSize: '1.5rem', marginBottom: '0.75rem', border: 'none' }}>
+            <form onSubmit={handleSubmit} className="glass" style={{ width: '100%', maxWidth: '420px', padding: '3rem', textAlign: 'center', borderRadius: '24px' }}>
+                <h2 className="section-title" style={{ fontSize: '1.5rem', marginBottom: '0.75rem', border: 'none', justifyContent: 'center' }}>
                     Đặt Lại Mật Khẩu
                 </h2>
                 <p style={{ color: '#888', fontSize: '0.9rem', marginBottom: '2rem' }}>
@@ -113,7 +113,7 @@ function ResetPasswordForm() {
                 </p>
 
                 {(errorMsg || status === 'error') && (
-                    <div style={{ color: '#ff4d4f', marginBottom: '1rem', fontSize: '0.9rem', padding: '10px', backgroundColor: 'rgba(255,77,79,0.1)', border: '1px solid rgba(255,77,79,0.3)', borderRadius: '4px' }}>
+                    <div style={{ color: '#ff4d4f', marginBottom: '1.5rem', fontSize: '0.9rem', padding: '12px', backgroundColor: 'rgba(255,77,79,0.1)', border: '1px solid rgba(255,77,79,0.3)', borderRadius: '12px' }}>
                         {errorMsg}
                     </div>
                 )}
@@ -124,7 +124,8 @@ function ResetPasswordForm() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    style={{ padding: '15px', backgroundColor: '#000', border: '1px solid #444', color: '#fff', width: '100%', marginBottom: '1rem', fontSize: '1rem', boxSizing: 'border-box' }}
+                    className="glass-input"
+                    style={{ marginBottom: '1rem' }}
                 />
                 <input
                     type="password"
@@ -132,19 +133,20 @@ function ResetPasswordForm() {
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
                     required
-                    style={{ padding: '15px', backgroundColor: '#000', border: '1px solid #444', color: '#fff', width: '100%', marginBottom: '2rem', fontSize: '1rem', boxSizing: 'border-box' }}
+                    className="glass-input"
+                    style={{ marginBottom: '2rem' }}
                 />
 
                 <button
                     type="submit"
                     className="btn-primary"
                     disabled={status === 'loading'}
-                    style={{ width: '100%', marginBottom: '1.5rem', opacity: status === 'loading' ? 0.7 : 1 }}
+                    style={{ width: '100%', marginBottom: '1.5rem', opacity: status === 'loading' ? 0.7 : 1, borderRadius: '12px' }}
                 >
                     {status === 'loading' ? 'Đang cập nhật...' : 'Đặt Lại Mật Khẩu'}
                 </button>
 
-                <Link href="/login" style={{ color: '#888', fontSize: '0.9rem', textDecoration: 'none' }}>
+                <Link href="/login" style={{ color: '#888', fontSize: '0.9rem', textDecoration: 'none' }} className="nav-hover">
                     ← Quay về đăng nhập
                 </Link>
             </form>

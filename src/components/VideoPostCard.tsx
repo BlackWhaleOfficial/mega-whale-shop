@@ -33,13 +33,10 @@ export default function VideoPostCard({ hero, title, desc, thumb, video, link }:
 
     return (
         <div
+            className="glass-card"
             style={{
-                backgroundColor: '#111',
-                transition: 'transform 0.4s ease, box-shadow 0.4s ease',
                 cursor: 'pointer',
                 overflow: 'hidden',
-                borderRadius: '8px',
-                border: '1px solid #222',
                 display: 'flex',
                 flexDirection: 'column'
             }}
@@ -69,6 +66,8 @@ export default function VideoPostCard({ hero, title, desc, thumb, video, link }:
                     playsInline
                     muted
                     loop
+                    autoPlay
+                    poster={thumb}
                     style={{
                         position: 'absolute',
                         top: 0,
@@ -76,7 +75,7 @@ export default function VideoPostCard({ hero, title, desc, thumb, video, link }:
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
-                        opacity: isHovered ? 1 : 0,
+                        opacity: isHovered ? 1 : 0.8, // subtle opacity change
                         transition: 'opacity 0.6s ease',
                         zIndex: 0
                     }}
@@ -85,12 +84,12 @@ export default function VideoPostCard({ hero, title, desc, thumb, video, link }:
                 </video>
             </div>
             <div style={{ padding: '2rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ color: 'var(--primary)', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem', letterSpacing: '2px', textTransform: 'uppercase' }}>
+                <div style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '0.8rem', marginBottom: '0.8rem', letterSpacing: '2px', textTransform: 'uppercase' }}>
                     {hero}
                 </div>
-                <h3 style={{ fontSize: '1.8rem', fontWeight: 500, marginBottom: '1rem' }}>{title}</h3>
-                <p style={{ color: '#aaa', lineHeight: 1.6, marginBottom: '2rem', flex: 1 }}>{desc}</p>
-                <Link href={link} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', fontWeight: 600, borderBottom: '2px solid transparent', paddingBottom: '4px', alignSelf: 'flex-start' }}>
+                <h3 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: '1rem', color: '#fff' }}>{title}</h3>
+                <p style={{ color: '#888', lineHeight: 1.6, marginBottom: '2rem', fontSize: '0.95rem', flex: 1 }}>{desc}</p>
+                <Link href={link} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '0.9rem', color: '#fff' }}>
                     Khám Phá <span style={{ color: 'var(--primary)', transition: 'transform 0.3s', transform: isHovered ? 'translateX(5px)' : 'none' }}>&rarr;</span>
                 </Link>
             </div>
