@@ -36,6 +36,18 @@ export default function CollectionPage() {
     const [gachaType, setGachaType] = useState<'FREE' | 'PAID'>('FREE');
     const [gachaLoading, setGachaLoading] = useState(false);
 
+    const banners = ['/banner1.png', '/banner2.png', '/banner3.png'];
+    const [currentBanner, setCurrentBanner] = useState(0);
+
+    useEffect(() => {
+        if (activeTab === 'gacha') {
+            const timer = setInterval(() => {
+                setCurrentBanner((prev) => (prev + 1) % banners.length);
+            }, 3000);
+            return () => clearInterval(timer);
+        }
+    }, [activeTab, banners.length]);
+
     useEffect(() => {
         fetch('/api/accounts')
             .then(res => res.json())
@@ -347,12 +359,38 @@ export default function CollectionPage() {
             {activeTab === 'gacha' && (
                 <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                     <div style={{
-                        borderRadius: '24px',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        height: '400px',
+                        gap: '2rem',
                         overflow: 'hidden',
-                        border: '2px solid rgba(233,196,106,0.3)',
-                        boxShadow: '0 10px 40px rgba(0,0,0,0.8)'
+                        position: 'relative'
                     }}>
-                        <img src="/gacha-banner.png" style={{ width: '100%', display: 'block', aspectRatio: '21/9', objectFit: 'cover' }} alt="Gacha Banner" />
+                        {banners.map((src, index) => {
+                            const isActive = index === currentBanner;
+                            let style: any = {
+                                position: 'absolute',
+                                transition: 'all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                                borderRadius: '24px',
+                                overflow: 'hidden',
+                                width: isActive ? '65%' : '40%',
+                                zIndex: isActive ? 10 : 1,
+                                opacity: isActive ? 1 : 0.3,
+                                filter: isActive ? 'none' : 'blur(4px)',
+                                transform: isActive
+                                    ? 'translateX(0) scale(1)'
+                                    : (index === (currentBanner + 1) % banners.length ? 'translateX(70%) scale(0.85)' : 'translateX(-70%) scale(0.85)'),
+                                cursor: isActive ? 'default' : 'pointer',
+                                boxShadow: isActive ? '0 10px 40px rgba(0,0,0,0.8)' : 'none'
+                            };
+
+                            return (
+                                <div key={src} style={style} onClick={() => !isActive && setCurrentBanner(index)}>
+                                    <img src={src} style={{ width: '100%', display: 'block', aspectRatio: '21/9', objectFit: 'cover' }} alt="Gacha Banner" />
+                                </div>
+                            );
+                        })}
                     </div>
 
                     <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -445,8 +483,9 @@ export default function CollectionPage() {
                         width: '90%',
                         maxWidth: '450px',
                         padding: '2.5rem',
-                        borderRadius: '24px',
+                        borderRadius: '20px',
                         border: '2px solid #e9c46a',
+                        backgroundColor: '#0a0a0a',
                         textAlign: 'center',
                         display: 'flex',
                         flexDirection: 'column',
@@ -463,28 +502,32 @@ export default function CollectionPage() {
                             </div>
                         </div>
 
-                        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
-                            <span style={{ color: '#888' }}>Mã Acc</span>
-                            <span style={{ color: '#fff', fontWeight: 600, fontFamily: 'monospace' }}>#{gachaResult.gameId}</span>
+                        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.8rem' }}>
+                            <span style={{ color: '#888', fontSize: '0.9rem' }}>Mã Acc</span>
+                            <span style={{ color: '#fff', fontWeight: 700, fontFamily: 'monospace', fontSize: '0.9rem' }}>#{gachaResult.gameId}</span>
                         </div>
-                        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
-                            <span style={{ color: '#888' }}>Rank</span>
-                            <span style={{ color: 'var(--primary)', fontWeight: 800 }}>{gachaResult.rank}</span>
+                        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.8rem' }}>
+                            <span style={{ color: '#888', fontSize: '0.9rem' }}>Rank</span>
+                            <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '0.9rem' }}>{gachaResult.rank}</span>
+                        </div>
+                        <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.8rem' }}>
+                            <span style={{ color: '#888', fontSize: '0.9rem' }}>Tướng / Skin</span>
+                            <span style={{ color: '#fff', fontWeight: 700, fontSize: '0.9rem' }}>{gachaResult.heroesCount} / {gachaResult.skinsCount}</span>
                         </div>
                         <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem' }}>
-                            <span style={{ color: '#888' }}>Tướng / Skin</span>
-                            <span style={{ color: '#fff', fontWeight: 600 }}>{gachaResult.heroesCount} / {gachaResult.skinsCount}</span>
+                            <span style={{ color: '#888', fontSize: '0.9rem' }}>Trị giá</span>
+                            <span style={{ color: '#fff', fontWeight: 700, fontSize: '0.9rem' }}>{new Intl.NumberFormat('vi-VN').format(gachaResult.price)}đ</span>
                         </div>
 
                         <div style={{ width: '100%', display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                             {gachaType === 'FREE' ? (
                                 <>
                                     <button
-                                        style={{ flex: 1, padding: '15px', background: '#e9c46a', color: '#000', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}
+                                        style={{ flex: 1, padding: '12px', background: '#e9c46a', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
                                         onClick={() => { setIsGachaPlaying(false); handleGacha('FREE'); }}
                                     >Thử lại nữa</button>
                                     <button
-                                        style={{ flex: 1, padding: '15px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}
+                                        style={{ flex: 1, padding: '12px', background: '#1a1a1a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
                                         onClick={() => { setIsGachaPlaying(false); setVideoEnded(false); }}
                                     >Thoát ra</button>
                                 </>
