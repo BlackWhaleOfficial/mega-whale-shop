@@ -46,6 +46,8 @@ export default function AdminDashboard() {
     const [showAddAccountForm, setShowAddAccountForm] = useState(false);
     const [gallerySearchTerm, setGallerySearchTerm] = useState('');
     const [galleryTab, setGalleryTab] = useState<'ALL' | 'REG'>('ALL');
+    const [galleryPage, setGalleryPage] = useState(1);
+    const [galleryPageSize, setGalleryPageSize] = useState(5);
     const [newAccountData, setNewAccountData] = useState({
         gameId: '', email: '', password: '', rank: 'Đồng', heroesCount: 0, skinsCount: 0,
         loginType: 'Garena', notes: '', price: 0, originalPrice: '', image: '', bannerTag: 'Auto'
@@ -501,7 +503,8 @@ export default function AdminDashboard() {
             (acc.notes && acc.notes.toLowerCase().includes(term))
         );
     });
-
+    const galleryTotalPages = Math.max(1, Math.ceil(filteredGalleryAccounts.length / galleryPageSize));
+    const paginatedAccounts = filteredGalleryAccounts.slice((galleryPage - 1) * galleryPageSize, galleryPage * galleryPageSize);
 
     return (
         <div style={{ padding: '8rem 5%', minHeight: '100vh', display: 'flex', gap: '2rem', flexWrap: 'wrap', backgroundColor: '#000' }}>
@@ -1271,64 +1274,92 @@ export default function AdminDashboard() {
                             </div>
                         )}
 
-                        <div style={{ overflowX: 'auto' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', color: '#fff', minWidth: '900px' }}>
-                                <thead>
-                                    <tr style={{ borderBottom: '1px solid #333', color: '#888', textTransform: 'uppercase', fontSize: '0.8rem' }}>
-                                        <th style={{ padding: '15px 0' }}>Preview/ID</th>
-                                        <th>Rank/Stats</th>
-                                        <th>Đăng ký</th>
-                                        <th>Thông tin login (ID/Pass)</th>
-                                        <th>Giá bán</th>
-                                        <th>Ngày đăng</th>
-                                        <th>Thao tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredGalleryAccounts.map((acc) => (
-                                        <tr key={acc.id} style={{ borderBottom: '1px solid #222' }}>
-                                            <td style={{ padding: '15px 0' }}>
-                                                <img src={acc.image || '/posts/dolia.png'} style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px', marginBottom: '5px' }} />
-                                                <div style={{ fontSize: '0.8rem', color: '#888' }}>#{acc.gameId}</div>
-                                            </td>
-                                            <td>
-                                                <div style={{ color: 'var(--primary)', fontWeight: 600 }}>{acc.rank}</div>
-                                                <div style={{ fontSize: '0.75rem', color: '#888' }}>{acc.heroesCount} Tướng | {acc.skinsCount} Skin</div>
-                                                {acc.bannerTag && <div style={{ fontSize: '0.7rem', color: '#e9c46a', textTransform: 'uppercase', marginTop: '2px', fontWeight: 700 }}>[{acc.bannerTag}]</div>}
-                                            </td>
-                                            <td style={{ fontSize: '0.9rem' }}>{acc.loginType}</td>
-                                            <td style={{ fontSize: '0.8rem', color: '#aaa', fontFamily: 'monospace' }}>
-                                                <div>{acc.email}</div>
-                                                <div>{acc.password}</div>
-                                            </td>
-                                            <td>
-                                                <div style={{ color: '#fff', fontWeight: 700 }}>{new Intl.NumberFormat('vi-VN').format(acc.price || 0)}đ</div>
-                                                {acc.originalPrice && <div style={{ fontSize: '0.7rem', color: '#555', textDecoration: 'line-through' }}>{new Intl.NumberFormat('vi-VN').format(Number(acc.originalPrice))}đ</div>}
-                                            </td>
-                                            <td style={{ fontSize: '0.75rem', color: '#666' }}>{acc.createdAt ? new Date(acc.createdAt).toLocaleDateString('vi-VN') : '---'}</td>
-                                            <td>
-                                                <div style={{ display: 'flex', gap: '8px' }}>
-                                                    <button
-                                                        onClick={() => handleEditAccount(acc)}
-                                                        title="Sửa"
-                                                        style={{ color: '#fff', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', padding: '8px', cursor: 'pointer', borderRadius: '8px', display: 'flex' }}
-                                                    >
-                                                        <Edit3 size={16} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteAccount(acc.id, acc.gameId)}
-                                                        title="Xóa"
-                                                        style={{ color: '#ff4d4f', border: '1px solid rgba(255,77,79,0.2)', background: 'rgba(255,77,79,0.05)', padding: '8px', cursor: 'pointer', borderRadius: '8px', display: 'flex' }}
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                </div>
-                                            </td>
+                        {!showAddAccountForm && (
+                            <div style={{ overflowX: 'auto' }}>
+                                {/* Pagination controls top */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '10px' }}>
+                                    <div style={{ color: '#888', fontSize: '0.85rem' }}>
+                                        Hiển thị {Math.min((galleryPage - 1) * galleryPageSize + 1, filteredGalleryAccounts.length)}–{Math.min(galleryPage * galleryPageSize, filteredGalleryAccounts.length)} / {filteredGalleryAccounts.length} tài khoản
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                        <span style={{ color: '#888', fontSize: '0.85rem' }}>Số mục:</span>
+                                        {[5, 10, 20].map(size => (
+                                            <button key={size} onClick={() => { setGalleryPageSize(size); setGalleryPage(1); }}
+                                                style={{ padding: '4px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', background: galleryPageSize === size ? 'var(--primary)' : '#333', color: galleryPageSize === size ? '#000' : '#fff' }}>
+                                                {size}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', color: '#fff', minWidth: '900px' }}>
+                                    <thead>
+                                        <tr style={{ borderBottom: '1px solid #333', color: '#888', textTransform: 'uppercase', fontSize: '0.8rem' }}>
+                                            <th style={{ padding: '15px 0' }}>Preview/ID</th>
+                                            <th>Rank/Stats</th>
+                                            <th>Đăng ký</th>
+                                            <th>Thông tin login (ID/Pass)</th>
+                                            <th>Giá bán</th>
+                                            <th>Ngày đăng</th>
+                                            <th>Thao tác</th>
                                         </tr>
+                                    </thead>
+                                    <tbody>
+                                        {paginatedAccounts.map((acc) => (
+                                            <tr key={acc.id} style={{ borderBottom: '1px solid #222' }}>
+                                                <td style={{ padding: '15px 0' }}>
+                                                    <img src={acc.image || '/posts/dolia.png'} style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px', marginBottom: '5px' }} />
+                                                    <div style={{ fontSize: '0.8rem', color: '#888' }}>#{acc.gameId}</div>
+                                                </td>
+                                                <td>
+                                                    <div style={{ color: 'var(--primary)', fontWeight: 600 }}>{acc.rank}</div>
+                                                    <div style={{ fontSize: '0.75rem', color: '#888' }}>{acc.heroesCount} Tướng | {acc.skinsCount} Skin</div>
+                                                    {acc.bannerTag && <div style={{ fontSize: '0.7rem', color: '#e9c46a', textTransform: 'uppercase', marginTop: '2px', fontWeight: 700 }}>[{acc.bannerTag}]</div>}
+                                                </td>
+                                                <td style={{ fontSize: '0.9rem' }}>{acc.loginType}</td>
+                                                <td style={{ fontSize: '0.8rem', color: '#aaa', fontFamily: 'monospace' }}>
+                                                    <div>{acc.email}</div>
+                                                    <div>{acc.password}</div>
+                                                </td>
+                                                <td>
+                                                    <div style={{ color: '#fff', fontWeight: 700 }}>{new Intl.NumberFormat('vi-VN').format(acc.price || 0)}đ</div>
+                                                    {acc.originalPrice && <div style={{ fontSize: '0.7rem', color: '#555', textDecoration: 'line-through' }}>{new Intl.NumberFormat('vi-VN').format(Number(acc.originalPrice))}đ</div>}
+                                                </td>
+                                                <td style={{ fontSize: '0.75rem', color: '#666' }}>{acc.createdAt ? new Date(acc.createdAt).toLocaleDateString('vi-VN') : '---'}</td>
+                                                <td>
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        <button
+                                                            onClick={() => handleEditAccount(acc)}
+                                                            title="Sửa"
+                                                            style={{ color: '#fff', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', padding: '8px', cursor: 'pointer', borderRadius: '8px', display: 'flex' }}
+                                                        >
+                                                            <Edit3 size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteAccount(acc.id, acc.gameId)}
+                                                            title="Xóa"
+                                                            style={{ color: '#ff4d4f', border: '1px solid rgba(255,77,79,0.2)', background: 'rgba(255,77,79,0.05)', padding: '8px', cursor: 'pointer', borderRadius: '8px', display: 'flex' }}
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                {/* Pagination controls bottom */}
+                                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+                                    <button onClick={() => setGalleryPage(p => Math.max(1, p - 1))} disabled={galleryPage === 1}
+                                        style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: galleryPage === 1 ? 'not-allowed' : 'pointer', background: '#333', color: galleryPage === 1 ? '#555' : '#fff', fontWeight: 700 }}>← Trước</button>
+                                    {Array.from({ length: galleryTotalPages }, (_, i) => i + 1).map(p => (
+                                        <button key={p} onClick={() => setGalleryPage(p)}
+                                            style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 700, background: p === galleryPage ? 'var(--primary)' : '#333', color: p === galleryPage ? '#000' : '#fff' }}>{p}</button>
                                     ))}
-                                </tbody>
-                            </table>
-                        </div>
+                                    <button onClick={() => setGalleryPage(p => Math.min(galleryTotalPages, p + 1))} disabled={galleryPage === galleryTotalPages}
+                                        style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', cursor: galleryPage === galleryTotalPages ? 'not-allowed' : 'pointer', background: '#333', color: galleryPage === galleryTotalPages ? '#555' : '#fff', fontWeight: 700 }}>Tiếp →</button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
