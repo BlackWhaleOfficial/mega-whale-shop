@@ -343,10 +343,11 @@ export default function CollectionPage() {
         if (!idToProcess) return;
 
         try {
+            const isTenPull = gachaResults.length > 1; // Used to determine refund amount (60%)
             const res = await fetch('/api/gacha/action', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action, accountId: idToProcess })
+                body: JSON.stringify({ action, accountId: idToProcess, isTenPull })
             });
             const data = await res.json();
 
@@ -568,7 +569,7 @@ export default function CollectionPage() {
                                             <div style={{ color: '#fff', fontWeight: 600 }}>{acc.rank}</div>
                                             <div style={{ display: 'flex', gap: '5px', marginTop: '10px' }}>
                                                 <button onClick={() => handleGachaAction('CLAIM', acc.id)} style={{ flex: 1, background: '#e9c46a', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer', fontWeight: 800, fontSize: '0.7rem' }}>NHẬN</button>
-                                                <button onClick={() => handleGachaAction('SELL', acc.id)} style={{ flex: 1, background: 'rgba(255,80,80,0.1)', border: '1px solid rgba(255,80,80,0.2)', color: '#ff4d4f', borderRadius: '4px', padding: '4px', cursor: 'pointer', fontWeight: 800, fontSize: '0.7rem' }}>BÁN</button>
+                                                <button onClick={() => handleGachaAction('SELL', acc.id)} style={{ flex: 1, background: 'rgba(255,80,80,0.1)', border: '1px solid rgba(255,80,80,0.2)', color: '#ff4d4f', borderRadius: '4px', padding: '4px', cursor: 'pointer', fontWeight: 800, fontSize: '0.7rem' }}>BÁN (+6 WC)</button>
                                             </div>
                                         </div>
                                     </div>
@@ -612,7 +613,7 @@ export default function CollectionPage() {
                             ) : gachaResults.length <= 1 && (
                                 <>
                                     <button style={{ flex: 1.5, padding: '1.3rem', background: '#e9c46a', color: '#000', border: 'none', borderRadius: '16px', fontWeight: 900, fontSize: '1.1rem', cursor: 'pointer', textTransform: 'uppercase' }} onClick={() => handleGachaAction('CLAIM')}>NHẬN ACC</button>
-                                    <button style={{ flex: 1, padding: '1.3rem', background: 'rgba(255,80,80,0.1)', color: '#ff4d4f', border: '1px solid rgba(255,77,79,0.2)', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }} onClick={() => handleGachaAction('SELL')}>BÁN (Hoàn 4 WC)</button>
+                                    <button style={{ flex: 1, padding: '1.3rem', background: 'rgba(255,80,80,0.1)', color: '#ff4d4f', border: '1px solid rgba(255,77,79,0.2)', borderRadius: '16px', fontWeight: 800, cursor: 'pointer' }} onClick={() => handleGachaAction('SELL')}>BÁN (Hoàn 6 WC)</button>
                                 </>
                             )}
                             {gachaResults.length > 1 && (

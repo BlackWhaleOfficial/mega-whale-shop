@@ -8,7 +8,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { action, accountId } = body;
+        const { action, accountId, isTenPull } = body;
 
         const cookieStore = cookies();
         const token = cookieStore.get('token')?.value;
@@ -48,6 +48,8 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: true });
 
         } else if (action === 'SELL') {
+            const refundAmount = isTenPull ? Math.floor(90 * 0.6) : Math.floor(10 * 0.6);
+
             await prisma.$transaction([
                 prisma.gameAccount.update({
                     where: { id: accountId },
@@ -55,18 +57,18 @@ export async function POST(request: Request) {
                 }),
                 prisma.user.update({
                     where: { id: userId },
-                    data: { whaleCash: { increment: 4 } }
+                    data: { whaleCash: { increment: refundAmount } }
                 }),
                 prisma.transaction.create({
                     data: {
                         userId,
-                        amount: 4,
-                        type: `BÁN_GACHA - Bán Acc #${account.gameId} (Hoàn 4 WCash)`,
+                        amount: refundAmount,
+                        type: `BÁN_GACHA - Bán Acc #${account.gameId} (Hoàn ${refundAmount} WCash)`,
                         status: 'DONE'
                     }
                 })
             ]);
-            return NextResponse.json({ success: true, refund: 4 });
+            return NextResponse.json({ success: true, refund: refundAmount });
         }
 
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
