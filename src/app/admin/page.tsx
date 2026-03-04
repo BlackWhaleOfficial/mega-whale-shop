@@ -329,10 +329,18 @@ export default function AdminDashboard() {
             const url = editingAccountId ? `/api/admin/accounts/${editingAccountId}` : '/api/admin/accounts';
             const method = editingAccountId ? 'PUT' : 'POST';
 
+            // Resolve Auto tag
+            let finalData = { ...newAccountData };
+            if (finalData.bannerTag === 'Auto') {
+                if (finalData.price > 10000000) finalData.bannerTag = 'VIP';
+                else if (finalData.price >= 26000) finalData.bannerTag = 'Nor';
+                else finalData.bannerTag = 'REG';
+            }
+
             const res = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newAccountData),
+                body: JSON.stringify(finalData),
             });
             const data = await res.json();
             if (res.ok) {

@@ -22,8 +22,13 @@ interface GameAccount {
     createdAt?: string;
 }
 
-const GachaTab = ({ activeTab, banners, currentBanner, setCurrentBanner, setShowBannerInfo, handleGacha, gachaLoading }: any) => {
+const GachaTab = ({ activeTab, banners, bannerNames, currentBanner, setCurrentBanner, setShowBannerInfo, handleGacha, gachaLoading, rollCounts }: any) => {
     if (activeTab !== 'gacha') return null;
+
+    const bannerName = bannerNames[currentBanner];
+    const currentRolls = rollCounts.find((r: any) => r.bannerName === bannerName)?.count || 0;
+    const rollsLeft = 150 - (currentRolls % 150);
+
     return (
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -81,6 +86,11 @@ const GachaTab = ({ activeTab, banners, currentBanner, setCurrentBanner, setShow
                         />
                     ))}
                 </div>
+            </div>
+
+            <div style={{ textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.5)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(233,196,106,0.3)', alignSelf: 'center' }}>
+                <div style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 600 }}>Tích lũy: <span style={{ color: '#e9c46a' }}>{currentRolls}</span> lượt</div>
+                <div style={{ color: '#aaa', fontSize: '0.9rem', marginTop: '5px' }}>Còn <span style={{ color: '#fff' }}>{rollsLeft}</span> lượt nữa chắc chắn nhận <span style={{ color: 'var(--primary)' }}>REG Skin SSS</span></div>
             </div>
 
             <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -150,6 +160,8 @@ export default function CollectionPage() {
     const [currentBanner, setCurrentBanner] = useState(0);
     const [showBannerInfo, setShowBannerInfo] = useState(false);
 
+    const [rollCounts, setRollCounts] = useState<any[]>([]);
+
     useEffect(() => {
         fetch('/api/accounts')
             .then(res => res.json())
@@ -160,6 +172,14 @@ export default function CollectionPage() {
                 setLoading(false);
             })
             .catch(() => setLoading(false));
+
+        // Fetch roll counts
+        fetch('/api/gacha/rolls')
+            .then(res => res.json())
+            .then(data => {
+                if (data.rolls) setRollCounts(data.rolls);
+            })
+            .catch(() => { });
     }, []);
 
     const handleGacha = async (type: 'FREE' | 'PAID') => {
@@ -173,14 +193,32 @@ export default function CollectionPage() {
             const res = await fetch('/api/gacha/pull', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type })
+                body: JSON.stringify({ type, bannerIndex: currentBanner })
             });
             const data = await res.json();
+
+            if (res.status === 401) {
+                router.push('/login');
+                return;
+            }
 
             if (!res.ok) {
                 alert(data.error || 'Có lỗi xảy ra khi gacha!');
                 setGachaLoading(false);
                 return;
+            }
+
+            // Update roll counts if paid
+            if (type === 'PAID') {
+                const updatedRolls = [...rollCounts];
+                const bannerName = bannerNames[currentBanner];
+                const idx = updatedRolls.findIndex(r => r.bannerName === bannerName);
+                if (idx > -1) {
+                    updatedRolls[idx].count = data.rollCount;
+                } else {
+                    updatedRolls.push({ bannerName, count: data.rollCount });
+                }
+                setRollCounts(updatedRolls);
             }
 
             const video = Math.random() > 0.5 ? '/gacha1.mp4' : '/gacha2.mp4';
@@ -222,10 +260,13 @@ export default function CollectionPage() {
     };
 
     const allFilteredAccounts = accounts
-        .filter(acc =>
-            acc.gameId.toLowerCase().includes(search.toLowerCase()) ||
-            acc.rank.toLowerCase().includes(search.toLowerCase())
-        )
+        .filter(acc => {
+            // Hide REG and REG SSS from collection list
+            if (acc.bannerTag === 'REG' || acc.bannerTag === 'REG có sẵn skin SSS') return false;
+
+            return acc.gameId.toLowerCase().includes(search.toLowerCase()) ||
+                acc.rank.toLowerCase().includes(search.toLowerCase());
+        })
         .sort((a, b) => {
             if (sortBy === 'price-asc') return a.price - b.price;
             if (sortBy === 'price-desc') return b.price - a.price;
@@ -324,7 +365,17 @@ export default function CollectionPage() {
                     )}
                 </div>
             ) : (
-                <GachaTab activeTab={activeTab} banners={banners} currentBanner={currentBanner} setCurrentBanner={setCurrentBanner} setShowBannerInfo={setShowBannerInfo} handleGacha={handleGacha} gachaLoading={gachaLoading} />
+                <GachaTab
+                    activeTab={activeTab}
+                    banners={banners}
+                    bannerNames={bannerNames}
+                    currentBanner={currentBanner}
+                    setCurrentBanner={setCurrentBanner}
+                    setShowBannerInfo={setShowBannerInfo}
+                    handleGacha={handleGacha}
+                    gachaLoading={gachaLoading}
+                    rollCounts={rollCounts}
+                />
             )}
 
             {isGachaPlaying && !videoEnded && (
@@ -394,8 +445,8 @@ export default function CollectionPage() {
                         <div style={{ background: 'rgba(0,0,0,0.4)', padding: '1.5rem', borderRadius: '12px' }}>
                             <h4 style={{ color: '#ffb800', marginBottom: '10px' }}>Tỷ lệ:</h4>
                             <ul style={{ color: '#ccc', lineHeight: '1.8', marginLeft: '20px' }}>
-                                <li>Acc Full Skin <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>(0.0001%)</span></li>
-                                <li>Acc REG có sẵn skin SSS trong Banner <span style={{ color: '#ffb800', fontWeight: 'bold' }}>(0.9%)</span></li>
+                                <li>Acc Full Skin <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>(0.0000001%)</span></li>
+                                <li>Acc REG có sẵn skin SSS trong Banner <span style={{ color: '#ffb800', fontWeight: 'bold' }}>(0.0001%)</span></li>
                                 <li>Acc REG ngẫu nhiên <span style={{ color: 'var(--primary)' }}>(99%)</span></li>
                             </ul>
                         </div>

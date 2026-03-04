@@ -20,7 +20,19 @@ model User {
   transactions Transaction[]
   discounts    UserDiscount[]
   orders       Order[]
+  rollCounts   BannerRollCount[]
   createdAt    DateTime      @default(now())
+}
+
+model BannerRollCount {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  bannerName String
+  count      Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, bannerName])
 }
 
 model Order {
