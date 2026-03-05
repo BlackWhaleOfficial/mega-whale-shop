@@ -699,7 +699,7 @@ export default function CollectionPage() {
                                                 <div style={{ color: isGrandPrize ? '#fff' : '#ccc', fontWeight: isGrandPrize ? 700 : 600 }}>{acc.rank}</div>
                                                 <div style={{ display: 'flex', gap: '5px', marginTop: '10px' }}>
                                                     {!isGrandPrize && (
-                                                        <button onClick={() => handleGachaAction('SELL', acc.id)} style={{ flex: 1, background: 'rgba(255,80,80,0.1)', border: '1px solid rgba(255,80,80,0.2)', color: '#ff4d4f', borderRadius: '4px', padding: '4px', cursor: 'pointer', fontWeight: 800, fontSize: '0.7rem' }}>BÁN (+6 WC)</button>
+                                                        <button onClick={() => handleGachaAction('SELL', acc.id)} style={{ flex: 1, background: 'rgba(255,80,80,0.1)', border: '1px solid rgba(255,80,80,0.2)', color: '#ff4d4f', borderRadius: '4px', padding: '4px', cursor: 'pointer', fontWeight: 800, fontSize: '0.7rem' }}>BÁN (+{gachaResults.length > 1 ? 5 : 6} WC)</button>
                                                     )}
                                                     {isGrandPrize && (
                                                         <div style={{ flex: 1, background: 'rgba(233,196,106,0.08)', border: '1px solid rgba(233,196,106,0.2)', color: '#e9c46a', borderRadius: '4px', padding: '4px', fontWeight: 700, fontSize: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', lineHeight: 1.2 }}>✦ Không thể bán</div>
@@ -770,7 +770,7 @@ export default function CollectionPage() {
                             })()}
                             {gachaResults.length > 1 && gachaType !== 'FREE' && (() => {
                                 const sellableCount = gachaResults.filter(a => !(a.bannerTag === 'Full Skin' || (a.bannerTag && a.bannerTag.startsWith('REG SSS')))).length;
-                                const sellWC = sellableCount * 6;
+                                const sellWC = Math.floor(sellableCount * 5.4);
                                 return (
                                     <>
                                         {sellableCount > 0 && (

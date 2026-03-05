@@ -85,7 +85,8 @@ export async function POST(request: Request) {
             } else if (action === 'SELL_ALL') {
                 // Only sell non-grand-prize accounts
                 const sellableAccounts = accounts.filter(a => !isGrandPrize(a.bannerTag));
-                const refundAmount = sellableAccounts.length * 6;
+                // Bulk sell is always from a 10x pull, 60% of (90 WC / 10) = 5.4 WC per account
+                const refundAmount = Math.floor(sellableAccounts.length * 5.4);
                 const sellableIds = sellableAccounts.map(a => a.id);
 
                 if (sellableIds.length === 0) {
@@ -176,7 +177,8 @@ export async function POST(request: Request) {
                 return NextResponse.json({ error: 'Không thể bán Grand Prize!' }, { status: 400 });
             }
 
-            const refundAmount = 6;
+            // If selling individually from a 10x pull, floor of 5.4 is 5 WC. Otherwise 6.
+            const refundAmount = isTenPull ? 5 : 6;
 
             await prisma.$transaction([
                 prisma.gameAccount.update({
