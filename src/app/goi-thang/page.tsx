@@ -11,8 +11,20 @@ const THANG_PACKAGES = [
 export default function GoiThangPage() {
     const router = useRouter();
 
-    const handleBuy = (e: React.MouseEvent, id: string) => {
+    const handleBuy = async (e: React.MouseEvent, id: string) => {
         e.preventDefault();
+
+        try {
+            const authRes = await fetch('/api/auth/me');
+            const authData = await authRes.json();
+            if (!authData.authenticated) {
+                alert('Vui lòng đăng nhập để đăng ký gói!');
+                router.push('/login?redirect=/goi-thang');
+                return;
+            }
+        } catch {
+            return;
+        }
 
         let cartItems = [];
         try {

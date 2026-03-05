@@ -44,8 +44,21 @@ export default function AccountDetailPage({ params }: { params: { id: string } }
             });
     }, [params.id]);
 
-    const handleAddToCart = (redirect: boolean = true) => {
+    const handleAddToCart = async (redirect: boolean = true) => {
         if (!acc) return;
+
+        try {
+            const authRes = await fetch('/api/auth/me');
+            const authData = await authRes.json();
+            if (!authData.authenticated) {
+                alert('Vui lòng đăng nhập để thêm thẻ vào giỏ hàng!');
+                router.push('/login');
+                return;
+            }
+        } catch (error) {
+            console.error('Lỗi khi kiểm tra đăng nhập:', error);
+            return;
+        }
 
         let cartItems = [];
         try {
