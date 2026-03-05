@@ -658,57 +658,84 @@ export default function CollectionPage() {
                             <h2 style={{ color: '#e9c46a', fontSize: '2.5rem', margin: 0, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '2px' }}>KẾT QUẢ</h2>
 
                             {gachaResults.length > 1 ? (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem', width: '100%', maxHeight: '60vh', overflowY: 'auto', padding: '10px' }}>
-                                    {gachaResults.map((acc, idx) => {
+                                <div className="gacha-grid-container">
+                                    {[...gachaResults].sort((a, b) => {
+                                        const aGrand = a.bannerTag === 'Full Skin' || (a.bannerTag && a.bannerTag.startsWith('REG SSS'));
+                                        const bGrand = b.bannerTag === 'Full Skin' || (b.bannerTag && b.bannerTag.startsWith('REG SSS'));
+                                        return (bGrand ? 1 : 0) - (aGrand ? 1 : 0);
+                                    }).map((acc, idx) => {
                                         const isGrandPrize = acc.bannerTag === 'Full Skin' || (acc.bannerTag && acc.bannerTag.startsWith('REG SSS'));
                                         return (
-                                            <div key={acc.id} style={{
-                                                background: isGrandPrize ? 'linear-gradient(135deg, rgba(233,196,106,0.15) 0%, rgba(255,215,0,0.08) 100%)' : 'rgba(255,255,255,0.03)',
-                                                borderRadius: '16px',
-                                                border: isGrandPrize ? '2px solid #e9c46a' : '1px solid rgba(255,255,255,0.1)',
-                                                overflow: 'hidden',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                boxShadow: isGrandPrize ? '0 0 20px rgba(233,196,106,0.4), 0 0 60px rgba(233,196,106,0.15)' : 'none',
-                                                position: 'relative',
-                                                transform: isGrandPrize ? 'scale(1.03)' : 'none',
-                                                zIndex: isGrandPrize ? 2 : 1,
-                                            }}>
-                                                {/* Shimmer sweep cho Grand Prize */}
-                                                {isGrandPrize && (
-                                                    <div style={{
-                                                        position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none',
-                                                        background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%)',
-                                                        animation: 'shimmer 2.5s infinite',
-                                                        borderRadius: '14px',
-                                                    }} />
-                                                )}
-                                                <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9' }}>
-                                                    <Image src={acc.image || '/posts/dolia.png'} fill style={{ objectFit: 'cover' }} alt="Result" sizes="200px" />
+                                            <div key={acc.id} style={{ display: 'contents' }}>
+                                                <div className={isGrandPrize ? '' : 'desktop-only'} style={{
+                                                    background: isGrandPrize ? 'linear-gradient(135deg, rgba(233,196,106,0.15) 0%, rgba(255,215,0,0.08) 100%)' : 'rgba(255,255,255,0.03)',
+                                                    borderRadius: '16px',
+                                                    border: isGrandPrize ? '2px solid #e9c46a' : '1px solid rgba(255,255,255,0.1)',
+                                                    overflow: 'hidden',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    boxShadow: isGrandPrize ? '0 0 20px rgba(233,196,106,0.4), 0 0 60px rgba(233,196,106,0.15)' : 'none',
+                                                    position: 'relative',
+                                                    transform: isGrandPrize ? 'scale(1.03)' : 'none',
+                                                    zIndex: isGrandPrize ? 2 : 1,
+                                                }}>
+                                                    {/* Shimmer sweep cho Grand Prize */}
                                                     {isGrandPrize && (
                                                         <div style={{
-                                                            position: 'absolute', top: 6, left: 6,
-                                                            background: 'linear-gradient(90deg, #b8860b, #e9c46a, #ffd700, #e9c46a, #b8860b)',
-                                                            backgroundSize: '200% auto',
-                                                            animation: 'gold-shine 2s linear infinite',
-                                                            color: '#000', fontWeight: 900, padding: '3px 8px',
-                                                            borderRadius: '6px', fontSize: '0.6rem', letterSpacing: '1px',
-                                                        }}>✦ GRAND PRIZE</div>
+                                                            position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none',
+                                                            background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%)',
+                                                            animation: 'shimmer 2.5s infinite',
+                                                            borderRadius: '14px',
+                                                        }} />
                                                     )}
-                                                </div>
-                                                <div style={{ padding: '10px', fontSize: '0.8rem', textAlign: 'left' }}>
-                                                    <div style={{ color: isGrandPrize ? '#ffd700' : '#e9c46a', fontWeight: 900 }}>#{acc.gameId}</div>
-                                                    <div style={{ color: isGrandPrize ? '#fff' : '#ccc', fontWeight: isGrandPrize ? 700 : 600 }}>{acc.rank}</div>
-                                                    <div style={{ display: 'flex', gap: '5px', marginTop: '10px' }}>
-                                                        {!isGrandPrize && (
-                                                            <button onClick={() => handleGachaAction('SELL', acc.id)} style={{ flex: 1, background: 'rgba(255,80,80,0.1)', border: '1px solid rgba(255,80,80,0.2)', color: '#ff4d4f', borderRadius: '4px', padding: '4px', cursor: 'pointer', fontWeight: 800, fontSize: '0.7rem' }}>BÁN (+{gachaResults.length > 1 ? 5 : 6} WC)</button>
-                                                        )}
+                                                    <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9' }}>
+                                                        <Image src={acc.image || '/posts/dolia.png'} fill style={{ objectFit: 'cover' }} alt="Result" sizes="200px" />
                                                         {isGrandPrize && (
-                                                            <div style={{ flex: 1, background: 'rgba(233,196,106,0.08)', border: '1px solid rgba(233,196,106,0.2)', color: '#e9c46a', borderRadius: '4px', padding: '4px', fontWeight: 700, fontSize: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', lineHeight: 1.2 }}>✦ Không thể bán</div>
+                                                            <div style={{
+                                                                position: 'absolute', top: 6, left: 6,
+                                                                background: 'linear-gradient(90deg, #b8860b, #e9c46a, #ffd700, #e9c46a, #b8860b)',
+                                                                backgroundSize: '200% auto',
+                                                                animation: 'gold-shine 2s linear infinite',
+                                                                color: '#000', fontWeight: 900, padding: '3px 8px',
+                                                                borderRadius: '6px', fontSize: '0.6rem', letterSpacing: '1px',
+                                                            }}>✦ GRAND PRIZE</div>
                                                         )}
-                                                        <button onClick={() => handleGachaAction('CLAIM', acc.id)} style={{ flex: 1, background: isGrandPrize ? 'linear-gradient(90deg, #b8860b, #e9c46a)' : '#e9c46a', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer', fontWeight: 800, fontSize: '0.7rem' }}>NHẬN</button>
+                                                    </div>
+                                                    <div style={{ padding: '10px', fontSize: '0.8rem', textAlign: 'left' }}>
+                                                        <div style={{ color: isGrandPrize ? '#ffd700' : '#e9c46a', fontWeight: 900 }}>#{acc.gameId}</div>
+                                                        <div style={{ color: isGrandPrize ? '#fff' : '#ccc', fontWeight: isGrandPrize ? 700 : 600 }}>{acc.rank}</div>
+                                                        <div style={{ display: 'flex', gap: '5px', marginTop: '10px' }}>
+                                                            {!isGrandPrize && (
+                                                                <button onClick={() => handleGachaAction('SELL', acc.id)} style={{ flex: 1, background: 'rgba(255,80,80,0.1)', border: '1px solid rgba(255,80,80,0.2)', color: '#ff4d4f', borderRadius: '4px', padding: '4px', cursor: 'pointer', fontWeight: 800, fontSize: '0.7rem' }}>BÁN (+{gachaResults.length > 1 ? 5 : 6} WC)</button>
+                                                            )}
+                                                            {isGrandPrize && (
+                                                                <div style={{ flex: 1, background: 'rgba(233,196,106,0.08)', border: '1px solid rgba(233,196,106,0.2)', color: '#e9c46a', borderRadius: '4px', padding: '4px', fontWeight: 700, fontSize: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', lineHeight: 1.2 }}>✦ Không thể bán</div>
+                                                            )}
+                                                            <button onClick={() => handleGachaAction('CLAIM', acc.id)} style={{ flex: 1, background: isGrandPrize ? 'linear-gradient(90deg, #b8860b, #e9c46a)' : '#e9c46a', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer', fontWeight: 800, fontSize: '0.7rem' }}>NHẬN</button>
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                {!isGrandPrize && (
+                                                    <div className="mobile-only" style={{
+                                                        width: '100%',
+                                                        background: 'rgba(255,255,255,0.03)',
+                                                        border: '1px solid rgba(255,255,255,0.1)',
+                                                        borderRadius: '12px',
+                                                        padding: '10px',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'space-between',
+                                                        gap: '10px'
+                                                    }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            <div style={{ background: '#e9c46a', color: '#000', fontWeight: 900, padding: '4px 8px', borderRadius: '6px', fontSize: '0.7rem' }}>REG</div>
+                                                            <div style={{ color: '#fff', fontSize: '0.85rem', fontWeight: 800 }}>{new Intl.NumberFormat('vi-VN').format(acc.price)}đ</div>
+                                                        </div>
+                                                        <div style={{ display: 'flex', gap: '5px' }}>
+                                                            <button onClick={() => handleGachaAction('CLAIM', acc.id)} style={{ background: '#e9c46a', border: 'none', borderRadius: '4px', padding: '6px 12px', color: '#000', fontWeight: 800, fontSize: '0.7rem', cursor: 'pointer' }}>NHẬN</button>
+                                                            <button onClick={() => handleGachaAction('SELL', acc.id)} style={{ background: 'rgba(255,80,80,0.1)', border: '1px solid rgba(255,80,80,0.2)', color: '#ff4d4f', borderRadius: '4px', padding: '6px 12px', fontWeight: 800, fontSize: '0.7rem', cursor: 'pointer' }}>BÁN (+{gachaResults.length > 1 ? 5 : 6} WC)</button>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         );
                                     })}
@@ -789,7 +816,7 @@ export default function CollectionPage() {
 
                 {showBannerInfo && (
                     <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, backdropFilter: 'blur(10px)' }} onClick={() => setShowBannerInfo(false)}>
-                        <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="glass" style={{ padding: '2.5rem', borderRadius: '32px', maxWidth: '650px', width: '94%', position: 'relative', border: '1px solid rgba(255,255,255,0.1)', cursor: 'default', backgroundColor: '#0a0a0a' }} onClick={e => e.stopPropagation()}>
+                        <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="glass banner-info-modal" style={{ cursor: 'default' }} onClick={e => e.stopPropagation()}>
                             <button onClick={() => setShowBannerInfo(false)} style={{ position: 'absolute', top: '25px', right: '25px', background: 'rgba(255,255,255,0.05)', border: 'none', color: '#fff', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>✕</button>
                             <h2 style={{ color: '#e9c46a', marginBottom: '0.8rem', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 900, fontSize: '1.8rem' }}>THÔNG TIN BANNER</h2>
                             <h3 style={{ color: '#fff', marginBottom: '2rem', textAlign: 'center', fontSize: '1.4rem', background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '12px' }}>{bannerNames[currentBanner]}</h3>
