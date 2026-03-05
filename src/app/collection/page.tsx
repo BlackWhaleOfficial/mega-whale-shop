@@ -722,7 +722,7 @@ export default function CollectionPage() {
                                             {isSingleGrandPrize ? (
                                                 <div style={{ position: 'absolute', top: 15, left: 15, background: 'linear-gradient(90deg, #b8860b, #e9c46a, #ffd700, #e9c46a, #b8860b)', backgroundSize: '200% auto', animation: 'gold-shine 2s linear infinite', color: '#000', fontWeight: 900, padding: '6px 16px', borderRadius: '10px', fontSize: '0.85rem', letterSpacing: '1.5px', zIndex: 10 }}>✦ GRAND PRIZE</div>
                                             ) : (
-                                                <div style={{ position: 'absolute', top: 15, left: 15, background: '#e9c46a', color: '#000', fontWeight: 900, padding: '5px 12px', borderRadius: '8px', fontSize: '0.8rem' }}>LIMITED</div>
+                                                <div style={{ position: 'absolute', top: 15, left: 15, background: '#e9c46a', color: '#000', fontWeight: 900, padding: '5px 12px', borderRadius: '8px', fontSize: '0.8rem' }}>REG</div>
                                             )}
                                         </div>
                                     </div>
