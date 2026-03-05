@@ -367,7 +367,7 @@ export default function AccountDetailPage({ params }: { params: { id: string } }
                             boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
                         }} className="wcash-btn">
                         <span>Mua Bằng WCash</span>
-                        <span style={{ fontSize: '1rem', opacity: 0.9 }}>{new Intl.NumberFormat('vi-VN').format(acc.price)} W</span>
+                        <span style={{ fontSize: '1rem', opacity: 0.9 }}>{new Intl.NumberFormat('vi-VN').format(Math.round(acc.price / 1000))} W</span>
                     </button>
 
                 </div>
