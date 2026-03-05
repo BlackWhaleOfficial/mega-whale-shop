@@ -11,7 +11,7 @@ const FEATURED_POSTS = [
         title: 'Mã Khởi Thiên Ca',
         hero: 'Dolia',
         video: '/posts/dolia.mp4',
-        thumb: '/posts/dolia.png',
+        thumb: '/posts/dolia.webp',
         desc: 'Sức mạnh khởi nguyên từ Thiên Ca. Tuyệt phẩm âm nhạc và nghệ thuật.',
         link: 'https://www.facebook.com/share/v/17xSQwG1rA/'
     },
@@ -20,7 +20,7 @@ const FEATURED_POSTS = [
         title: 'Mã Đẳng Cửu Thế',
         hero: 'Lauriel',
         video: '/posts/lauriel.mp4',
-        thumb: '/posts/lauriel.png',
+        thumb: '/posts/lauriel.webp',
         desc: 'Thiên sứ hạ phàm mang theo kỉ nguyên mới của ánh sáng và quyền lực.',
         link: 'https://www.facebook.com/share/v/1E35jqTymL/'
     },
@@ -29,7 +29,7 @@ const FEATURED_POSTS = [
         title: 'Mã Hành Vạn Lý',
         hero: 'Valhein',
         video: '/posts/valhein.mp4',
-        thumb: '/posts/valhein.png',
+        thumb: '/posts/valhein.webp',
         desc: 'Chiến thần viễn chinh không khoan nhượng. Tiên phong mọi mặt trận.',
         link: 'https://www.facebook.com/share/v/18RrkRQniY/'
     }
@@ -56,7 +56,7 @@ export default function Home() {
                     left: 0,
                     width: '100%',
                     height: '100%',
-                    backgroundImage: 'url("/hero-bg.jpg")',
+                    backgroundImage: 'url("/hero-bg.webp")',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     zIndex: 0
@@ -68,7 +68,7 @@ export default function Home() {
                     loop
                     muted
                     playsInline
-                    poster="/hero-bg.jpg"
+                    poster="/hero-bg.webp"
                     style={{
                         position: 'absolute',
                         top: 0,
@@ -200,7 +200,7 @@ export default function Home() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 textAlign: 'center',
-                background: 'linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0.7)), url("/trust-bg.png") no-repeat center / cover',
+                background: 'linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0.7)), url("/trust-bg.webp") no-repeat center / cover',
                 backgroundAttachment: 'fixed'
             }}>
                 <div style={{ maxWidth: '800px' }}>

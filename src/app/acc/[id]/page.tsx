@@ -79,7 +79,7 @@ export default function AccountDetailPage({ params }: { params: { id: string } }
         return (
             <div style={{
                 minHeight: '100vh',
-                backgroundImage: "linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('/collection-bg.png')",
+                backgroundImage: "linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)), url('/collection-bg.webp')",
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundAttachment: 'fixed',
@@ -125,12 +125,12 @@ export default function AccountDetailPage({ params }: { params: { id: string } }
 
     const discountPercent = acc.originalPrice ? Math.round((1 - acc.price / acc.originalPrice) * 100) : 0;
     const depositAmount = acc.price * 0.1; // 10% deposit
-    const mainImageUrl = acc.image || '/posts/dolia.png';
+    const mainImageUrl = acc.image || '/posts/dolia.webp';
 
     return (
         <div style={{
             minHeight: '100vh',
-            backgroundImage: "linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.85)), url('/collection-bg.png')",
+            backgroundImage: "linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.85)), url('/collection-bg.webp')",
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundAttachment: 'fixed',

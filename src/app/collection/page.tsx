@@ -255,7 +255,7 @@ export default function CollectionPage() {
     const [gachaLoading, setGachaLoading] = useState(false);
     const [imagesPreloaded, setImagesPreloaded] = useState(false);
 
-    const banners = ['/banner1.png', '/banner2.png', '/banner3.png?v=2026'];
+    const banners = ['/banner1.webp', '/banner2.webp', '/banner3.webp?v=2026'];
     const bannerNames = ['Mộng Giới Thần Chủ', 'Nhật Nguyệt Thánh Linh', 'Hỗn Độn Thần Ma'];
     const [currentBanner, setCurrentBanner] = useState(0);
     const [showBannerInfo, setShowBannerInfo] = useState(false);
@@ -502,10 +502,10 @@ export default function CollectionPage() {
 
     return (
         <>
-            <link rel="preload" href="/collection-bg.png" as="image" />
+            <link rel="preload" href="/collection-bg.webp" as="image" />
             <div style={{
                 minHeight: '100vh',
-                backgroundImage: "linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.85)), url('/collection-bg.png')",
+                backgroundImage: "linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.85)), url('/collection-bg.webp')",
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundAttachment: 'fixed',
@@ -578,7 +578,7 @@ export default function CollectionPage() {
                                     <div key={acc.id} className="glass-card img-optimize" style={{ overflow: 'hidden', padding: 0, cursor: 'pointer' }} onClick={() => router.push(`/acc/${acc.gameId}`)}>
                                         <div style={{ height: '200px', backgroundColor: '#000', position: 'relative' }}>
                                             <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                                                <Image src={acc.image || '/posts/dolia.png'} alt="Acc Preview" fill style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+                                                <Image src={acc.image || '/posts/dolia.webp'} alt="Acc Preview" fill style={{ objectFit: 'cover' }} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                                             </div>
                                             <div style={{ position: 'absolute', bottom: '15px', right: '15px', backgroundColor: '#e9c46a', color: '#000', padding: '5px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 900 }}>LIÊN QUÂN</div>
                                         </div>
@@ -689,7 +689,7 @@ export default function CollectionPage() {
                                                         }} />
                                                     )}
                                                     <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9' }}>
-                                                        <Image src={acc.image || '/posts/dolia.png'} fill style={{ objectFit: 'cover' }} alt="Result" sizes="200px" />
+                                                        <Image src={acc.image || '/posts/dolia.webp'} fill style={{ objectFit: 'cover' }} alt="Result" sizes="200px" />
                                                         {isGrandPrize && (
                                                             <div style={{
                                                                 position: 'absolute', top: 6, left: 6,
@@ -747,7 +747,7 @@ export default function CollectionPage() {
                                         <div style={{ width: '100%', borderRadius: '24px', overflow: 'hidden', border: isSingleGrandPrize ? '2px solid #e9c46a' : '1px solid rgba(255,255,255,0.1)', position: 'relative', boxShadow: isSingleGrandPrize ? '0 0 40px rgba(233,196,106,0.5), 0 10px 40px rgba(0,0,0,0.5)' : '0 10px 40px rgba(0,0,0,0.5)' }}>
                                             {isSingleGrandPrize && <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.12) 50%, transparent 70%)', animation: 'shimmer 2.5s infinite', zIndex: 5, pointerEvents: 'none', borderRadius: '22px' }} />}
                                             <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9' }}>
-                                                <Image src={gachaResult.image || '/posts/dolia.png'} fill style={{ objectFit: 'cover' }} alt="Gacha Result" sizes="500px" />
+                                                <Image src={gachaResult.image || '/posts/dolia.webp'} fill style={{ objectFit: 'cover' }} alt="Gacha Result" sizes="500px" />
                                                 {isSingleGrandPrize ? (
                                                     <div style={{ position: 'absolute', top: 15, left: 15, background: 'linear-gradient(90deg, #b8860b, #e9c46a, #ffd700, #e9c46a, #b8860b)', backgroundSize: '200% auto', animation: 'gold-shine 2s linear infinite', color: '#000', fontWeight: 900, padding: '6px 16px', borderRadius: '10px', fontSize: '0.85rem', letterSpacing: '1.5px', zIndex: 10 }}>✦ GRAND PRIZE</div>
                                                 ) : (

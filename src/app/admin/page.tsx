@@ -111,9 +111,9 @@ export default function AdminDashboard() {
     ]);
 
     const [posts, setPosts] = useState([
-        { id: 'dolia', title: 'Mã Khởi Thiên Ca', hero: 'Dolia', video: '/posts/dolia.mp4', thumb: '/posts/dolia.png', link: 'https://www.facebook.com/share/v/17xSQwG1rA/' },
-        { id: 'lauriel', title: 'Mã Đẳng Cửu Thế', hero: 'Lauriel', video: '/posts/lauriel.mp4', thumb: '/posts/lauriel.png', link: 'https://www.facebook.com/share/v/1E35jqTymL/' },
-        { id: 'valhein', title: 'Mã Hành Vạn Lý', hero: 'Valhein', video: '/posts/valhein.mp4', thumb: '/posts/valhein.png', link: 'https://www.facebook.com/share/v/18RrkRQniY/' }
+        { id: 'dolia', title: 'Mã Khởi Thiên Ca', hero: 'Dolia', video: '/posts/dolia.mp4', thumb: '/posts/dolia.webp', link: 'https://www.facebook.com/share/v/17xSQwG1rA/' },
+        { id: 'lauriel', title: 'Mã Đẳng Cửu Thế', hero: 'Lauriel', video: '/posts/lauriel.mp4', thumb: '/posts/lauriel.webp', link: 'https://www.facebook.com/share/v/1E35jqTymL/' },
+        { id: 'valhein', title: 'Mã Hành Vạn Lý', hero: 'Valhein', video: '/posts/valhein.mp4', thumb: '/posts/valhein.webp', link: 'https://www.facebook.com/share/v/18RrkRQniY/' }
     ]);
 
     useEffect(() => {
@@ -1307,7 +1307,7 @@ export default function AdminDashboard() {
                                         {paginatedAccounts.map((acc) => (
                                             <tr key={acc.id} style={{ borderBottom: '1px solid #222' }}>
                                                 <td style={{ padding: '15px 0' }}>
-                                                    <img src={acc.image || '/posts/dolia.png'} style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px', marginBottom: '5px' }} />
+                                                    <img src={acc.image || '/posts/dolia.webp'} style={{ width: '60px', height: '40px', objectFit: 'cover', borderRadius: '4px', marginBottom: '5px' }} />
                                                     <div style={{ fontSize: '0.8rem', color: '#888' }}>#{acc.gameId}</div>
                                                 </td>
                                                 <td>
