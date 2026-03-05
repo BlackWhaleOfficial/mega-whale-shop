@@ -2,10 +2,16 @@ import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../lib/prisma';
 import { getSession } from '../../../../../lib/auth';
 
+const GRAND_PRIZE_TAGS = ['Full Skin'];
+const SSS_PREFIX = 'REG SSS banner';
+
+const isGrandPrize = (tag: string | null) =>
+    tag !== null && (GRAND_PRIZE_TAGS.includes(tag) || tag.startsWith(SSS_PREFIX));
+
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { action, accountId, isTenPull, accountIds } = body;
+        const { action, accountId, isTenPull, accountIds, bannerName } = body;
 
         const session = await getSession();
         const userId = session?.id || null;
@@ -22,7 +28,10 @@ export async function POST(request: Request) {
             if (accounts.length === 0) return NextResponse.json({ error: 'Không tìm thấy tài khoản' }, { status: 404 });
 
             if (action === 'CLAIM_ALL') {
-                await prisma.$transaction([
+                // Check if any grand prize in the batch — if so, reset pity for that banner
+                const grandPrizeAcc = accounts.find(a => isGrandPrize(a.bannerTag));
+
+                const ops: any[] = [
                     prisma.gameAccount.updateMany({
                         where: { id: { in: accountIds } },
                         data: { status: 'SOLD' }
@@ -52,14 +61,40 @@ export async function POST(request: Request) {
                             }
                         }
                     })
-                ]);
+                ];
+
+                // ✅ Reset pity: giữ lại số dư (count % 150)
+                if (grandPrizeAcc && bannerName) {
+                    const rollRecord = await prisma.bannerRollCount.findUnique({
+                        where: { userId_bannerName: { userId, bannerName } }
+                    });
+                    if (rollRecord) {
+                        const remainder = rollRecord.count % 150;
+                        ops.push(
+                            prisma.bannerRollCount.update({
+                                where: { userId_bannerName: { userId, bannerName } },
+                                data: { count: remainder }
+                            })
+                        );
+                    }
+                }
+
+                await prisma.$transaction(ops);
                 return NextResponse.json({ success: true });
+
             } else if (action === 'SELL_ALL') {
-                const refundAmount = accounts.length === 10 ? 54 : accounts.length * 6;
+                // Only sell non-grand-prize accounts
+                const sellableAccounts = accounts.filter(a => !isGrandPrize(a.bannerTag));
+                const refundAmount = sellableAccounts.length * 6;
+                const sellableIds = sellableAccounts.map(a => a.id);
+
+                if (sellableIds.length === 0) {
+                    return NextResponse.json({ error: 'Không có tài khoản nào có thể bán' }, { status: 400 });
+                }
 
                 await prisma.$transaction([
                     prisma.gameAccount.updateMany({
-                        where: { id: { in: accountIds } },
+                        where: { id: { in: sellableIds } },
                         data: { status: 'AVAILABLE' }
                     }),
                     prisma.user.update({
@@ -70,7 +105,7 @@ export async function POST(request: Request) {
                         data: {
                             userId,
                             amount: refundAmount,
-                            type: `BÁN_GACHA - Bán ${accounts.length} Acc (Hoàn ${refundAmount} WCash)`,
+                            type: `BÁN_GACHA - Bán ${sellableAccounts.length} Acc (Hoàn ${refundAmount} WCash)`,
                             status: 'DONE'
                         }
                     })
@@ -85,7 +120,7 @@ export async function POST(request: Request) {
         }
 
         if (action === 'CLAIM') {
-            await prisma.$transaction([
+            const ops: any[] = [
                 prisma.gameAccount.update({
                     where: { id: accountId },
                     data: { status: 'SOLD' }
@@ -115,10 +150,32 @@ export async function POST(request: Request) {
                         }
                     }
                 })
-            ]);
+            ];
+
+            // ✅ Reset pity khi CLAIM grand prize — giữ số dư (count % 150)
+            if (isGrandPrize(account.bannerTag) && bannerName) {
+                const rollRecord = await prisma.bannerRollCount.findUnique({
+                    where: { userId_bannerName: { userId, bannerName } }
+                });
+                if (rollRecord) {
+                    const remainder = rollRecord.count % 150;
+                    ops.push(
+                        prisma.bannerRollCount.update({
+                            where: { userId_bannerName: { userId, bannerName } },
+                            data: { count: remainder }
+                        })
+                    );
+                }
+            }
+
+            await prisma.$transaction(ops);
             return NextResponse.json({ success: true });
 
         } else if (action === 'SELL') {
+            if (isGrandPrize(account.bannerTag)) {
+                return NextResponse.json({ error: 'Không thể bán Grand Prize!' }, { status: 400 });
+            }
+
             const refundAmount = 6;
 
             await prisma.$transaction([

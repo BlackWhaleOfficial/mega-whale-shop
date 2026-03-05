@@ -19,98 +19,89 @@ export async function POST(request: Request) {
             }
 
             const cost = pullCount === 10 ? 90 : (pullCount * 10);
+            const sssTag = `REG SSS banner ${bannerIndex + 1}`;
 
-            const user = await prisma.user.findUnique({ where: { id: userId } });
+            // ✅ FIX 1: Load user + roll count + ALL pools SONG SONG (3 queries thay vì tối đa 20)
+            const [user, currentRollRecord, regPool, sssPool, fullSkinPool] = await Promise.all([
+                prisma.user.findUnique({
+                    where: { id: userId },
+                    select: { id: true, whaleCash: true }
+                }),
+                prisma.bannerRollCount.findUnique({
+                    where: { userId_bannerName: { userId, bannerName } }
+                }),
+                // Tải toàn bộ pool AVAILABLE theo từng tag — chọn random trong bộ nhớ
+                prisma.gameAccount.findMany({
+                    where: { status: 'AVAILABLE', bannerTag: 'REG' },
+                    select: { id: true, gameId: true, email: true, rank: true, heroesCount: true, skinsCount: true, loginType: true, notes: true, price: true, originalPrice: true, status: true, bannerTag: true, image: true, createdAt: true }
+                }),
+                prisma.gameAccount.findMany({
+                    where: { status: 'AVAILABLE', bannerTag: sssTag },
+                    select: { id: true, gameId: true, email: true, rank: true, heroesCount: true, skinsCount: true, loginType: true, notes: true, price: true, originalPrice: true, status: true, bannerTag: true, image: true, createdAt: true }
+                }),
+                prisma.gameAccount.findMany({
+                    where: { status: 'AVAILABLE', bannerTag: 'Full Skin' },
+                    select: { id: true, gameId: true, email: true, rank: true, heroesCount: true, skinsCount: true, loginType: true, notes: true, price: true, originalPrice: true, status: true, bannerTag: true, image: true, createdAt: true }
+                }),
+            ]);
+
             if (!user || user.whaleCash < cost) {
                 return NextResponse.json({ error: 'Không đủ WCash' }, { status: 400 });
             }
 
-            // Get current roll count to calculate pity accurately for multiple pulls
-            const currentRollRecord = await prisma.bannerRollCount.findUnique({
-                where: { userId_bannerName: { userId, bannerName } }
-            });
             let baseRoll = currentRollRecord?.count || 0;
-
             const results: any[] = [];
-            const accountUpdates: any[] = [];
+            const pickedIds = new Set<string>();
 
+            // Helper: chọn ngẫu nhiên từ pool, loại bỏ đã chọn
+            const pickRandom = (pool: any[]) => {
+                const available = pool.filter(a => !pickedIds.has(a.id));
+                if (available.length === 0) return null;
+                return available[Math.floor(Math.random() * available.length)];
+            };
+
+            // ✅ Toàn bộ logic chọn account chạy TRONG BỘ NHỚ — không thêm DB query nào
             for (let i = 1; i <= pullCount; i++) {
                 const currentRollNum = baseRoll + i;
-                let targetTag = 'REG';
+                let picked: any = null;
 
-                const sssTag = `REG SSS banner ${bannerIndex + 1}`;
-
-                // Pity check: 150 rolls (Sao Hộ Mệnh)
                 if (currentRollNum % 150 === 0) {
-                    targetTag = sssTag;
+                    // Pity: guaranteed SSS
+                    picked = pickRandom(sssPool) ?? pickRandom(regPool);
                 } else {
                     const r = Math.random() * 100;
                     if (r < 0.0000001) {
-                        targetTag = 'Full Skin';
+                        picked = pickRandom(fullSkinPool) ?? pickRandom(regPool);
                     } else if (r < 0.0000001 + 0.0001) {
-                        targetTag = sssTag;
+                        picked = pickRandom(sssPool) ?? pickRandom(regPool);
                     } else {
-                        targetTag = 'REG';
+                        picked = pickRandom(regPool);
                     }
                 }
 
-                // Explicitly get IDs already picked to avoid duplication in same 10x
-                const pickedIds = accountUpdates.map(a => a.id);
-
-                // Find an available account with this tag
-                let availableAccounts: any[] = await prisma.gameAccount.findMany({
-                    where: {
-                        status: 'AVAILABLE',
-                        bannerTag: targetTag,
-                        id: { notIn: pickedIds }
-                    }
-                });
-
-                // Fallback if no account with specific tag is found
-                if (availableAccounts.length === 0 && targetTag !== 'REG') {
-                    availableAccounts = await prisma.gameAccount.findMany({
-                        where: {
-                            status: 'AVAILABLE',
-                            bannerTag: 'REG',
-                            id: { notIn: pickedIds }
-                        }
-                    });
-                }
-
-                if (availableAccounts.length === 0) {
-                    // Critical failure: No accounts left even in REG
+                if (!picked) {
                     return NextResponse.json({ error: 'Kho tài khoản hiện đang tạm hết, vui lòng quay lại sau' }, { status: 400 });
                 }
 
-                const pulledAcc = availableAccounts[Math.floor(Math.random() * availableAccounts.length)];
-                results.push(pulledAcc);
-                accountUpdates.push(pulledAcc);
+                pickedIds.add(picked.id);
+                results.push(picked);
             }
 
-            // Perform transaction
+            // Transaction cập nhật DB (giống trước)
             await prisma.$transaction([
-                // Update User Balance
                 prisma.user.update({
                     where: { id: userId },
                     data: { whaleCash: { decrement: cost } }
                 }),
-                // Update Roll Count
                 prisma.bannerRollCount.upsert({
                     where: { userId_bannerName: { userId, bannerName } },
                     update: { count: { increment: pullCount } },
                     create: { userId, bannerName, count: pullCount }
                 }),
-                // Create Transaction record
                 prisma.transaction.create({
-                    data: {
-                        userId,
-                        amount: cost,
-                        type: 'GACHA_PULL',
-                        status: 'DONE'
-                    }
+                    data: { userId, amount: cost, type: 'GACHA_PULL', status: 'DONE' }
                 }),
-                // Set accounts to pending
-                ...accountUpdates.map(acc =>
+                ...results.map(acc =>
                     prisma.gameAccount.update({
                         where: { id: acc.id },
                         data: { status: 'GACHA_PENDING' }
@@ -127,14 +118,15 @@ export async function POST(request: Request) {
         } else if (type === 'FREE') {
             const accounts = await prisma.gameAccount.findMany({
                 where: { status: 'AVAILABLE' },
-                take: pullCount
+                take: Math.max(pullCount * 5, 50),
+                select: { id: true, gameId: true, email: true, rank: true, heroesCount: true, skinsCount: true, loginType: true, notes: true, price: true, originalPrice: true, status: true, bannerTag: true, image: true, createdAt: true }
             });
 
             if (accounts.length === 0) {
                 return NextResponse.json({ error: 'Kho tài khoản trống' }, { status: 400 });
             }
 
-            const shuffled = accounts.sort(() => 0.5 - Math.random());
+            const shuffled = accounts.sort(() => 0.5 - Math.random()).slice(0, pullCount);
 
             return NextResponse.json({
                 accounts: shuffled,
