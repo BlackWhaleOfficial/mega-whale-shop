@@ -149,20 +149,13 @@ export default function AccountDetailPage({ params }: { params: { id: string } }
                 {/* LEFT COLUMN: IMAGES & DETAILS */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-                    {/* Image section: Main image + left thumbnails (mocked with same image) */}
+                    {/* Image section: Main image */}
                     <div className="glass" style={{
                         borderRadius: '16px',
                         padding: '1.5rem',
-                        display: 'flex',
-                        gap: '1rem',
                         border: '1px solid rgba(0,255,100,0.2)'
                     }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '80px' }}>
-                            <img src={mainImageUrl} style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', border: '2px solid var(--primary)', borderRadius: '8px', cursor: 'pointer' }} alt="Thumb 1" />
-                            <img src={mainImageUrl} style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', border: '2px solid transparent', borderRadius: '8px', cursor: 'pointer', opacity: 0.5 }} alt="Thumb 2" />
-                            <img src={mainImageUrl} style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', border: '2px solid transparent', borderRadius: '8px', cursor: 'pointer', opacity: 0.5 }} alt="Thumb 3" />
-                        </div>
-                        <div style={{ flex: 1, position: 'relative' }}>
+                        <div style={{ width: '100%', position: 'relative' }}>
                             <img
                                 src={mainImageUrl}
                                 style={{ width: '100%', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}
