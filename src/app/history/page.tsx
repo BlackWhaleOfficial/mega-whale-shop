@@ -101,18 +101,10 @@ export default function HistoryPage() {
                                     {/* Order Summary Header */}
                                     <div
                                         onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
-                                        style={{
-                                            padding: '1.5rem 2rem',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            cursor: 'pointer',
-                                            backgroundColor: isExpanded ? 'rgba(68, 214, 44, 0.05)' : 'transparent',
-                                            flexWrap: 'wrap',
-                                            gap: '1rem'
-                                        }}
+                                        className="history-item-header"
+                                        style={{ backgroundColor: isExpanded ? 'rgba(68, 214, 44, 0.05)' : 'transparent' }}
                                     >
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flex: 1, minWidth: '300px' }}>
+                                        <div className="history-info-group">
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                                 <div style={{ color: '#888', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '5px' }}>
                                                     <Hash size={12} /> Mã Hóa Đơn
@@ -132,8 +124,8 @@ export default function HistoryPage() {
                                             </div>
                                         </div>
 
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '3rem' }}>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'flex-end' }}>
+                                        <div className="history-price-group">
+                                            <div className="history-price-text">
                                                 <div style={{ color: '#888', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '5px' }}>
                                                     Sản Phẩm & Tổng Tiền
                                                 </div>
@@ -192,28 +184,32 @@ export default function HistoryPage() {
                                                             </div>
 
                                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                                                <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#000', padding: '10px 15px', borderRadius: '6px', border: '1px solid #222' }}>
-                                                                    <span style={{ color: '#888', width: '80px', fontSize: '0.9rem' }}>Serial:</span>
-                                                                    <span style={{ color: '#fff', flex: 1, fontFamily: 'monospace', fontSize: '1.1rem', letterSpacing: '1px' }}>{item.serial}</span>
-                                                                    <button
-                                                                        onClick={(e) => { e.stopPropagation(); handleCopy(item.serial, `serial_${item.id}`); }}
-                                                                        style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', padding: '5px' }}
-                                                                        title="Sao chép Serial"
-                                                                    >
-                                                                        {copiedId === `serial_${item.id}` ? <Check size={18} color="var(--primary)" /> : <Copy size={18} />}
-                                                                    </button>
+                                                                <div className="history-detail-row">
+                                                                    <span className="history-detail-label">Serial:</span>
+                                                                    <div className="history-detail-value-container">
+                                                                        <span className="history-detail-value">{item.serial}</span>
+                                                                        <button
+                                                                            onClick={(e) => { e.stopPropagation(); handleCopy(item.serial, `serial_${item.id}`); }}
+                                                                            style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', padding: '5px', flexShrink: 0 }}
+                                                                            title="Sao chép Serial"
+                                                                        >
+                                                                            {copiedId === `serial_${item.id}` ? <Check size={18} color="var(--primary)" /> : <Copy size={18} />}
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
 
-                                                                <div style={{ display: 'flex', alignItems: 'center', backgroundColor: '#000', padding: '10px 15px', borderRadius: '6px', border: '1px solid #222' }}>
-                                                                    <span style={{ color: '#888', width: '80px', fontSize: '0.9rem' }}>Mã PIN:</span>
-                                                                    <span style={{ color: '#fff', flex: 1, fontFamily: 'monospace', fontSize: '1.1rem', letterSpacing: '1px', fontWeight: 'bold' }}>{item.pin}</span>
-                                                                    <button
-                                                                        onClick={(e) => { e.stopPropagation(); handleCopy(item.pin, `pin_${item.id}`); }}
-                                                                        style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', padding: '5px' }}
-                                                                        title="Sao chép PIN"
-                                                                    >
-                                                                        {copiedId === `pin_${item.id}` ? <Check size={18} color="var(--primary)" /> : <Copy size={18} />}
-                                                                    </button>
+                                                                <div className="history-detail-row">
+                                                                    <span className="history-detail-label">Mã PIN:</span>
+                                                                    <div className="history-detail-value-container">
+                                                                        <span className="history-detail-value" style={{ fontWeight: 'bold' }}>{item.pin}</span>
+                                                                        <button
+                                                                            onClick={(e) => { e.stopPropagation(); handleCopy(item.pin, `pin_${item.id}`); }}
+                                                                            style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', padding: '5px', flexShrink: 0 }}
+                                                                            title="Sao chép PIN"
+                                                                        >
+                                                                            {copiedId === `pin_${item.id}` ? <Check size={18} color="var(--primary)" /> : <Copy size={18} />}
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
